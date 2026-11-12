@@ -1,0 +1,19 @@
+{
+  "name": "codebench-editor-state-vendor",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node build.mjs --check",
+    "test": "node --experimental-vm-modules ../idea/check_editor_buffer.mjs",
+    "check:native": "node check-native.mjs"
+  },
+  "dependencies": {
+    "@codemirror/state": "6.7.6",
+    "@marijn/find-cluster-break": "1.0.4",
+    "unicode-segmenter": "0.17.3"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

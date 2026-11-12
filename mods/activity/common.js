@@ -4,10 +4,13 @@ import { T } from "./i18n.js";
 import { h_flex } from "gpui-base";
 import { spaces, panes, focused, run, shared, setShared, layout, theme } from "herdr";
 import { isIdea, IDEA, uiSize, ideaUI, uiIconButton, uiToolHeader } from "./idea-design.js";
+import { uiIcon } from "./ui-icons.js";
 
 export const MOD = "activity";
 export const STACK = "sidebar-views";
-export const icon = (name, size = 16) => svg(`mods/${MOD}/icons/${name}.svg`).size(size).flex_none();
+export const icon = (name, size = 16) => name === "vscode"
+  ? svg(`mods/${MOD}/icons/vscode.svg`).size(size).flex_none()
+  : uiIcon(name, size);
 
 // Git reads that write nothing under .git, so a folder watch doesn't loop on our own refresh.
 export const READ = ["--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "diff.autoRefreshIndex=false"];
@@ -137,7 +140,7 @@ export const statusColor = (s, t) => s === "A" || s === "?" ? t.ansi2 : s === "D
 // An agent status as Herdr's own lists draw it: a spinner while working, "!"
 // when it needs you, a dot when done, a ring when idle, nothing otherwise.
 export function statusMark(status, t) {
-  if (status === "working") return svg("mods/workspace-chrome/spinner.svg").size(12).mx(1).flex_none().text_color(t.working).spin(900);
+  if (status === "working") return uiIcon("progress", 12).mx(1).text_color(t.working).spin(900);
   if (status === "blocked") return div().size(14).flex_none().rounded(4).bg(t.blocked + "26").text_size(10.5).font_bold().text_color(t.blocked).flex().items_center().justify_center().child("!");
   if (status === "done") return div().size(7).mx(3).flex_none().rounded(4).bg(t.done ?? t.ansi2);
   if (status === "idle") return div().size(7).mx(3).flex_none().rounded(4).border(1.5).border_color(t.idle ?? t.dim);

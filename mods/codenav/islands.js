@@ -1,7 +1,7 @@
 // Structural edges belong to the island, not to whichever view happens to be
 // active. Herdr's layout radius does not mask an editor, viewer or terminal.
 import { IDEA } from "./idea-design.js";
-import { ensureToolSplits, ensureBottomSpan } from "./tool-layout.js";
+import { ensureToolSplits, ensureBottomSpan, hideEmptyToolColumns } from "./tool-layout.js";
 import { find } from "./layout-tree.js";
 
 const EDGES = { left: "left-main", left2: "left-aux", right: "right-main", right2: "right-aux", bottom: "terminal-panel", editor: "editor-area" };
@@ -11,10 +11,12 @@ export const islandFoot = (side) => ({
 });
 
 // Mutate only idea-owned chrome fields; tool ordering, sizes, active children,
-// split directions, hidden state and terminal data remain the user's.
+// split directions, slot visibility and terminal data remain the user's.
+// An outer column with both slots hidden is collapsed without touching them.
 export function ensureIdeaIslands(tree) {
   let changed = ensureToolSplits(tree);
   changed = ensureBottomSpan(tree) || changed;
+  changed = hideEmptyToolColumns(tree) || changed;
   const set = (node, key, value) => {
     if (JSON.stringify(node[key]) !== JSON.stringify(value)) { node[key] = value; changed = true; }
   };
@@ -23,6 +25,15 @@ export function ensureIdeaIslands(tree) {
   for (const id of ["root", "body", "idea-content", "idea-upper", "work-body", "sidebar", "tool-right"]) {
     const node = find(tree, id);
     if (node) { set(node, "gap", 0); set(node, "padding", [0, 0]); }
+  }
+  // A zero-width separator leaves its native 6px handle over adjacent views,
+  // where their input/pointer surfaces can win the hit test. Reserve the rail
+  // on the actual splits; fixed stripe/header/footer edges keep their spacing.
+  for (const id of ["idea-upper", "idea-content", "sidebar", "tool-right"]) {
+    const node = find(tree, id);
+    if (!node) continue;
+    set(node, "resizable", true);
+    set(node, "divider", { ...node.divider, width: Math.max(IDEA.splitterWidth, node.divider?.width ?? 0), color: node.divider?.color ?? "canvas" });
   }
   set(tree, "traffic_lights", [12, Math.round(IDEA.toolbarHeight / 2 - 7)]);
   for (const [side, id] of Object.entries(EDGES)) {

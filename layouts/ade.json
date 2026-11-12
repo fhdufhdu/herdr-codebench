@@ -1,0 +1,372 @@
+{
+  "id": "ade-root",
+  "type": "column",
+  "background": "canvas",
+  "resizable": false,
+  "movable": false,
+  "titlebar": "none",
+  "traffic_lights": [
+    12,
+    18
+  ],
+  "ui_font": ".AppleSystemUIFont",
+  "children": [
+    {
+      "id": "ade-appbar",
+      "type": "block",
+      "size": {
+        "px": 48
+      },
+      "background": "canvas",
+      "content": {
+        "mod": "ade",
+        "props": {
+          "view": "appbar"
+        }
+      },
+      "min": 48,
+      "max": 48,
+      "window_drag": true
+    },
+    {
+      "id": "ade-workspace",
+      "type": "row",
+      "size": {
+        "weight": 1
+      },
+      "background": "canvas",
+      "resizable": false,
+      "children": [
+        {
+          "id": "ade-stripe-left",
+          "type": "block",
+          "size": {
+            "px": 44
+          },
+          "background": "canvas",
+          "content": {
+            "mod": "ade",
+            "props": {
+              "view": "stripe",
+              "side": "left"
+            }
+          },
+          "min": 44,
+          "max": 44
+        },
+        {
+          "id": "ade-content",
+          "type": "column",
+          "size": {
+            "weight": 1
+          },
+          "background": "canvas",
+          "resizable": true,
+          "divider": {
+            "width": 6,
+            "color": "canvas"
+          },
+          "children": [
+            {
+              "id": "ade-upper",
+              "type": "row",
+              "size": {
+                "weight": 1
+              },
+              "background": "canvas",
+              "resizable": true,
+              "divider": {
+                "width": 6,
+                "color": "canvas"
+              },
+              "children": [
+                {
+                  "id": "ade-left",
+                  "type": "column",
+                  "size": {
+                    "px": 218
+                  },
+                  "background": "canvas",
+                  "resizable": true,
+                  "divider": {
+                    "width": 6,
+                    "color": "canvas"
+                  },
+                  "children": [
+                    {
+                      "id": "ade-project",
+                      "type": "block",
+                      "size": {
+                        "weight": 1
+                      },
+                      "background": "canvas",
+                      "content": {
+                        "mod": "ade",
+                        "props": {
+                          "view": "panel",
+                          "region": "project"
+                        }
+                      },
+                      "min": 84,
+                      "radius": 4
+                    },
+                    {
+                      "id": "ade-review",
+                      "type": "block",
+                      "size": {
+                        "weight": 1
+                      },
+                      "background": "canvas",
+                      "content": {
+                        "mod": "ade",
+                        "props": {
+                          "view": "panel",
+                          "region": "review"
+                        }
+                      },
+                      "min": 84,
+                      "radius": 4,
+                      "hidden": true
+                    },
+                    {
+                      "id": "ade-structure",
+                      "type": "block",
+                      "size": {
+                        "px": 180
+                      },
+                      "background": "canvas",
+                      "content": {
+                        "mod": "ade",
+                        "props": {
+                          "view": "panel",
+                          "region": "structure"
+                        }
+                      },
+                      "min": 84,
+                      "radius": 4
+                    }
+                  ],
+                  "min": 120
+                },
+                {
+                  "id": "ade-center",
+                  "type": "column",
+                  "size": {
+                    "weight": 1
+                  },
+                  "background": "canvas",
+                  "resizable": true,
+                  "divider": {
+                    "width": 6,
+                    "color": "canvas"
+                  },
+                  "children": [
+                    {
+                      "id": "ade-editor",
+                      "type": "block",
+                      "size": {
+                        "weight": 1
+                      },
+                      "background": "canvas",
+                      "content": {
+                        "mod": "ade",
+                        "props": {
+                          "view": "editor"
+                        }
+                      },
+                      "min": 84,
+                      "radius": 4
+                    }
+                  ],
+                  "min": 320
+                },
+                {
+                  "id": "ade-right",
+                  "type": "column",
+                  "size": {
+                    "px": 244
+                  },
+                  "background": "canvas",
+                  "resizable": true,
+                  "divider": {
+                    "width": 6,
+                    "color": "canvas"
+                  },
+                  "children": [
+                    {
+                      "id": "ade-agents",
+                      "type": "block",
+                      "size": {
+                        "weight": 1
+                      },
+                      "background": "canvas",
+                      "content": {
+                        "mod": "ade",
+                        "props": {
+                          "view": "panel",
+                          "region": "agents"
+                        }
+                      },
+                      "min": 84,
+                      "radius": 4
+                    },
+                    {
+                      "id": "ade-database",
+                      "type": "block",
+                      "size": {
+                        "weight": 1
+                      },
+                      "background": "canvas",
+                      "content": {
+                        "mod": "ade",
+                        "props": {
+                          "view": "panel",
+                          "region": "database"
+                        }
+                      },
+                      "min": 84,
+                      "radius": 4,
+                      "hidden": true
+                    },
+                    {
+                      "id": "ade-terminal",
+                      "type": "column",
+                      "size": {
+                        "px": 180
+                      },
+                      "min": 84,
+                      "radius": 4,
+                      "background": "canvas",
+                      "resizable": false,
+                      "children": [
+                        {
+                          "id": "ade-terminal-header",
+                          "type": "block",
+                          "size": {
+                            "px": 76
+                          },
+                          "background": "canvas",
+                          "content": {
+                            "mod": "ade",
+                            "props": {
+                              "view": "panel",
+                              "region": "terminal",
+                              "headerOnly": true
+                            }
+                          },
+                          "min": 76,
+                          "max": 76
+                        },
+                        {
+                          "id": "ade-terminal-body",
+                          "type": "block",
+                          "size": {
+                            "weight": 1
+                          },
+                          "movable": true,
+                          "content": {
+                            "tab": "active",
+                            "pane": {
+                              "lone": true,
+                              "radius": 4,
+                              "gap": 6,
+                              "background": "background",
+                              "border": {
+                                "width": 1,
+                                "color": "border"
+                              },
+                              "focus": {
+                                "width": 1,
+                                "color": "accent"
+                              },
+                              "header": {
+                                "content": {
+                                  "mod": "ade",
+                                  "props": {
+                                    "view": "pane-header"
+                                  }
+                                },
+                                "height": 28,
+                                "position": "top",
+                                "reveal": "always"
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "min": 120
+                }
+              ]
+            },
+            {
+              "id": "ade-results",
+              "type": "block",
+              "size": {
+                "px": 180
+              },
+              "background": "canvas",
+              "content": {
+                "mod": "ade",
+                "props": {
+                  "view": "panel",
+                  "region": "results"
+                }
+              },
+              "min": 84,
+              "radius": 4
+            }
+          ]
+        },
+        {
+          "id": "ade-stripe-right",
+          "type": "block",
+          "size": {
+            "px": 44
+          },
+          "background": "canvas",
+          "content": {
+            "mod": "ade",
+            "props": {
+              "view": "stripe",
+              "side": "right"
+            }
+          },
+          "min": 44,
+          "max": 44
+        }
+      ]
+    },
+    {
+      "id": "ade-status",
+      "type": "block",
+      "size": {
+        "px": 26
+      },
+      "background": "canvas",
+      "content": {
+        "mod": "ade",
+        "props": {
+          "view": "status"
+        }
+      },
+      "min": 26,
+      "max": 26
+    }
+  ],
+  "colors": {
+    "canvas": "#14171D",
+    "background": "#181C23",
+    "surface": "#20252E",
+    "chrome": "#181C23",
+    "popover": "#272E39",
+    "border": "#394352",
+    "foreground": "#EEF2F7",
+    "muted": "#B4BFCE",
+    "dim": "#7D899C",
+    "accent": "#88B9FF",
+    "selected": "#29466B",
+    "hover": "#303A49"
+  }
+}

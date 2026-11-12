@@ -1,0 +1,136 @@
+{
+  "source_jar": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.impl.jar",
+  "sha256": "a33e6f7cc9076d28313cce3a6b09fa36a252ae4507afe35bba05f514cf5218d9",
+  "matches": [
+    {
+      "resource": "DatabaseProductivityFeatures.xml",
+      "line": 23,
+      "text": "      <track-action id=\"Console.TableResult.EditValue\"/>\n      <track-action id=\"Console.TableResult.Submit\"/>\n      <track-action id=\"Console.TableResult.FindInGrid\"/>\n      <track-action id=\"Console.TableResult.CompareCells\"/>"
+    },
+    {
+      "resource": "DatabaseProductivityFeatures.xml",
+      "line": 57,
+      "text": "      utility-score=\"3\">\n      <track-action id=\"Console.Jdbc.Execute\"/>\n    </feature>\n"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 299,
+      "text": "    <database.datagrid.formatterCreatorProvider implementation=\"com.intellij.database.datagrid.DatabaseFormatterCreatorProvider\"/>\n    <database.datagrid.extractorsHelper implementation=\"com.intellij.database.extractors.DbExtractorsHelper\"/>\n    <database.datagrid.customToolbarProvider implementation=\"com.intellij.database.editor.TableEditorCustomGridToolbarProvider\"/>\n    <database.datagrid.cellViewerFactory implementation=\"com.intellij.database.run.ui.ExpressionEditorCellViewerFactory\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 591,
+      "text": "    <reference ref=\"DatabaseView.PropertiesAction\"/>\n    <action id=\"Console.TableResult.Submit\" class=\"com.intellij.database.run.actions.SubmitMutations\"\n            use-shortcut-of=\"Console.Jdbc.Execute\" icon=\"DatabaseIcons.SubmitDB\"/>\n    <action id=\"Console.TableResult.PreviewDml\" class=\"com.intellij.database.run.actions.DataGridPreviewDmlAction\""
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 592,
+      "text": "    <action id=\"Console.TableResult.Submit\" class=\"com.intellij.database.run.actions.SubmitMutations\"\n            use-shortcut-of=\"Console.Jdbc.Execute\" icon=\"DatabaseIcons.SubmitDB\"/>\n    <action id=\"Console.TableResult.PreviewDml\" class=\"com.intellij.database.run.actions.DataGridPreviewDmlAction\"\n            icon=\"DatabaseIcons.PreviewChanges\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 598,
+      "text": "      <reference ref=\"Console.TableResult.PreviewDml\"/>\n      <reference ref=\"Console.TableResult.Submit\"/>\n    </group>\n    <action id=\"Console.TableResult.ImportTable\" class=\"com.intellij.database.actions.ImportAction$ImportTable\""
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 665,
+      "text": "    </action>\n    <action id=\"DatabaseView.CopyDdlAction\" class=\"com.intellij.database.actions.GenerateSqlActions$CopyDdlAction\"\n            icon=\"AllIcons.ToolbarDecorator.Export\">\n      <keyboard-shortcut first-keystroke=\"control alt shift G\" keymap=\"$default\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 788,
+      "text": "        <reference ref=\"DatabaseView.CopyDdlFromDbAction\"/>\n        <reference ref=\"DatabaseView.CopyDdlAction\"/>\n        <reference ref=\"DatabaseView.OpenDdlInConsole\"/>\n        <add-to-group group-id=\"EditorPopupMenu2\" anchor=\"first\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 874,
+      "text": "      <reference ref=\"Console.Transaction.TxSettings\"/>\n      <action id=\"Console.TableResult.SubmitAndCommit\" class=\"com.intellij.database.run.actions.TransactionAction$SubmitAndCommitAction\"\n              icon=\"DatabaseIcons.Commit\">\n        <keyboard-shortcut first-keystroke=\"control alt shift ENTER\" keymap=\"$default\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 878,
+      "text": "      </action>\n      <action id=\"Console.Transaction.RevertAndRollback\" class=\"com.intellij.database.run.actions.TransactionAction$RevertAndRollbackAction\"\n              icon=\"DatabaseIcons.RollbackDB\"/>\n    </group>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 921,
+      "text": "\n    <action id=\"Console.Jdbc.Execute\" class=\"com.intellij.database.actions.RunQueryAction$Alt1\"\n            icon=\"AllIcons.Actions.Execute\"\n            use-shortcut-of=\"Console.Execute.Multiline\">"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 942,
+      "text": "            use-shortcut-of=\"EditSource\"/>\n    <action id=\"Console.Jdbc.Execute.2\" class=\"com.intellij.database.actions.RunQueryAction$Alt2\"\n            icon=\"AllIcons.Actions.Execute\"/>\n    <action id=\"Console.Jdbc.Execute.3\" class=\"com.intellij.database.actions.RunQueryAction$Alt3\""
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 944,
+      "text": "            icon=\"AllIcons.Actions.Execute\"/>\n    <action id=\"Console.Jdbc.Execute.3\" class=\"com.intellij.database.actions.RunQueryAction$Alt3\"\n            icon=\"AllIcons.Actions.Execute\"/>\n    <action id=\"Console.Jdbc.Execute.Selection\" class=\"com.intellij.database.actions.RunQueryAction$RunSelectionExactlyAsOneStatement\""
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 946,
+      "text": "            icon=\"AllIcons.Actions.Execute\"/>\n    <action id=\"Console.Jdbc.Execute.Selection\" class=\"com.intellij.database.actions.RunQueryAction$RunSelectionExactlyAsOneStatement\"\n            icon=\"AllIcons.Actions.Execute\"/>\n    <action id=\"Console.Jdbc.ExplainPlan\" class=\"com.intellij.database.actions.ExplainActionBase$Ui$Plan\""
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 978,
+      "text": "    <group id=\"Console.JdbcActions\">\n      <reference ref=\"Console.Jdbc.Execute\"/>\n      <separator/>\n      <reference ref=\"Console.Transaction.Commit\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 1024,
+      "text": "      </group>\n      <reference ref=\"Console.Jdbc.Execute\"/>\n      <reference ref=\"Console.Jdbc.Execute.Selection\"/>\n      <reference ref=\"Console.TableResult.ShowDumpDialogAction\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 1025,
+      "text": "      <reference ref=\"Console.Jdbc.Execute\"/>\n      <reference ref=\"Console.Jdbc.Execute.Selection\"/>\n      <reference ref=\"Console.TableResult.ShowDumpDialogAction\"/>\n      <reference ref=\"Console.Jdbc.Debug\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 1051,
+      "text": "      <reference ref=\"Console.TableResult.PreviewDml\"/>\n      <reference ref=\"Console.TableResult.Submit\"/>\n      <separator/>\n      <reference ref=\"Console.TableResult.Data\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 1102,
+      "text": "      <add-to-group group-id=\"Console.TableResult.Group.Secondary\" anchor=\"first\"/>\n      <reference ref=\"Console.TableResult.ChooseExtractor\"/>\n      <separator/>\n      <reference ref=\"Console.TableResult.ShowDumpDialogAction\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 1109,
+      "text": "    </group>\n    <group id=\"Console.TableResult.ChooseExtractor.Skip.SubGroup\">\n      <add-to-group group-id=\"Console.TableResult.ChooseExtractor.Group\" anchor=\"before\" relative-to-action=\"Console.TableResult.CsvExtractors.Group\"/>\n      <action id=\"Console.TableResult.SkipComputedColumns\" class=\"com.intellij.database.run.actions.SkipColumnsAction$SkipComputedColumnsAction\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 1110,
+      "text": "    <group id=\"Console.TableResult.ChooseExtractor.Skip.SubGroup\">\n      <add-to-group group-id=\"Console.TableResult.ChooseExtractor.Group\" anchor=\"before\" relative-to-action=\"Console.TableResult.CsvExtractors.Group\"/>\n      <action id=\"Console.TableResult.SkipComputedColumns\" class=\"com.intellij.database.run.actions.SkipColumnsAction$SkipComputedColumnsAction\"/>\n      <action id=\"Console.TableResult.SkipGeneratedColumns\" class=\"com.intellij.database.run.actions.SkipColumnsAction$SkipGeneratedColumnsAction\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 1231,
+      "text": "    <group id=\"Console.Jdbc.Left\">\n      <reference ref=\"Console.Jdbc.Execute\"/>\n      <reference ref=\"Console.Jdbc.Debug\"/>\n      <reference ref=\"Console.Jdbc.ExplainGroup\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 1279,
+      "text": "      <reference ref=\"Console.TabPopupGroup\"/>\n      <reference ref=\"Console.TableResult.ChooseExtractor.Group\"/>\n      <reference ref=\"Console.TableResult.PopupGroup\"/>\n      <reference ref=\"Console.TableResult.CellEditor.Popup\"/>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 1286,
+      "text": "        <reference ref=\"Console.JdbcActions\"/>\n        <reference ref=\"Console.Jdbc.Execute.2\"/>\n        <reference ref=\"Console.Jdbc.Execute.3\"/>\n      </group>"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 1287,
+      "text": "        <reference ref=\"Console.Jdbc.Execute.2\"/>\n        <reference ref=\"Console.Jdbc.Execute.3\"/>\n      </group>\n      <group id=\"Database.KeymapGroup.TableResult\">"
+    },
+    {
+      "resource": "intellij.database.impl.xml",
+      "line": 1352,
+      "text": "      <reference ref=\"Floating.CodeToolbar\"/>\n      <reference ref=\"Console.Jdbc.Execute\"/>\n      <reference ref=\"Console.Jdbc.ExplainPlan\"/>\n    </group>"
+    }
+  ]
+}

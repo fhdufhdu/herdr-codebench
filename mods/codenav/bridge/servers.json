@@ -162,5 +162,175 @@
     "env": {
       "IJ_JAVA_OPTIONS": "-Xms64m -Xmx1g -XX:+UseG1GC -XX:G1PeriodicGCInterval=30000"
     }
+  },
+  "json": {
+    "extensions": [
+      "json",
+      "jsonc"
+    ],
+    "markers": [
+      "package.json"
+    ],
+    "root": "nearest",
+    "commands": [
+      [
+        "vscode-json-language-server",
+        "--stdio"
+      ]
+    ],
+    "init": {
+      "provideFormatter": true
+    }
+  },
+  "yaml": {
+    "extensions": [
+      "yaml",
+      "yml"
+    ],
+    "markers": [],
+    "root": "nearest",
+    "commands": [
+      [
+        "yaml-language-server",
+        "--stdio"
+      ]
+    ]
+  },
+  "html": {
+    "extensions": [
+      "html",
+      "htm"
+    ],
+    "markers": [
+      "package.json"
+    ],
+    "root": "nearest",
+    "commands": [
+      [
+        "vscode-html-language-server",
+        "--stdio"
+      ]
+    ],
+    "init": {
+      "provideFormatter": true
+    }
+  },
+  "css": {
+    "extensions": [
+      "css",
+      "scss",
+      "less"
+    ],
+    "markers": [
+      "package.json"
+    ],
+    "root": "nearest",
+    "commands": [
+      [
+        "vscode-css-language-server",
+        "--stdio"
+      ]
+    ],
+    "init": {
+      "provideFormatter": true,
+      "css": {
+        "validate": true
+      },
+      "scss": {
+        "validate": true
+      },
+      "less": {
+        "validate": true
+      }
+    }
+  },
+  "shellscript": {
+    "extensions": [
+      "sh",
+      "bash"
+    ],
+    "markers": [],
+    "root": "nearest",
+    "commands": [
+      [
+        "bash-language-server",
+        "start"
+      ]
+    ]
+  },
+  "cpp": {
+    "extensions": [
+      "c",
+      "h",
+      "cc",
+      "cpp",
+      "cxx",
+      "c++",
+      "hh",
+      "hpp",
+      "hxx",
+      "h++"
+    ],
+    "markers": [
+      "compile_commands.json",
+      "compile_flags.txt",
+      ".clangd",
+      "CMakeLists.txt"
+    ],
+    "root": "nearest",
+    "commands": [
+      [
+        "clangd"
+      ]
+    ]
+  },
+  "markdown": {
+    "extensions": [
+      "md",
+      "markdown"
+    ],
+    "markers": [
+      ".marksman.toml"
+    ],
+    "root": "nearest",
+    "commands": [
+      [
+        "marksman",
+        "server"
+      ]
+    ]
+  },
+  "toml": {
+    "extensions": [
+      "toml"
+    ],
+    "markers": [
+      "taplo.toml",
+      ".taplo.toml"
+    ],
+    "root": "nearest",
+    "commands": [
+      [
+        "taplo",
+        "lsp",
+        "stdio"
+      ]
+    ]
+  },
+  "xml": {
+    "extensions": [
+      "xml",
+      "xsd",
+      "xsl",
+      "xslt",
+      "svg"
+    ],
+    "markers": [],
+    "root": "nearest",
+    "commands": [
+      [
+        "lemminx"
+      ]
+    ]
   }
 }

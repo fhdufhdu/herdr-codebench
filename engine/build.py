@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reproducible, dependency-free release builds for the supported desktop hosts."""
+"""Reproducible CGO-free release builds for the supported desktop hosts."""
 import argparse
 import hashlib
 import json
@@ -14,6 +14,8 @@ TARGETS = [(os_name, arch) for os_name in ("darwin", "linux", "windows") for arc
 def source_digest():
     digest = hashlib.sha256()
     paths = sorted(p for p in ROOT.glob("*.go") if not p.name.endswith("_test.go")) + [ROOT / "go.mod"]
+    if (ROOT / "go.sum").exists():
+        paths.append(ROOT / "go.sum")
     paths.append(ROOT.parent / "mods/codenav/bridge/servers.json")
     for path in paths:
         digest.update(path.name.encode() + b"\0" + path.read_bytes() + b"\0")

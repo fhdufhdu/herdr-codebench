@@ -1,0 +1,22 @@
+# T49 fresh ADE database models and shared extraction
+
+This stage prepares pure models/service calls only. It installs no UI, opens no database, and reads/writes no real profile or credential. The implementation imports the fresh ADE backend boundary and no previous database UI/model/controller.
+
+`mods/ade/database-model.js` exports:
+
+- `DRIVERS`, `sourceDraft`, `validateSource`: MySQL/MariaDB/PostgreSQL/SQL Server/SQLite profiles. A draft omits password so an untouched password field preserves the engine's existing credential. Save strips untrusted public password-status flags; engine remains the authority for Keychain/session storage and global source IDs.
+- `catalogKey`, `catalogRequest`, `ddlSelection`: structured source/database/schema/table identities, lazy catalog payloads and parent-first mixed DDL deduplication. The existing engine owns recursive generated DDL and warnings.
+- `DatabaseService`/`databaseService`: native `db_*` requests wrapped in `{database:{...}}`. Explicit source CRUD/test, catalog/rows/DDL, query/job/cancel and transactional apply are separate methods. Nothing sends a mutation during staging/render.
+- `TableChanges`: original-row snapshots, PK-gated update/delete, inserts, revert, explicit Apply. Failed Apply preserves staged changes; in-flight Apply blocks mutation and retains full original values for engine optimistic conflict checks.
+- `QueryJob`: real engine job IDs/state/results, explicit progress observation/cancel, and stale-poll guards. It creates no fabricated progress percentage or perpetual timer.
+- `splitSQL`/`SQLScript`: bounded lexical ranges with quotes/comments, PostgreSQL dollar/E strings, MySQL DELIMITER, and SQL Server GO batches. Native selection, safely bracketed nested SELECT/WITH, current statement/block and whole-script candidates preserve reviewable source ranges. Merely creating/selecting candidates never runs SQL. This is deliberately not a complete dialect grammar.
+
+`mods/ade/data-extract.js` provides one `extractData` implementation for preview/copy/export: CSV, TSV, JSON, Markdown, HTML, XML, SQL INSERT/UPDATE/WHERE. It accepts explicit row/column indices, preserves NULL versus literal null markers, quotes Unicode/multiline data, preserves binary base64 and large numeric strings, and uses dialect-specific identifier/literal escaping. Unsafe numeric cells fail explicitly. SQL UPDATE requires explicit key columns; NULL predicates use IS NULL. Output is bounded to 16 MiB.
+
+`parseImport` handles quoted CSV/TSV and JSON, validates column shape, and preserves decimal/large integer JSON lexemes before precision can be lost. `prepareImport` produces a preview and insert changes only when field mapping, known target types/requiredness, binary encoding and row limits validate. Constraints/type details absent from metadata remain the engine transaction's authority. No import writes until the caller explicitly applies the validated changes.
+
+Validation: `node --experimental-vm-modules design/idea/check_ade_database_model.mjs` passes service payload/credential omission, scoped identities/DDL overlap, explicit optimistic staging/rollback and Apply locks, quoted/commented/delimited SQL, nested/current/selected candidates, stale job progress after cancel, extraction/import Unicode/NULL/binary/numeric round trips, escaping, mapping errors and malformed imports. It uses fake transport only; no live five-driver/database/UI compatibility is claimed.
+
+Service compatibility follow-up: absent-engine startup now uses the same default shared state/profile cache (`~/.cache/herdr-codenav/engine.json`) and port 47822. An unknown occupied port or existing unhealthy/invalid state fails without kill/restart. Separate ADE profile storage was removed, preserving existing global profile/Keychain identity without copying, modifying or deleting actual profiles during this stage.
+
+Cross-view document helpers use `ade.database-documents[projectKey] = {tabs:[{id,spec,title?}],active}` and set `ade.editor-mode[projectKey]` to database on open/select. Stable serialized IDs include source, kind, target and sorted DDL selection; only target metadata is stored. QueryJob publishes bounded 20-record metadata to `ade.database-executions[projectKey] = {records,activeId}`. Records contain jobId/spec/name/state/progress/error/resultCount, never result rows or SQL text. Each Results view must fetch job data locally by jobId. Closing a document/result never cancels a job automatically.

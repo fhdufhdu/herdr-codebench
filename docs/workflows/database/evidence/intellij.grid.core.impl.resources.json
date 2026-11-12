@@ -1,0 +1,26 @@
+{
+  "source_jar": "/Applications/IntelliJ IDEA.app/Contents/plugins/grid-core-plugin/lib/modules/intellij.grid.core.impl.jar",
+  "sha256": "e0b3ae154e25909d44803c561bf9c946e4270f512f3a10275c11bb5866a2c885",
+  "matches": [
+    {
+      "resource": "intellij.grid.core.impl.xml",
+      "line": 24,
+      "text": "    <extensionPoint qualifiedName=\"com.intellij.database.datagrid.formatterCreatorProvider\" interface=\"com.intellij.database.datagrid.FormatterCreatorProvider\" dynamic=\"true\"/>\n    <extensionPoint qualifiedName=\"com.intellij.database.datagrid.extractorsHelper\" interface=\"com.intellij.database.extractors.ExtractorsHelper\" dynamic=\"true\"/>\n  </extensionPoints>\n"
+    },
+    {
+      "resource": "messages/DataGridBundle.properties",
+      "line": 230,
+      "text": "action.Console.TableResult.FindInGrid.text=Find on Current Page\ngroup.Console.TableResult.ChooseExtractor.text=Change Data Extractor\ngroup.Console.TableResult.ChooseExtractor.description=Choose data extractor\ngroup.Console.TableResult.ChooseExtractor.Group.text=Extractors"
+    },
+    {
+      "resource": "messages/DataGridBundle.properties",
+      "line": 231,
+      "text": "group.Console.TableResult.ChooseExtractor.text=Change Data Extractor\ngroup.Console.TableResult.ChooseExtractor.description=Choose data extractor\ngroup.Console.TableResult.ChooseExtractor.Group.text=Extractors\ngroup.StatisticsPanel.Show.text=Show Column Statistics"
+    },
+    {
+      "resource": "messages/DataGridBundle.properties",
+      "line": 232,
+      "text": "group.Console.TableResult.ChooseExtractor.description=Choose data extractor\ngroup.Console.TableResult.ChooseExtractor.Group.text=Extractors\ngroup.StatisticsPanel.Show.text=Show Column Statistics\naction.Console.TableResult.GoToExtractorsScriptsDirectory.text=Go to Scripts Directory"
+    }
+  ]
+}

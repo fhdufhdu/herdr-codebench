@@ -1,0 +1,648 @@
+Compiled from "DumpAction.java"
+public abstract class com.intellij.database.run.actions.DumpAction {
+  private final com.intellij.database.extractors.DataExtractorFactory myFactory;
+
+  private final com.intellij.database.extractors.ExtractionConfig myConfig;
+
+  public com.intellij.database.run.actions.DumpAction(com.intellij.database.extractors.DataExtractorFactory, com.intellij.database.extractors.ExtractionConfig);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_0
+       5: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+       8: aload_2
+       9: ifnonnull     16
+      12: iconst_1
+      13: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      16: aload_0
+      17: invokespecial #1                  // Method java/lang/Object."<init>":()V
+      20: aload_0
+      21: aload_1
+      22: putfield      #7                  // Field myFactory:Lcom/intellij/database/extractors/DataExtractorFactory;
+      25: aload_0
+      26: aload_2
+      27: putfield      #13                 // Field myConfig:Lcom/intellij/database/extractors/ExtractionConfig;
+      30: return
+
+  public void actionPerformed(com.intellij.openapi.project.Project, com.intellij.database.run.actions.DumpSource<?>);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_2
+       5: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+       8: aload_2
+       9: ifnonnull     16
+      12: iconst_3
+      13: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      16: aload_1
+      17: aload_2
+      18: aload_0
+      19: invokevirtual #17                 // Method createHelper:()Lcom/intellij/database/dump/ExtractionHelper;
+      22: aload_0
+      23: getfield      #13                 // Field myConfig:Lcom/intellij/database/extractors/ExtractionConfig;
+      26: aload_0
+      27: getfield      #7                  // Field myFactory:Lcom/intellij/database/extractors/DataExtractorFactory;
+      30: invokestatic  #21                 // Method createHandler:(Lcom/intellij/openapi/project/Project;Lcom/intellij/database/run/actions/DumpSource;Lcom/intellij/database/dump/ExtractionHelper;Lcom/intellij/database/extractors/ExtractionConfig;Lcom/intellij/database/extractors/DataExtractorFactory;)Lcom/intellij/database/dump/DumpHandler;
+      33: astore_3
+      34: aload_3
+      35: ifnonnull     39
+      38: return
+      39: aload_3
+      40: aload_1
+      41: invokevirtual #25                 // Method com/intellij/database/dump/DumpHandler.performDump:(Lcom/intellij/openapi/project/Project;)V
+      44: return
+
+  public static com.intellij.database.dump.DumpHandler<?> createHandler(com.intellij.openapi.project.Project, com.intellij.database.run.actions.DumpSource<?>, com.intellij.database.dump.ExtractionHelper, com.intellij.database.extractors.ExtractionConfig, com.intellij.database.extractors.DataExtractorFactory);
+    Code:
+       0: aload_0
+       1: ifnonnull     8
+       4: iconst_4
+       5: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+       8: aload_1
+       9: ifnonnull     16
+      12: iconst_5
+      13: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      16: aload_3
+      17: ifnonnull     25
+      20: bipush        6
+      22: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      25: aload         4
+      27: ifnonnull     35
+      30: bipush        7
+      32: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      35: aload_1
+      36: instanceof    #31                 // class com/intellij/database/run/actions/ConsoleSource
+      39: ifeq          56
+      42: aload_1
+      43: checkcast     #31                 // class com/intellij/database/run/actions/ConsoleSource
+      46: aload_2
+      47: aload         4
+      49: aload_3
+      50: invokestatic  #33                 // Method createConsoleHandler:(Lcom/intellij/database/run/actions/ConsoleSource;Lcom/intellij/database/dump/ExtractionHelper;Lcom/intellij/database/extractors/DataExtractorFactory;Lcom/intellij/database/extractors/ExtractionConfig;)Lcom/intellij/database/dump/DumpHandler;
+      53: goto          110
+      56: aload_1
+      57: instanceof    #37                 // class com/intellij/database/run/actions/DumpSource$DataGridSource
+      60: ifeq          91
+      63: aload_1
+      64: checkcast     #37                 // class com/intellij/database/run/actions/DumpSource$DataGridSource
+      67: astore        5
+      69: aload         5
+      71: invokevirtual #39                 // Method com/intellij/database/run/actions/DumpSource$DataGridSource.getGrid:()Lcom/intellij/database/datagrid/DataGrid;
+      74: invokestatic  #43                 // InterfaceMethod com/intellij/database/datagrid/GridHelper.get:(Lcom/intellij/database/datagrid/CoreGrid;)Lcom/intellij/database/datagrid/GridHelper;
+      77: aload         5
+      79: aload_2
+      80: aload         4
+      82: aload_3
+      83: invokeinterface #49,  5           // InterfaceMethod com/intellij/database/datagrid/GridHelper.createDumpHandler:(Lcom/intellij/database/run/actions/DumpSource;Lcom/intellij/database/dump/ExtractionHelper;Lcom/intellij/database/extractors/DataExtractorFactory;Lcom/intellij/database/extractors/ExtractionConfig;)Lcom/intellij/database/dump/DumpHandler;
+      88: goto          110
+      91: new           #53                 // class com/intellij/database/dump/DatabaseViewHandler
+      94: dup
+      95: aload_0
+      96: aload_1
+      97: checkcast     #55                 // class com/intellij/database/run/actions/DbTablesSource
+     100: invokevirtual #57                 // Method com/intellij/database/run/actions/DbTablesSource.getSources:()Lcom/intellij/util/containers/JBIterable;
+     103: aload_2
+     104: aload_3
+     105: aload         4
+     107: invokespecial #61                 // Method com/intellij/database/dump/DatabaseViewHandler."<init>":(Lcom/intellij/openapi/project/Project;Lcom/intellij/util/containers/JBIterable;Lcom/intellij/database/dump/ExtractionHelper;Lcom/intellij/database/extractors/ExtractionConfig;Lcom/intellij/database/extractors/DataExtractorFactory;)V
+     110: areturn
+
+  private static com.intellij.database.dump.DumpHandler<?> createConsoleHandler(com.intellij.database.run.actions.ConsoleSource, com.intellij.database.dump.ExtractionHelper, com.intellij.database.extractors.DataExtractorFactory, com.intellij.database.extractors.ExtractionConfig);
+    Code:
+       0: aload_0
+       1: ifnonnull     9
+       4: bipush        8
+       6: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+       9: aload_1
+      10: ifnonnull     18
+      13: bipush        9
+      15: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      18: aload_2
+      19: ifnonnull     27
+      22: bipush        10
+      24: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      27: aload_3
+      28: ifnonnull     36
+      31: bipush        11
+      33: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      36: invokestatic  #64                 // Method com/intellij/openapi/fileEditor/FileDocumentManager.getInstance:()Lcom/intellij/openapi/fileEditor/FileDocumentManager;
+      39: invokevirtual #70                 // Method com/intellij/openapi/fileEditor/FileDocumentManager.saveAllDocuments:()V
+      42: aload_0
+      43: invokevirtual #73                 // Method com/intellij/database/run/actions/ConsoleSource.getConsole:()Lcom/intellij/database/console/JdbcConsole;
+      46: aload_0
+      47: invokevirtual #77                 // Method com/intellij/database/run/actions/ConsoleSource.getModel:()Lcom/intellij/database/script/ScriptModel;
+      50: invokevirtual #81                 // Method com/intellij/database/console/JdbcConsole.beforeExecuteQueries:(Lcom/intellij/database/script/ScriptModel;)Z
+      53: ifne          58
+      56: aconst_null
+      57: areturn
+      58: aload_0
+      59: invokevirtual #87                 // Method com/intellij/database/run/actions/ConsoleSource.getSources:()Lcom/intellij/util/containers/JBIterable;
+      62: astore        4
+      64: aload         4
+      66: invokevirtual #88                 // Method com/intellij/util/containers/JBIterable.isEmpty:()Z
+      69: ifeq          74
+      72: aconst_null
+      73: areturn
+      74: aload_0
+      75: invokevirtual #73                 // Method com/intellij/database/run/actions/ConsoleSource.getConsole:()Lcom/intellij/database/console/JdbcConsole;
+      78: invokevirtual #94                 // Method com/intellij/database/console/JdbcConsole.getProject:()Lcom/intellij/openapi/project/Project;
+      81: astore        5
+      83: new           #98                 // class com/intellij/database/dump/ConsoleHandler
+      86: dup
+      87: aload         5
+      89: aload         4
+      91: aload_0
+      92: invokevirtual #73                 // Method com/intellij/database/run/actions/ConsoleSource.getConsole:()Lcom/intellij/database/console/JdbcConsole;
+      95: aload_1
+      96: aload_2
+      97: aload_3
+      98: invokespecial #100                // Method com/intellij/database/dump/ConsoleHandler."<init>":(Lcom/intellij/openapi/project/Project;Lcom/intellij/util/containers/JBIterable;Lcom/intellij/database/console/JdbcConsole;Lcom/intellij/database/dump/ExtractionHelper;Lcom/intellij/database/extractors/DataExtractorFactory;Lcom/intellij/database/extractors/ExtractionConfig;)V
+     101: areturn
+
+  public static com.intellij.database.run.actions.DumpSource<?> getDumpSource(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_0
+       1: ifnonnull     9
+       4: bipush        12
+       6: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+       9: aload_0
+      10: getstatic     #103                // Field com/intellij/database/DatabaseDataKeys.DATA_GRID_KEY:Lcom/intellij/openapi/actionSystem/DataKey;
+      13: invokevirtual #109                // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      16: checkcast     #115                // class com/intellij/database/datagrid/DataGrid
+      19: astore_1
+      20: aload_1
+      21: ifnull        58
+      24: aload_1
+      25: invokeinterface #117,  1          // InterfaceMethod com/intellij/database/datagrid/DataGrid.isReady:()Z
+      30: ifeq          56
+      33: aload_1
+      34: invokeinterface #120,  1          // InterfaceMethod com/intellij/database/datagrid/DataGrid.isEmpty:()Z
+      39: ifne          56
+      42: aload_1
+      43: invokestatic  #43                 // InterfaceMethod com/intellij/database/datagrid/GridHelper.get:(Lcom/intellij/database/datagrid/CoreGrid;)Lcom/intellij/database/datagrid/GridHelper;
+      46: aload_1
+      47: aload_0
+      48: invokeinterface #121,  3          // InterfaceMethod com/intellij/database/datagrid/GridHelper.createDumpSource:(Lcom/intellij/database/datagrid/DataGrid;Lcom/intellij/openapi/actionSystem/AnActionEvent;)Lcom/intellij/database/run/actions/DumpSource;
+      53: goto          57
+      56: aconst_null
+      57: areturn
+      58: aload_0
+      59: invokestatic  #125                // Method com/intellij/database/console/JdbcConsole.findConsole:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)Lcom/intellij/database/console/JdbcConsole;
+      62: astore_2
+      63: aload_0
+      64: invokestatic  #129                // Method com/intellij/database/settings/DatabaseSettings.getDefaultExecOption:()Lcom/intellij/database/settings/DatabaseSettings$ExecOption;
+      67: aconst_null
+      68: invokestatic  #135                // Method com/intellij/database/actions/QueryActionBase.getInfoClassic:(Lcom/intellij/openapi/actionSystem/AnActionEvent;Lcom/intellij/database/settings/DatabaseSettings$ExecOption;Ljava/util/function/Consumer;)Lcom/intellij/database/console/JdbcConsoleProvider$Info;
+      71: astore_3
+      72: aload_2
+      73: ifnull        93
+      76: aload_3
+      77: ifnull        93
+      80: new           #31                 // class com/intellij/database/run/actions/ConsoleSource
+      83: dup
+      84: aload_2
+      85: aload_3
+      86: invokestatic  #141                // Method getAdjustedScriptModel:(Lcom/intellij/database/console/JdbcConsoleProvider$Info;)Lcom/intellij/database/script/ScriptModel;
+      89: invokespecial #145                // Method com/intellij/database/run/actions/ConsoleSource."<init>":(Lcom/intellij/database/console/JdbcConsole;Lcom/intellij/database/script/ScriptModel;)V
+      92: areturn
+      93: aload_0
+      94: invokevirtual #148                // Method com/intellij/openapi/actionSystem/AnActionEvent.getDataContext:()Lcom/intellij/openapi/actionSystem/DataContext;
+      97: invokestatic  #152                // Method com/intellij/database/view/DatabaseContextFun.getSelectedDbElementsExpandingGroups:(Lcom/intellij/openapi/actionSystem/DataContext;)Lcom/intellij/util/containers/JBIterable;
+     100: invokedynamic #158,  0            // InvokeDynamic #0:value:()Lcom/intellij/openapi/util/Condition;
+     105: invokevirtual #162                // Method com/intellij/util/containers/JBIterable.filter:(Lcom/intellij/openapi/util/Condition;)Lcom/intellij/util/containers/JBIterable;
+     108: astore        4
+     110: aload         4
+     112: invokestatic  #166                // Method getTables:(Lcom/intellij/util/containers/JBIterable;)Lcom/intellij/util/containers/JBIterable;
+     115: astore        5
+     117: aload         5
+     119: invokevirtual #88                 // Method com/intellij/util/containers/JBIterable.isEmpty:()Z
+     122: ifeq          129
+     125: aconst_null
+     126: goto          138
+     129: new           #55                 // class com/intellij/database/run/actions/DbTablesSource
+     132: dup
+     133: aload         5
+     135: invokespecial #170                // Method com/intellij/database/run/actions/DbTablesSource."<init>":(Lcom/intellij/util/containers/JBIterable;)V
+     138: areturn
+
+  private static com.intellij.database.script.ScriptModel<?> getAdjustedScriptModel(com.intellij.database.console.JdbcConsoleProvider$Info);
+    Code:
+       0: aload_0
+       1: ifnonnull     9
+       4: bipush        13
+       6: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+       9: aload_0
+      10: getfield      #173                // Field com/intellij/database/console/JdbcConsoleProvider$Info.editor:Lcom/intellij/openapi/editor/ex/EditorEx;
+      13: aload_0
+      14: getfield      #179                // Field com/intellij/database/console/JdbcConsoleProvider$Info.execOption:Lcom/intellij/database/settings/DatabaseSettings$ExecOption;
+      17: invokestatic  #183                // Method com/intellij/database/script/ScriptModelUtil.getSelectionForConsole:(Lcom/intellij/openapi/editor/Editor;Lcom/intellij/database/settings/DatabaseSettings$ExecOption;)Lcom/intellij/openapi/util/TextRange;
+      20: astore_1
+      21: aload_0
+      22: getfield      #189                // Field com/intellij/database/console/JdbcConsoleProvider$Info.model:Lcom/intellij/database/script/ScriptModel;
+      25: aload_0
+      26: getfield      #173                // Field com/intellij/database/console/JdbcConsoleProvider$Info.editor:Lcom/intellij/openapi/editor/ex/EditorEx;
+      29: invokeinterface #193,  1          // InterfaceMethod com/intellij/openapi/editor/ex/EditorEx.getDocument:()Lcom/intellij/openapi/editor/ex/DocumentEx;
+      34: aload_1
+      35: aload_0
+      36: getfield      #179                // Field com/intellij/database/console/JdbcConsoleProvider$Info.execOption:Lcom/intellij/database/settings/DatabaseSettings$ExecOption;
+      39: invokestatic  #199                // Method com/intellij/database/script/ScriptModelUtil.adjustSelectionRange:(Lcom/intellij/database/script/ScriptModel;Lcom/intellij/openapi/editor/Document;Lcom/intellij/openapi/util/TextRange;Lcom/intellij/database/settings/DatabaseSettings$ExecOption;)Lcom/intellij/openapi/util/TextRange;
+      42: astore_2
+      43: aload_0
+      44: getfield      #189                // Field com/intellij/database/console/JdbcConsoleProvider$Info.model:Lcom/intellij/database/script/ScriptModel;
+      47: aload_2
+      48: invokevirtual #203                // Method com/intellij/database/script/ScriptModel.subModel:(Lcom/intellij/openapi/util/TextRange;)Lcom/intellij/database/script/ScriptModel;
+      51: dup
+      52: ifnonnull     60
+      55: bipush        14
+      57: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      60: areturn
+
+  private static com.intellij.util.containers.JBIterable<com.intellij.database.psi.DbTable> getTables(com.intellij.util.containers.JBIterable<com.intellij.database.psi.DbElement>);
+    Code:
+       0: aload_0
+       1: ifnonnull     9
+       4: bipush        15
+       6: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+       9: aload_0
+      10: invokedynamic #209,  0            // InvokeDynamic #1:fun:()Lcom/intellij/util/Function;
+      15: invokevirtual #213                // Method com/intellij/util/containers/JBIterable.map:(Lcom/intellij/util/Function;)Lcom/intellij/util/containers/JBIterable;
+      18: invokevirtual #217                // Method com/intellij/util/containers/JBIterable.toSet:()Ljava/util/Set;
+      21: astore_1
+      22: aload_1
+      23: invokedynamic #221,  0            // InvokeDynamic #2:value:()Lcom/intellij/openapi/util/Condition;
+      28: invokestatic  #222                // Method com/intellij/util/containers/ContainerUtil.filter:(Ljava/util/Collection;Lcom/intellij/openapi/util/Condition;)Ljava/util/List;
+      31: astore_2
+      32: aload_0
+      33: aload_2
+      34: invokedynamic #227,  0            // InvokeDynamic #3:value:(Ljava/util/List;)Lcom/intellij/openapi/util/Condition;
+      39: invokevirtual #162                // Method com/intellij/util/containers/JBIterable.filter:(Lcom/intellij/openapi/util/Condition;)Lcom/intellij/util/containers/JBIterable;
+      42: invokedynamic #230,  0            // InvokeDynamic #4:fun:()Lcom/intellij/util/Function;
+      47: invokevirtual #231                // Method com/intellij/util/containers/JBIterable.flatten:(Lcom/intellij/util/Function;)Lcom/intellij/util/containers/JBIterable;
+      50: dup
+      51: ifnonnull     59
+      54: bipush        16
+      56: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      59: areturn
+
+  public static com.intellij.database.Dbms getDbms(com.intellij.database.run.actions.DumpSource<?>);
+    Code:
+       0: aload_0
+       1: instanceof    #31                 // class com/intellij/database/run/actions/ConsoleSource
+       4: ifeq          27
+       7: aload_0
+       8: checkcast     #31                 // class com/intellij/database/run/actions/ConsoleSource
+      11: invokevirtual #73                 // Method com/intellij/database/run/actions/ConsoleSource.getConsole:()Lcom/intellij/database/console/JdbcConsole;
+      14: invokestatic  #234                // Method com/intellij/database/util/DbImplUtil.getDbms:(Lcom/intellij/database/console/JdbcConsoleBase;)Lcom/intellij/database/Dbms;
+      17: dup
+      18: ifnonnull     26
+      21: bipush        17
+      23: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      26: areturn
+      27: aload_0
+      28: instanceof    #55                 // class com/intellij/database/run/actions/DbTablesSource
+      31: ifeq          60
+      34: aload_0
+      35: checkcast     #55                 // class com/intellij/database/run/actions/DbTablesSource
+      38: invokevirtual #57                 // Method com/intellij/database/run/actions/DbTablesSource.getSources:()Lcom/intellij/util/containers/JBIterable;
+      41: invokevirtual #240                // Method com/intellij/util/containers/JBIterable.first:()Ljava/lang/Object;
+      44: checkcast     #244                // class com/intellij/database/psi/DbElement
+      47: invokestatic  #246                // Method com/intellij/database/util/DbImplUtilCore.getDbms:(Lcom/intellij/database/psi/DbElement;)Lcom/intellij/database/Dbms;
+      50: dup
+      51: ifnonnull     59
+      54: bipush        18
+      56: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      59: areturn
+      60: aload_0
+      61: instanceof    #37                 // class com/intellij/database/run/actions/DumpSource$DataGridSource
+      64: ifeq          87
+      67: aload_0
+      68: checkcast     #37                 // class com/intellij/database/run/actions/DumpSource$DataGridSource
+      71: invokevirtual #39                 // Method com/intellij/database/run/actions/DumpSource$DataGridSource.getGrid:()Lcom/intellij/database/datagrid/DataGrid;
+      74: invokestatic  #251                // Method com/intellij/database/datagrid/DataGridUtil.getDbms:(Lcom/intellij/database/datagrid/DataGrid;)Lcom/intellij/database/Dbms;
+      77: dup
+      78: ifnonnull     86
+      81: bipush        19
+      83: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      86: areturn
+      87: getstatic     #256                // Field com/intellij/database/Dbms.UNKNOWN:Lcom/intellij/database/Dbms;
+      90: dup
+      91: ifnonnull     99
+      94: bipush        20
+      96: invokestatic  #449                // Method $$$reportNull$$$0:(I)V
+      99: areturn
+
+  public abstract com.intellij.database.dump.ExtractionHelper createHelper();
+
+  private static java.lang.Iterable lambda$getTables$2(com.intellij.database.psi.DbElement);
+    Code:
+       0: aload_0
+       1: invokeinterface #262,  1          // InterfaceMethod com/intellij/database/psi/DbElement.getDataSource:()Lcom/intellij/database/psi/DbDataSource;
+       6: invokestatic  #266                // Method com/intellij/database/util/DbImplUtilCore.traverseVisibleObjects:(Lcom/intellij/database/model/DasDataSource;)Lcom/intellij/util/containers/JBTreeTraverser;
+       9: aload_0
+      10: invokevirtual #270                // Method com/intellij/util/containers/JBTreeTraverser.withRoot:(Ljava/lang/Object;)Lcom/intellij/util/containers/FilteredTraverserBase;
+      13: checkcast     #271                // class com/intellij/util/containers/JBTreeTraverser
+      16: ldc_w         #276                // class com/intellij/database/model/DasSchemaChild
+      19: invokestatic  #278                // Method com/intellij/database/util/DasUtil.byClass:(Ljava/lang/Class;)Lcom/intellij/openapi/util/Condition;
+      22: invokestatic  #284                // Method com/intellij/openapi/util/Conditions.not:(Lcom/intellij/openapi/util/Condition;)Lcom/intellij/openapi/util/Condition;
+      25: invokevirtual #290                // Method com/intellij/util/containers/JBTreeTraverser.expand:(Lcom/intellij/openapi/util/Condition;)Lcom/intellij/util/containers/FilteredTraverserBase;
+      28: checkcast     #271                // class com/intellij/util/containers/JBTreeTraverser
+      31: ldc_w         #294                // class com/intellij/database/psi/DbTable
+      34: invokevirtual #296                // Method com/intellij/util/containers/JBTreeTraverser.filter:(Ljava/lang/Class;)Lcom/intellij/util/containers/JBIterable;
+      37: areturn
+
+  private static boolean lambda$getTables$1(java.util.List, com.intellij.database.psi.DbElement);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokeinterface #262,  1          // InterfaceMethod com/intellij/database/psi/DbElement.getDataSource:()Lcom/intellij/database/psi/DbDataSource;
+       7: invokeinterface #299,  2          // InterfaceMethod java/util/List.contains:(Ljava/lang/Object;)Z
+      12: ireturn
+
+  private static com.intellij.database.psi.DbDataSource lambda$getTables$0(com.intellij.database.psi.DbElement);
+    Code:
+       0: aload_0
+       1: invokeinterface #262,  1          // InterfaceMethod com/intellij/database/psi/DbElement.getDataSource:()Lcom/intellij/database/psi/DbDataSource;
+       6: areturn
+
+  private static boolean lambda$getDumpSource$0(com.intellij.database.psi.DbElement);
+    Code:
+       0: aload_0
+       1: invokeinterface #305,  1          // InterfaceMethod com/intellij/database/psi/DbElement.getKind:()Lcom/intellij/database/model/ObjectKind;
+       6: invokestatic  #309                // Method com/intellij/database/util/DbImplUtilCore.isDataTable:(Lcom/intellij/database/model/ObjectKind;)Z
+       9: ireturn
+
+  private static void $$$reportNull$$$0(int);
+    Code:
+       0: iload_0
+       1: tableswitch   { // 0 to 20
+                     0: 100
+                     1: 100
+                     2: 100
+                     3: 100
+                     4: 100
+                     5: 100
+                     6: 100
+                     7: 100
+                     8: 100
+                     9: 100
+                    10: 100
+                    11: 100
+                    12: 100
+                    13: 100
+                    14: 106
+                    15: 100
+                    16: 106
+                    17: 106
+                    18: 106
+                    19: 106
+                    20: 106
+               default: 100
+          }
+     100: ldc_w         #455                // String Argument for @NotNull parameter \'%s\' of %s.%s must not be null
+     103: goto          112
+     106: ldc_w         #457                // String @NotNull method %s.%s must not return null
+     109: goto          112
+     112: iload_0
+     113: tableswitch   { // 0 to 20
+                     0: 212
+                     1: 212
+                     2: 212
+                     3: 212
+                     4: 212
+                     5: 212
+                     6: 212
+                     7: 212
+                     8: 212
+                     9: 212
+                    10: 212
+                    11: 212
+                    12: 212
+                    13: 212
+                    14: 216
+                    15: 212
+                    16: 216
+                    17: 216
+                    18: 216
+                    19: 216
+                    20: 216
+               default: 212
+          }
+     212: iconst_3
+     213: goto          220
+     216: iconst_2
+     217: goto          220
+     220: anewarray     #2                  // class java/lang/Object
+     223: iload_0
+     224: tableswitch   { // 0 to 20
+                     0: 324
+                     1: 333
+                     2: 342
+                     3: 351
+                     4: 342
+                     5: 351
+                     6: 333
+                     7: 324
+                     8: 351
+                     9: 360
+                    10: 324
+                    11: 333
+                    12: 369
+                    13: 378
+                    14: 387
+                    15: 396
+                    16: 387
+                    17: 387
+                    18: 387
+                    19: 387
+                    20: 387
+               default: 324
+          }
+     324: dup
+     325: iconst_0
+     326: ldc_w         #458                // String factory
+     329: aastore
+     330: goto          405
+     333: dup
+     334: iconst_0
+     335: ldc_w         #459                // String config
+     338: aastore
+     339: goto          405
+     342: dup
+     343: iconst_0
+     344: ldc_w         #460                // String project
+     347: aastore
+     348: goto          405
+     351: dup
+     352: iconst_0
+     353: ldc_w         #461                // String source
+     356: aastore
+     357: goto          405
+     360: dup
+     361: iconst_0
+     362: ldc_w         #462                // String manager
+     365: aastore
+     366: goto          405
+     369: dup
+     370: iconst_0
+     371: ldc_w         #463                // String e
+     374: aastore
+     375: goto          405
+     378: dup
+     379: iconst_0
+     380: ldc_w         #464                // String info
+     383: aastore
+     384: goto          405
+     387: dup
+     388: iconst_0
+     389: ldc_w         #465                // String com/intellij/database/run/actions/DumpAction
+     392: aastore
+     393: goto          405
+     396: dup
+     397: iconst_0
+     398: ldc_w         #466                // String elements
+     401: aastore
+     402: goto          405
+     405: iload_0
+     406: tableswitch   { // 0 to 20
+                     0: 504
+                     1: 504
+                     2: 504
+                     3: 504
+                     4: 504
+                     5: 504
+                     6: 504
+                     7: 504
+                     8: 504
+                     9: 504
+                    10: 504
+                    11: 504
+                    12: 504
+                    13: 504
+                    14: 513
+                    15: 504
+                    16: 522
+                    17: 531
+                    18: 531
+                    19: 531
+                    20: 531
+               default: 504
+          }
+     504: dup
+     505: iconst_1
+     506: ldc_w         #465                // String com/intellij/database/run/actions/DumpAction
+     509: aastore
+     510: goto          540
+     513: dup
+     514: iconst_1
+     515: ldc_w         #467                // String getAdjustedScriptModel
+     518: aastore
+     519: goto          540
+     522: dup
+     523: iconst_1
+     524: ldc_w         #468                // String getTables
+     527: aastore
+     528: goto          540
+     531: dup
+     532: iconst_1
+     533: ldc_w         #469                // String getDbms
+     536: aastore
+     537: goto          540
+     540: iload_0
+     541: tableswitch   { // 0 to 20
+                     0: 640
+                     1: 640
+                     2: 649
+                     3: 649
+                     4: 658
+                     5: 658
+                     6: 658
+                     7: 658
+                     8: 667
+                     9: 667
+                    10: 667
+                    11: 667
+                    12: 676
+                    13: 685
+                    14: 694
+                    15: 697
+                    16: 694
+                    17: 694
+                    18: 694
+                    19: 694
+                    20: 694
+               default: 640
+          }
+     640: dup
+     641: iconst_2
+     642: ldc_w         #470                // String <init>
+     645: aastore
+     646: goto          706
+     649: dup
+     650: iconst_2
+     651: ldc_w         #471                // String actionPerformed
+     654: aastore
+     655: goto          706
+     658: dup
+     659: iconst_2
+     660: ldc_w         #472                // String createHandler
+     663: aastore
+     664: goto          706
+     667: dup
+     668: iconst_2
+     669: ldc_w         #473                // String createConsoleHandler
+     672: aastore
+     673: goto          706
+     676: dup
+     677: iconst_2
+     678: ldc_w         #474                // String getDumpSource
+     681: aastore
+     682: goto          706
+     685: dup
+     686: iconst_2
+     687: ldc_w         #467                // String getAdjustedScriptModel
+     690: aastore
+     691: goto          706
+     694: goto          706
+     697: dup
+     698: iconst_2
+     699: ldc_w         #468                // String getTables
+     702: aastore
+     703: goto          706
+     706: invokestatic  #480                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     709: iload_0
+     710: tableswitch   { // 0 to 20
+                     0: 808
+                     1: 808
+                     2: 808
+                     3: 808
+                     4: 808
+                     5: 808
+                     6: 808
+                     7: 808
+                     8: 808
+                     9: 808
+                    10: 808
+                    11: 808
+                    12: 808
+                    13: 808
+                    14: 819
+                    15: 808
+                    16: 819
+                    17: 819
+                    18: 819
+                    19: 819
+                    20: 819
+               default: 808
+          }
+     808: new           #482                // class java/lang/IllegalArgumentException
+     811: dup_x1
+     812: swap
+     813: invokespecial #485                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     816: goto          830
+     819: new           #487                // class java/lang/IllegalStateException
+     822: dup_x1
+     823: swap
+     824: invokespecial #488                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     827: goto          830
+     830: athrow
+}

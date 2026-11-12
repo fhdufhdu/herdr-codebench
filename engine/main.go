@@ -233,8 +233,11 @@ func (e *Engine) Handler(token string) http.Handler {
 	})
 }
 func knownRoute(route string) bool {
+	if databaseRoute(route) {
+		return true
+	}
 	switch route {
-	case "health", "status", "setup_status", "setup_start", "tokens", "info", "hover", "definition", "references", "symbols", "diagnostics", "workspace_symbols", "related", "spring_markers", "spring_project":
+	case "health", "status", "project_prepare", "project_status", "setup_status", "setup_start", "document_sync", "document_touch", "document_close", "tokens", "info", "hover", "definition", "references", "symbols", "diagnostics", "workspace_symbols", "related", "spring_markers", "spring_project", "completion", "completion_resolve", "formatting":
 		return true
 	}
 	return false
@@ -294,8 +297,27 @@ func (e *Engine) info(path string) any {
 	}
 	return map[string]any{"lang": lang, "root": root, "installed": err == nil, "command": command, "state": state, "busy": busy}
 }
-func (e *Engine) dispatch(ctx context.Context, route string, req Request) (any, error) {
+func (e *Engine) dispatch(ctx context.Context, route string, req Request) (result any, failure error) {
+	if databaseRoute(route) {
+		if e.database == nil {
+			return nil, errors.New("database manager unavailable")
+		}
+		return e.database.handle(ctx, route, req.Database)
+	}
+	if result, handled, err := e.libraryRequest(ctx, route, req); handled {
+		return result, err
+	}
 	switch route {
+	case "project_prepare":
+		return e.prepareProject(req)
+	case "project_status":
+		return e.projectStatus(req)
+	case "document_sync":
+		return e.syncDocument(ctx, req)
+	case "document_close":
+		return e.closeDocument(ctx, req)
+	case "document_touch":
+		return e.touchDocument(req)
 	case "health":
 		return map[string]any{"pid": os.Getpid(), "started": e.started.Unix(), "engine": engineName, "version": version}, nil
 	case "status":
@@ -321,22 +343,56 @@ func (e *Engine) dispatch(ctx context.Context, route string, req Request) (any, 
 		}
 		return syntaxTokens(*text, req.Path), nil
 	case "related":
+		if req.Kind == "super" {
+			break
+		}
+		if req.DocumentOwner != "" || req.Revision != nil {
+			return nil, errors.New("buffered related navigation is not supported")
+		}
+		e.documentMu.Lock()
+		path, _ := filepath.Abs(req.Path)
+		_, leased := e.documents[path]
+		e.documentMu.Unlock()
+		// Spring's explicit-text analysis is pure: it never opens or replaces
+		// an LSP document. Preserve that contract for a mod-owned source buffer.
+		if leased && req.Text == nil {
+			return nil, errors.New("document owner is required for an open buffer")
+		}
 		return related(ctx, e, req)
 	case "spring_markers":
+		if req.DocumentOwner != "" || req.Revision != nil {
+			return nil, errors.New("buffered Spring navigation is not supported; use the existing explicit text contract")
+		}
 		return springMarkers(req)
 	case "spring_project":
+		if req.DocumentOwner != "" || req.Revision != nil {
+			return nil, errors.New("buffered Spring navigation is not supported; use the existing explicit text contract")
+		}
 		return springProject(req)
 	}
-	srv, err := e.Server(ctx, req.Path, req.Retry)
+	if (route == "completion" || route == "completion_resolve" || route == "formatting") && (req.DocumentOwner == "" || req.Revision == nil) {
+		return nil, errors.New("document owner and revision are required for editor changes")
+	}
+	srv, uri, snapshot, err := e.openRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	uri, err := srv.Open(ctx, req.Path)
-	if err != nil {
-		return nil, err
+	if snapshot != nil {
+		defer func() {
+			if failure == nil {
+				result = struct {
+					Value any `json:"value"`
+					*documentSnapshot
+				}{result, snapshot}
+			}
+		}()
 	}
 	params := map[string]any{"textDocument": map[string]any{"uri": uri}, "position": map[string]any{"line": req.Line, "character": req.Col}}
 	switch route {
+	case "completion", "completion_resolve", "formatting":
+		return editorRequest(ctx, srv, uri, snapshot, route, req)
+	case "related":
+		return superDocumentNavigation(ctx, e, req, srv, uri, snapshot)
 	case "hover":
 		raw, err := srv.Call(ctx, "textDocument/hover", params)
 		if err != nil {
@@ -365,12 +421,36 @@ func (e *Engine) dispatch(ctx context.Context, route string, req Request) (any, 
 			}
 		}
 		raw, err := srv.Call(ctx, method, params)
-		if err != nil {
+		var rpcError *RPCError
+		unsupportedImplementation := method == "textDocument/implementation" && errors.As(err, &rpcError) && rpcError.Code == -32601
+		if err != nil && !unsupportedImplementation {
 			return nil, err
 		}
-		locs, err := e.Locations(ctx, raw, srv)
+		var locs []Location
+		if err == nil {
+			locs, err = e.Locations(ctx, raw, srv)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if method == "textDocument/implementation" && len(locs) == 0 {
+			fallback := req
+			if snapshot != nil {
+				fallback.Text = &snapshot.text
+			}
+			candidates, fallbackErr := sourceImplementations(ctx, fallback)
+			if fallbackErr == nil && len(candidates) > 0 {
+				locs, err = candidates, nil
+			}
+			if err != nil {
+				return nil, err
+			}
+		}
 		if route == "references" && len(locs) > 500 {
 			locs = locs[:500]
+		}
+		if snapshot != nil {
+			return e.bufferPreviews(locs), err
 		}
 		return withPreviews(locs), err
 	case "symbols":
@@ -389,7 +469,22 @@ func (e *Engine) dispatch(ctx context.Context, route string, req Request) (any, 
 		srv.mu.Lock()
 		items := append([]json.RawMessage{}, srv.diagnostics[uri]...)
 		busy := lspBusy(srv.progress)
+		diagnosticVersion := srv.diagnosticVersions[uri]
+		_, seen := srv.diagnostics[uri]
 		srv.mu.Unlock()
+		confidence := "pending"
+		if seen {
+			confidence = "unversioned"
+			if diagnosticVersion != nil {
+				if snapshot != nil && *diagnosticVersion != snapshot.Version {
+					items = nil
+					confidence = "pending"
+				} else {
+					confidence = "matched"
+				}
+			}
+		}
+
 		out := []any{}
 		for _, raw := range items {
 			var d struct {
@@ -410,6 +505,9 @@ func (e *Engine) dispatch(ctx context.Context, route string, req Request) (any, 
 				code = fmt.Sprint(d.Code)
 			}
 			out = append(out, map[string]any{"line": d.Range.Start.Line, "col": d.Range.Start.Character, "end_line": d.Range.End.Line, "end_col": d.Range.End.Character, "severity": d.Severity, "message": d.Message, "source": d.Source, "code": code})
+		}
+		if snapshot != nil {
+			return map[string]any{"items": out, "busy": busy, "diagnostic_version": diagnosticVersion, "version_confidence": confidence}, nil
 		}
 		return map[string]any{"items": out, "busy": busy}, nil
 	case "workspace_symbols":

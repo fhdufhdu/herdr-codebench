@@ -13,12 +13,16 @@ import { h_flex, v_flex } from "gpui-base";
 import { theme, shared, setShared, layout, run, spaces, openOverlay, closeOverlay, props } from "herdr";
 import { icon, iconButton, find, STACK, AREA, CHILD, editorSpec, editorKey, setEditorSpec, wantedChild, showReview, basename, location } from "./common.js";
 import { ideaImage } from "./ideaicons.js";
-import { IDEA, isIdea, uiSize, ideaUI, uiColors, popupSurface, uiTab, uiTabStrip, TabViewport, uiMenu, uiPopupSize, MenuController } from "./idea-design.js";
+import { IDEA, isIdea, uiSize, ideaUI, uiColors, popupSurface, uiTab, uiTabStrip, TabViewport, uiMenu, uiPopupSize, MenuController, uiNotify } from "./idea-design.js";
 import { fileTabId as fileId, recentFileTabs, visitFile, tabAfterClose } from "./editor-history.js";
 
 const KEY = "codenav.tabs";
 const MAX = 100;
 const reviewId = (r) => `r:${r.rkey}:${r.path}`;
+function fileGraphic(spec, size) {
+  if (spec.kind === "database") return icon(spec.database?.kind === "table" ? "table" : "code", size);
+  return ideaImage(spec.path, false, size);
+}
 
 // -- the open tabs of the shown space ----------------------------------------------
 const tabsNow = () => (shared(KEY) ?? {})[editorKey()] ?? [];
@@ -35,6 +39,12 @@ function setTabs(list) {
   const all = { ...(shared(KEY) ?? {}) };
   all[editorKey()] = list.slice(-MAX);
   setShared(KEY, all);
+}
+function databaseState(spec) {
+  if (spec?.kind !== "database" || !find(layout(), CHILD.database)) return {};
+  const states = Object.values(shared("codenav.databaseState") || {})
+    .filter(owner => owner.layout === shared("layout")).map(owner => owner.documents?.[spec.path]);
+  return { dirty: states.some(state => state?.dirty), busy: states.some(state => state?.busy) };
 }
 const reviewing = () => shared("codenav.area") === "review";
 // The reviewed file, if it belongs to the shown space (each space has its own repository).
@@ -77,6 +87,23 @@ function closeTabs(ids) {
     }
     run("layout.select", { stack: STACK, child: CHILD.text });
     if (find(layout(), AREA)?.hidden) run("layout.show", { id: AREA });
+    return false;
+  }
+  const currentSpec = editorSpec();
+  const candidates = [...list, ...(currentSpec ? [{ id: fileId(currentSpec), type: "file", spec: currentSpec }] : [])];
+  const protectedTab = candidates.find(tab => {
+    if (!gone.has(tab.id) || tab.type !== "file") return false;
+    const state = databaseState(tab.spec); return state.dirty || state.busy;
+  });
+  if (protectedTab) {
+    const state = databaseState(protectedTab.spec);
+    if (reviewing()) setShared("codenav.area", null);
+    setEditorSpec(key, protectedTab.spec);
+    run("layout.select", { stack: STACK, child: CHILD.database });
+    if (find(layout(), AREA)?.hidden) run("layout.show", { id: AREA });
+    uiNotify({ title: T("Database tab kept open"), body: T(state.busy
+      ? "Wait for the database operation to finish, or cancel the running query, then close again."
+      : "Save or discard the SQL draft, or apply or revert table changes, then close again."), level: "warning" });
     return false;
   }
   const recent = recentFileTabs((shared("codenav.recentFiles") ?? {})[key], h.list, list);
@@ -178,7 +205,9 @@ export function routeEditor(self, cx) {
     self.lastAt = at;
     const ids = new Set(tabsNow().map((x) => x.id));
     const add = [];
-    if (spec && !ids.has(fileId(spec))) add.push({ id: fileId(spec), type: "file", spec: { kind: "file", path: spec.path, root: spec.root, rel: spec.rel, on: spec.on ?? null } });
+    if (spec && !ids.has(fileId(spec))) add.push({ id: fileId(spec), type: "file", spec: spec.kind === "database"
+      ? { kind: "database", path: spec.path, rel: spec.rel, database: spec.database, on: null }
+      : { kind: "file", path: spec.path, root: spec.root, rel: spec.rel, on: spec.on ?? null } });
     const r = current();
     if (reviewing() && r?.path && !ids.has(reviewId(r))) add.push({ id: reviewId(r), type: "review", rkey: r.rkey, path: r.path });
     const sig = JSON.stringify([key, add.map(x => x.id)]);
@@ -246,12 +275,14 @@ export default class Tabs {
     const tab = (x, i) => {
       const on = x.id === active;
       const name = x.type === "file" ? basename(x.spec.rel ?? x.spec.path) : basename(x.path);
+      const dirty = x.type === "file" && databaseState(x.spec).dirty;
       const count = x.type === "review" ? comments.get(`${x.rkey}:${x.path}`) ?? 0 : 0;
       // Opens on press: the close button stops its press, so closing never reopens the tab.
       const idea = shared("layout") === "idea";
       if (idea) return uiTab(`cn-tab-${x.id}`, [
-        x.type === "file" ? ideaImage(x.spec.path, false, IDEA.iconSize) : icon("git-branch", IDEA.iconSize).text_color(t.accent),
+        x.type === "file" ? fileGraphic(x.spec, IDEA.iconSize) : icon("git-branch", IDEA.iconSize).text_color(t.accent),
         div().max_w(180).truncate().when(on, el => el.font_semibold()).child(name),
+        ...(dirty ? [div().text_color(uiColors().warning).tooltip(T("Unsaved database changes")).child("●")] : []),
         ...(x.pinned ? [div().text_size(10).tooltip(T("Pinned Tab")).child("•")] : []),
         ...(count > 0 ? [div().px(5).h(15).flex().items_center().rounded(8).bg(t.accent).text_color(t.accent_foreground).text_size(10).font_bold().child(String(count))] : []),
       ], { selected: on, onSelect: () => openTab(x), onClose: () => closeTab(x.id), closeIcon: icon("x", 11),
@@ -273,6 +304,7 @@ export default class Tabs {
         .child(x.type === "file" && shared("layout") === "idea" ? ideaImage(x.spec.path, false, 14)
           : icon(x.type === "file" ? "file-text" : "git-branch", 13).text_color(x.type === "review" ? t.accent : on ? t.foreground : t.muted))
         .child(div().max_w(180).truncate().child(name))
+        .when(dirty, el => el.child(div().text_color(t.working).tooltip(T("Unsaved database changes")).child("●")))
         .when(count > 0, (e) => e.child(div().px(5).h(15).flex().items_center().rounded(8).bg(t.accent).text_color(t.accent_foreground).text_size(10).font_bold().child(String(count))))
         .child(iconButton(`cn-tab-x-${i}`, "x", T("Close (Cmd+W)"), () => closeTab(x.id), { size: 16, icon: 11 }));
     };
@@ -324,7 +356,9 @@ export class TabList {
     const t = theme(), tabs = visibleTabs(), done = (x) => { closeOverlay(props().overlay); if (x) openTab(x); };
     const rows = tabs.map(x => {
       const path = x.type === "file" ? x.spec.path : x.path;
-      return { id: x.id, label: basename(path), icon: () => ideaImage(path, false, IDEA.iconSize), shortcut: path, action: () => openTab(x) };
+      return { id: x.id, label: basename(x.type === "file" ? x.spec.rel ?? path : path),
+        icon: () => x.type === "file" ? fileGraphic(x.spec, IDEA.iconSize) : ideaImage(path, false, IDEA.iconSize),
+        shortcut: path, action: () => openTab(x) };
     });
     this.menu.normalize(rows);
     if (isIdea()) return uiMenu("cn-tablist", rows, this.menu, cx, { width: 360, maxHeight: 360, onClose: () => closeOverlay(props().overlay) });

@@ -1,0 +1,323 @@
+Compiled from "SubmitMutations.java"
+public class com.intellij.database.run.actions.SubmitMutations extends com.intellij.openapi.project.DumbAwareAction implements com.intellij.database.run.actions.GridAction {
+  public com.intellij.database.run.actions.SubmitMutations();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method com/intellij/openapi/project/DumbAwareAction."<init>":()V
+       4: return
+
+  public void update(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_0
+       5: invokestatic  #191                // Method $$$reportNull$$$0:(I)V
+       8: aload_1
+       9: invokestatic  #7                  // Method updateAvailability:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)V
+      12: aload_1
+      13: getstatic     #13                 // Field com/intellij/database/DatabaseDataKeys.DATA_GRID_KEY:Lcom/intellij/openapi/actionSystem/DataKey;
+      16: invokevirtual #19                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      19: checkcast     #25                 // class com/intellij/database/datagrid/DataGrid
+      22: astore_2
+      23: aload_1
+      24: invokevirtual #27                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getPresentation:()Lcom/intellij/openapi/actionSystem/Presentation;
+      27: aload_1
+      28: invokevirtual #27                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getPresentation:()Lcom/intellij/openapi/actionSystem/Presentation;
+      31: invokevirtual #31                 // Method com/intellij/openapi/actionSystem/Presentation.isEnabled:()Z
+      34: ifeq          59
+      37: aload_2
+      38: ifnull        59
+      41: aload_2
+      42: invokeinterface #37,  1           // InterfaceMethod com/intellij/database/datagrid/DataGrid.getDataSupport:()Lcom/intellij/database/run/ui/GridDataSupport;
+      47: invokeinterface #41,  1           // InterfaceMethod com/intellij/database/run/ui/GridDataSupport.hasUnparsedValues:()Z
+      52: ifne          59
+      55: iconst_1
+      56: goto          60
+      59: iconst_0
+      60: invokevirtual #46                 // Method com/intellij/openapi/actionSystem/Presentation.setEnabled:(Z)V
+      63: return
+
+  public void actionPerformed(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_1
+       5: invokestatic  #191                // Method $$$reportNull$$$0:(I)V
+       8: invokestatic  #50                 // Method com/intellij/database/settings/DatabaseSettings.getSettings:()Lcom/intellij/database/settings/DatabaseSettings;
+      11: invokevirtual #56                 // Method com/intellij/database/settings/DatabaseSettings.isEnableShowPreviewForSqlJoins:()Z
+      14: istore_2
+      15: aload_1
+      16: getstatic     #13                 // Field com/intellij/database/DatabaseDataKeys.DATA_GRID_KEY:Lcom/intellij/openapi/actionSystem/DataKey;
+      19: invokevirtual #19                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      22: checkcast     #25                 // class com/intellij/database/datagrid/DataGrid
+      25: astore_3
+      26: aload_3
+      27: ifnull        56
+      30: aload_3
+      31: invokeinterface #59,  1           // InterfaceMethod com/intellij/database/datagrid/DataGrid.getDataHookup:()Lcom/intellij/database/datagrid/GridDataHookUp;
+      36: invokeinterface #63,  1           // InterfaceMethod com/intellij/database/datagrid/GridDataHookUp.isForSingleSource:()Z
+      41: ifne          48
+      44: iload_2
+      45: ifne          56
+      48: aload_1
+      49: invokestatic  #68                 // Method submitChangesIfExists:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)Lcom/intellij/openapi/util/ActionCallback;
+      52: pop
+      53: goto          78
+      56: aload_1
+      57: invokevirtual #72                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getActionManager:()Lcom/intellij/openapi/actionSystem/ActionManager;
+      60: ldc           #76                 // String Console.TableResult.PreviewDml
+      62: invokevirtual #78                 // Method com/intellij/openapi/actionSystem/ActionManager.getActionOrStub:(Ljava/lang/String;)Lcom/intellij/openapi/actionSystem/AnAction;
+      65: astore        4
+      67: aload         4
+      69: ifnull        78
+      72: aload         4
+      74: aload_1
+      75: invokevirtual #84                 // Method com/intellij/openapi/actionSystem/AnAction.actionPerformed:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)V
+      78: return
+
+  public com.intellij.openapi.actionSystem.ActionUpdateThread getActionUpdateThread();
+    Code:
+       0: getstatic     #89                 // Field com/intellij/openapi/actionSystem/ActionUpdateThread.BGT:Lcom/intellij/openapi/actionSystem/ActionUpdateThread;
+       3: dup
+       4: ifnonnull     11
+       7: iconst_2
+       8: invokestatic  #191                // Method $$$reportNull$$$0:(I)V
+      11: areturn
+
+  public static void updateAvailability(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_0
+       1: ifnonnull     8
+       4: iconst_3
+       5: invokestatic  #191                // Method $$$reportNull$$$0:(I)V
+       8: aload_0
+       9: invokestatic  #95                 // Method isVisible:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)Z
+      12: ifne          24
+      15: aload_0
+      16: invokevirtual #27                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getPresentation:()Lcom/intellij/openapi/actionSystem/Presentation;
+      19: iconst_0
+      20: invokevirtual #99                 // Method com/intellij/openapi/actionSystem/Presentation.setEnabledAndVisible:(Z)V
+      23: return
+      24: aload_0
+      25: invokevirtual #27                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getPresentation:()Lcom/intellij/openapi/actionSystem/Presentation;
+      28: iconst_1
+      29: invokevirtual #102                // Method com/intellij/openapi/actionSystem/Presentation.setVisible:(Z)V
+      32: aload_0
+      33: invokevirtual #27                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getPresentation:()Lcom/intellij/openapi/actionSystem/Presentation;
+      36: aload_0
+      37: invokestatic  #105                // Method hasChangesToSubmit:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)Z
+      40: invokevirtual #46                 // Method com/intellij/openapi/actionSystem/Presentation.setEnabled:(Z)V
+      43: return
+
+  public static boolean hasChangesToSubmit(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_0
+       1: invokestatic  #95                 // Method isVisible:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)Z
+       4: ifne          9
+       7: iconst_0
+       8: ireturn
+       9: aload_0
+      10: invokevirtual #108                // Method com/intellij/openapi/actionSystem/AnActionEvent.getDataContext:()Lcom/intellij/openapi/actionSystem/DataContext;
+      13: invokestatic  #112                // Method com/intellij/database/datagrid/GridUtil.getDataGrid:(Lcom/intellij/openapi/actionSystem/DataContext;)Lcom/intellij/database/datagrid/DataGrid;
+      16: invokestatic  #118                // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;)Ljava/lang/Object;
+      19: checkcast     #25                 // class com/intellij/database/datagrid/DataGrid
+      22: astore_1
+      23: aload_1
+      24: invokeinterface #37,  1           // InterfaceMethod com/intellij/database/datagrid/DataGrid.getDataSupport:()Lcom/intellij/database/run/ui/GridDataSupport;
+      29: astore_2
+      30: aload_2
+      31: invokeinterface #124,  1          // InterfaceMethod com/intellij/database/run/ui/GridDataSupport.hasPendingChanges:()Z
+      36: ifeq          52
+      39: aload_1
+      40: invokeinterface #127,  1          // InterfaceMethod com/intellij/database/datagrid/DataGrid.isEditing:()Z
+      45: ifne          52
+      48: iconst_1
+      49: goto          53
+      52: iconst_0
+      53: ireturn
+
+  public static com.intellij.openapi.util.ActionCallback submitChangesIfExists(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_0
+       1: invokestatic  #105                // Method hasChangesToSubmit:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)Z
+       4: ifne          19
+       7: getstatic     #130                // Field com/intellij/openapi/util/ActionCallback.DONE:Lcom/intellij/openapi/util/ActionCallback;
+      10: dup
+      11: ifnonnull     18
+      14: iconst_4
+      15: invokestatic  #191                // Method $$$reportNull$$$0:(I)V
+      18: areturn
+      19: aload_0
+      20: invokevirtual #108                // Method com/intellij/openapi/actionSystem/AnActionEvent.getDataContext:()Lcom/intellij/openapi/actionSystem/DataContext;
+      23: invokestatic  #112                // Method com/intellij/database/datagrid/GridUtil.getDataGrid:(Lcom/intellij/openapi/actionSystem/DataContext;)Lcom/intellij/database/datagrid/DataGrid;
+      26: invokestatic  #118                // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;)Ljava/lang/Object;
+      29: checkcast     #25                 // class com/intellij/database/datagrid/DataGrid
+      32: astore_1
+      33: aload_1
+      34: invokeinterface #136,  1          // InterfaceMethod com/intellij/database/datagrid/DataGrid.submit:()Lcom/intellij/openapi/util/ActionCallback;
+      39: dup
+      40: ifnonnull     47
+      43: iconst_5
+      44: invokestatic  #191                // Method $$$reportNull$$$0:(I)V
+      47: areturn
+
+  public static boolean isVisible(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_0
+       1: invokevirtual #108                // Method com/intellij/openapi/actionSystem/AnActionEvent.getDataContext:()Lcom/intellij/openapi/actionSystem/DataContext;
+       4: invokestatic  #112                // Method com/intellij/database/datagrid/GridUtil.getDataGrid:(Lcom/intellij/openapi/actionSystem/DataContext;)Lcom/intellij/database/datagrid/DataGrid;
+       7: astore_1
+       8: aload_1
+       9: ifnull        28
+      12: aload_1
+      13: invokeinterface #140,  1          // InterfaceMethod com/intellij/database/datagrid/DataGrid.isEditable:()Z
+      18: ifne          30
+      21: aload_1
+      22: invokestatic  #143                // Method com/intellij/database/datagrid/DataGridUtilCore.getDatabaseTable:(Lcom/intellij/database/datagrid/CoreGrid;)Lcom/intellij/database/model/DasObject;
+      25: ifnonnull     30
+      28: iconst_0
+      29: ireturn
+      30: aload_1
+      31: invokeinterface #37,  1           // InterfaceMethod com/intellij/database/datagrid/DataGrid.getDataSupport:()Lcom/intellij/database/run/ui/GridDataSupport;
+      36: astore_2
+      37: aload_2
+      38: invokeinterface #149,  1          // InterfaceMethod com/intellij/database/run/ui/GridDataSupport.isSubmitImmediately:()Z
+      43: ifeq          55
+      46: aload_2
+      47: invokeinterface #124,  1          // InterfaceMethod com/intellij/database/run/ui/GridDataSupport.hasPendingChanges:()Z
+      52: ifeq          70
+      55: aload_1
+      56: aload_0
+      57: invokevirtual #152                // Method com/intellij/openapi/actionSystem/AnActionEvent.getPlace:()Ljava/lang/String;
+      60: invokestatic  #156                // Method com/intellij/database/datagrid/GridUtil.hideEditActions:(Lcom/intellij/database/datagrid/DataGrid;Ljava/lang/String;)Z
+      63: ifne          70
+      66: iconst_1
+      67: goto          71
+      70: iconst_0
+      71: ireturn
+
+  private static void $$$reportNull$$$0(int);
+    Code:
+       0: iload_0
+       1: tableswitch   { // 0 to 5
+                     0: 40
+                     1: 40
+                     2: 45
+                     3: 40
+                     4: 45
+                     5: 45
+               default: 40
+          }
+      40: ldc           #193                // String Argument for @NotNull parameter \'%s\' of %s.%s must not be null
+      42: goto          50
+      45: ldc           #195                // String @NotNull method %s.%s must not return null
+      47: goto          50
+      50: iload_0
+      51: tableswitch   { // 0 to 5
+                     0: 88
+                     1: 88
+                     2: 92
+                     3: 88
+                     4: 92
+                     5: 92
+               default: 88
+          }
+      88: iconst_3
+      89: goto          96
+      92: iconst_2
+      93: goto          96
+      96: anewarray     #197                // class java/lang/Object
+      99: iload_0
+     100: tableswitch   { // 0 to 5
+                     0: 140
+                     1: 140
+                     2: 148
+                     3: 140
+                     4: 148
+                     5: 148
+               default: 140
+          }
+     140: dup
+     141: iconst_0
+     142: ldc           #198                // String e
+     144: aastore
+     145: goto          156
+     148: dup
+     149: iconst_0
+     150: ldc           #199                // String com/intellij/database/run/actions/SubmitMutations
+     152: aastore
+     153: goto          156
+     156: iload_0
+     157: tableswitch   { // 0 to 5
+                     0: 196
+                     1: 196
+                     2: 204
+                     3: 196
+                     4: 212
+                     5: 212
+               default: 196
+          }
+     196: dup
+     197: iconst_1
+     198: ldc           #199                // String com/intellij/database/run/actions/SubmitMutations
+     200: aastore
+     201: goto          220
+     204: dup
+     205: iconst_1
+     206: ldc           #200                // String getActionUpdateThread
+     208: aastore
+     209: goto          220
+     212: dup
+     213: iconst_1
+     214: ldc           #201                // String submitChangesIfExists
+     216: aastore
+     217: goto          220
+     220: iload_0
+     221: tableswitch   { // 0 to 5
+                     0: 260
+                     1: 268
+                     2: 276
+                     3: 279
+                     4: 276
+                     5: 276
+               default: 260
+          }
+     260: dup
+     261: iconst_2
+     262: ldc           #202                // String update
+     264: aastore
+     265: goto          287
+     268: dup
+     269: iconst_2
+     270: ldc           #203                // String actionPerformed
+     272: aastore
+     273: goto          287
+     276: goto          287
+     279: dup
+     280: iconst_2
+     281: ldc           #204                // String updateAvailability
+     283: aastore
+     284: goto          287
+     287: invokestatic  #210                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     290: iload_0
+     291: tableswitch   { // 0 to 5
+                     0: 328
+                     1: 328
+                     2: 339
+                     3: 328
+                     4: 339
+                     5: 339
+               default: 328
+          }
+     328: new           #212                // class java/lang/IllegalArgumentException
+     331: dup_x1
+     332: swap
+     333: invokespecial #215                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     336: goto          350
+     339: new           #217                // class java/lang/IllegalStateException
+     342: dup_x1
+     343: swap
+     344: invokespecial #218                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     347: goto          350
+     350: athrow
+}

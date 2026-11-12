@@ -1,5 +1,9 @@
 # IntelliJ와 거의 같은 Herdr 모드 — 실제 화면 기준 계획
 
+2026-11-05. `codex/ux-principles-redesign`에서는 사용자의 새 요청에 따라 [UX 원칙 기반 계획](../../docs/workflows/ux-redesign/00-progress.md)이 시각 설계를 대체한다. 중앙 편집기·도구 영역 구성과 공통 component·생성 경로는 유지한다. 아래 추출 기록은 이전 설계의 근거다. 현재 시각 값은 `tokens.json`의 `herdr.ux`다.
+
+2026-11-06 설정 후속: 불필요한 메뉴 및 도구 모음 전용 설정 편집 화면을 제거했다. 기존 action registry·`codenav.customization`의 runtime 소비와 저장값은 보존한다. Tool Windows는 IdeaSettings의 독립 `windows` 페이지에서 공통 관리 목록과 우측 위치·표시 상세를 사용하며, keymap은 검색·액션 선택·상단 추가/변경/제거와 우측 개별 chord 상세를 사용한다. 두 페이지는 Apply/Cancel draft를 유지한다. 키맵의 staged/CAS와 macOS Ctrl/Meta 구분도 보존한다. 현재 계약은 [공통 컴포넌트](COMPONENTS.md)와 [T31 구현 결과](../../docs/workflows/ux-redesign/results/T31-settings-cleanup.md)를 따른다.
+
 2026-11-04 후속: 시각 정합에 더해 액션·메뉴/툴바·도구 창·문서 상태를 공통 플랫폼으로
 전환하는 [현재 기능 목록과 구조 이식 계획](../../docs/workflows/ide-platform/README.md)을 선정했다.
 아래 디자인 계약은 유지한다. 새 플랫폼은 조사·설계 단계이며 아직 구현 완료 상태가 아니다.

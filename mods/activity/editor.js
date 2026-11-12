@@ -3,7 +3,7 @@
 // a file (editable, Ctrl+S saves, here or on an ssh machine), a viewer for
 // images / PDFs / media / binary files, or a git diff.
 import { div } from "gpui-kit";
-import { IDEA, isIdea, uiSize, ideaUI, uiColors, uiEditorSyntax, uiButton } from "./idea-design.js";
+import { IDEA, isIdea, uiSize, ideaUI, uiColors, uiEditorSyntax, uiButton, uiModeSwitch } from "./idea-design.js";
 import { T } from "./i18n.js";
 import { v_flex, h_flex, Editor, EditorState, Scrollbar, v_virtual_list, TextView, h_resizable, resizable_panel } from "gpui-base";
 import { exec, readTextFile, writeTextFile, watchFolder, theme, settings, shared, setShared, props, run, panes, nextCommand, home, layout } from "herdr";
@@ -44,14 +44,14 @@ export default class EditorPane {
     // In the workbench's editor area (props.slot) it follows the active space;
     // as a pane it belongs to its tab.
     this.slot = Boolean(p?.slot); this.tab = p?.tab;
-    this.rows = []; this.width = 0; this.pending = null; this.mdMode = "split";
+    this.rows = []; this.width = 0; this.pending = null; this.mdMode = isIdea() ? "edit" : "split";
     this.workspaceBuffers = new Map();
     cx.spawn(async (cx) => {
       for (;;) {
         const c = await nextCommand();
         if (c === "save") this.save(cx);
         else if (c === "close") this.close();
-        else if (c === "preview") this.mdMode = MD_MODES[this.mdMode][0];
+        else if (c === "preview") this.toggleMarkdown();
         cx.notify();
       }
     });
@@ -99,7 +99,7 @@ export default class EditorPane {
   sync(cx) {
     const spec = this.spec(), slot = this.slotKey();
     const key = JSON.stringify({ slot, spec });
-    if (key === this.key) return;
+    if (key === this.key && !(this.hasPending && !this.dirty && !this.saving)) return;
     if (this.code && this.shownKey === slot && spec?.kind === "file" && this.shown?.kind === "file"
       && spec.path === this.shown.path && (spec.on ?? null) === (this.shown.on ?? null) && spec.edit === this.shown.edit) {
       // Re-selecting the same document must not replace its native buffer/undo.
@@ -107,20 +107,26 @@ export default class EditorPane {
       this.shown = spec; this.key = key; this.pending = null; this.hasPending = false;
       return;
     }
-    if (this.shownKey !== undefined && this.shownKey !== slot && this.code && this.dirty) {
-      this.workspaceBuffers.set(this.shownKey, { code: this.code, shown: this.shown, original: this.original, readonly: this.readonly, dirty: this.dirty, mdMode: this.mdMode });
-      this.code = null; this.dirty = false; this.watched = null;
+    if (this.shownKey !== undefined && this.shownKey !== slot && this.code && (this.dirty || this.saving)) {
+      this.workspaceBuffers.set(this.shownKey, { code: this.code, shown: this.shown, original: this.original, readonly: this.readonly, dirty: this.dirty, saving: this.saving, note: this.note, mdMode: this.mdMode });
+      this.code = null; this.dirty = false; this.saving = false; this.watched = null;
     }
-    if (this.dirty) { this.pending = spec; this.hasPending = true; return; }
+    if (this.dirty || this.saving) { this.pending = spec; this.hasPending = true; return; }
     const kept = this.workspaceBuffers.get(slot);
     if (kept) {
       this.code?.release(); this.viewer?.dispose(); this.viewer = null;
       this.workspaceBuffers.delete(slot); Object.assign(this, kept); this.shownKey = slot;
-      this.key = key; this.seq = (this.seq ?? 0) + 1; this.loading = false;
+      this.key = key; this.seq = (this.seq ?? 0) + 1; this.loading = false; this.error = null;
       this.pending = spec; this.hasPending = !spec || spec.path !== this.shown.path || (spec.on ?? null) !== (this.shown.on ?? null);
+      if (this.hasPending && !this.dirty && !this.saving) {
+        this.sync(cx);
+      } else {
+        this.watched = null; this.watch(this.shown, cx);
+      }
       return;
     }
     this.pending = null; this.hasPending = false; this.key = key; this.shown = spec; this.shownKey = slot;
+    if (isIdea()) this.mdMode = "edit";
     this.load(spec, cx);
   }
 
@@ -133,7 +139,7 @@ export default class EditorPane {
 
   load(spec, cx) {
     const seq = (this.seq = (this.seq ?? 0) + 1);
-    this.error = null; this.note = null; this.dirty = false; this.original = null; this.rows = []; this.viewer?.dispose(); this.viewer = null; this.code?.release(); this.code = null;
+    this.error = null; this.note = null; this.dirty = false; this.saving = false; this.original = null; this.rows = []; this.viewer?.dispose(); this.viewer = null; this.code?.release(); this.code = null;
     this.closed = false;
     if (!spec) return;
     this.loading = true;
@@ -278,19 +284,23 @@ export default class EditorPane {
         // the editor's machine/workspace key. Failed writes never enter it.
         const edited = shared("codenav.editedFiles") ?? {};
         setShared("codenav.editedFiles", { ...edited, [editedKey]: [spec.path, ...(edited[editedKey] ?? []).filter(p => p !== spec.path)].slice(0, 200) });
-        if (this.code === editor) { this.original = text; this.dirty = editor.value() !== text; }
-        else {
-          const buffer = this.workspaceBuffers.get(editedKey);
-          if (buffer?.code === editor) { buffer.original = text; buffer.dirty = editor.value() !== text; }
-        }
-        if (!this.dirty && this.hasPending && !closeRequest) this.sync(cx);
-      } catch (e) { this.note = `Not saved: ${e.message ?? e}. Reopen the file to see the version on disk.`; }
-      finally {
-        this.saving = false;
         const buffer = this.code === editor ? this : this.workspaceBuffers.get(editedKey);
-        if (buffer?.code === editor) this.publishStateFor(editedKey, spec, buffer.dirty, false);
-        const closing = closeRequest ?? (this.code === editor ? this.closeRequest() : null);
-        if (saved && closing) this.finishClose(closing, true);
+        if (!this.closed && buffer?.code === editor) {
+          buffer.original = text; buffer.dirty = editor.value() !== text;
+        }
+      } catch (e) {
+        const buffer = this.code === editor ? this : this.workspaceBuffers.get(editedKey);
+        if (!this.closed && buffer?.code === editor) buffer.note = `Not saved: ${e.message ?? e}. Reopen the file to see the version on disk.`;
+      } finally {
+        const buffer = this.code === editor ? this : this.workspaceBuffers.get(editedKey);
+        if (!this.closed && buffer?.code === editor) {
+          buffer.saving = false;
+          this.publishStateFor(editedKey, spec, buffer.dirty, false);
+          const closing = closeRequest ?? (buffer === this ? this.closeRequest() : null);
+          if (saved && closing) this.finishClose(closing, true);
+          // A background workspace save must not navigate the visible workspace.
+          if (buffer === this && !this.dirty && this.hasPending && !closing) this.sync(cx);
+        }
         cx.notify();
       }
     });
@@ -341,10 +351,18 @@ export default class EditorPane {
       .child(div().flex_1().min_w(0).whitespace_nowrap().child(r.text));
   }
 
+  toggleMarkdown() {
+    if (this.shown?.kind !== "file" || !MD.test(this.shown.path) || !this.code) return;
+    this.mdMode = isIdea() ? (this.mdMode === "edit" ? "preview" : "edit") : MD_MODES[this.mdMode][0];
+  }
+
   markdownButton(t) {
     if (this.shown?.kind !== "file" || !MD.test(this.shown.path) || !this.code) return null;
-    return iconButton("ed-preview", "eye", `${MD_MODES[this.mdMode][2]} (Ctrl+Shift+V)`, (_e, cx) => {
-      this.mdMode = MD_MODES[this.mdMode][0]; cx.notify();
+    if (isIdea()) return uiModeSwitch("ed-mode", [{ id: "edit", label: T("Edit") }, { id: "preview", label: T("Preview") }],
+      this.mdMode, (mode, _event, cx) => { this.mdMode = mode; cx.notify(); });
+    const tip = `${MD_MODES[this.mdMode][2]} (Ctrl+Shift+V)`;
+    return iconButton("ed-preview", "eye", tip, (_e, cx) => {
+      this.toggleMarkdown(); cx.notify();
     }, { ...(isIdea() ? { size: 20, icon: 12 } : {}), color: this.mdMode !== "edit" ? t.accent : undefined });
   }
 

@@ -1,0 +1,201 @@
+Compiled from "GenerateSqlActions.java"
+class com.intellij.database.actions.GenerateSqlActions$CopyDdlAction extends com.intellij.openapi.project.DumbAwareAction {
+  com.intellij.database.actions.GenerateSqlActions$CopyDdlAction();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method com/intellij/openapi/project/DumbAwareAction."<init>":()V
+       4: return
+
+  public com.intellij.openapi.actionSystem.ActionUpdateThread getActionUpdateThread();
+    Code:
+       0: getstatic     #7                  // Field com/intellij/openapi/actionSystem/ActionUpdateThread.BGT:Lcom/intellij/openapi/actionSystem/ActionUpdateThread;
+       3: dup
+       4: ifnonnull     11
+       7: iconst_0
+       8: invokestatic  #170                // Method $$$reportNull$$$0:(I)V
+      11: areturn
+
+  public void update(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_1
+       5: invokestatic  #170                // Method $$$reportNull$$$0:(I)V
+       8: aload_1
+       9: iconst_0
+      10: invokestatic  #13                 // Method com/intellij/database/actions/GenerateSqlActions.getElements:(Lcom/intellij/openapi/actionSystem/AnActionEvent;Z)Lcom/intellij/util/containers/JBIterable;
+      13: invokedynamic #19,  0             // InvokeDynamic #0:value:()Lcom/intellij/openapi/util/Condition;
+      18: invokevirtual #23                 // Method com/intellij/util/containers/JBIterable.find:(Lcom/intellij/openapi/util/Condition;)Ljava/lang/Object;
+      21: ifnull        28
+      24: iconst_1
+      25: goto          29
+      28: iconst_0
+      29: istore_2
+      30: aload_1
+      31: invokevirtual #29                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getPresentation:()Lcom/intellij/openapi/actionSystem/Presentation;
+      34: iload_2
+      35: invokevirtual #35                 // Method com/intellij/openapi/actionSystem/Presentation.setEnabled:(Z)V
+      38: aload_1
+      39: invokevirtual #29                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getPresentation:()Lcom/intellij/openapi/actionSystem/Presentation;
+      42: iload_2
+      43: ifne          53
+      46: aload_1
+      47: invokevirtual #41                 // Method com/intellij/openapi/actionSystem/AnActionEvent.isFromActionToolbar:()Z
+      50: ifeq          57
+      53: iconst_1
+      54: goto          58
+      57: iconst_0
+      58: invokevirtual #45                 // Method com/intellij/openapi/actionSystem/Presentation.setVisible:(Z)V
+      61: aload_1
+      62: invokestatic  #48                 // Method com/intellij/database/util/DbeTierUtil.adjustPaidTier:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)V
+      65: return
+
+  public void actionPerformed(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_2
+       5: invokestatic  #170                // Method $$$reportNull$$$0:(I)V
+       8: aload_1
+       9: iconst_0
+      10: invokestatic  #13                 // Method com/intellij/database/actions/GenerateSqlActions.getElements:(Lcom/intellij/openapi/actionSystem/AnActionEvent;Z)Lcom/intellij/util/containers/JBIterable;
+      13: invokevirtual #54                 // Method com/intellij/util/containers/JBIterable.unique:()Lcom/intellij/util/containers/JBIterable;
+      16: invokevirtual #58                 // Method com/intellij/util/containers/JBIterable.toList:()Ljava/util/List;
+      19: astore_2
+      20: aload_2
+      21: invokeinterface #62,  1           // InterfaceMethod java/util/Collection.isEmpty:()Z
+      26: ifeq          30
+      29: return
+      30: aload_1
+      31: invokevirtual #67                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getProject:()Lcom/intellij/openapi/project/Project;
+      34: astore_3
+      35: aload_3
+      36: ifnonnull     40
+      39: return
+      40: aload_1
+      41: invokevirtual #29                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getPresentation:()Lcom/intellij/openapi/actionSystem/Presentation;
+      44: invokevirtual #71                 // Method com/intellij/openapi/actionSystem/Presentation.getText:()Ljava/lang/String;
+      47: astore        4
+      49: aload_2
+      50: aload_3
+      51: aload         4
+      53: invokestatic  #75                 // Method com/intellij/database/actions/GenerateSqlActions.doGenerateDDLUnderProgress:(Ljava/util/Collection;Lcom/intellij/openapi/project/Project;Ljava/lang/String;)Ljava/lang/String;
+      56: astore        5
+      58: invokestatic  #79                 // Method com/intellij/openapi/ide/CopyPasteManager.getInstance:()Lcom/intellij/openapi/ide/CopyPasteManager;
+      61: astore        6
+      63: aload         6
+      65: new           #85                 // class java/awt/datatransfer/StringSelection
+      68: dup
+      69: aload         5
+      71: invokespecial #87                 // Method java/awt/datatransfer/StringSelection."<init>":(Ljava/lang/String;)V
+      74: invokevirtual #90                 // Method com/intellij/openapi/ide/CopyPasteManager.setContents:(Ljava/awt/datatransfer/Transferable;)V
+      77: return
+
+  private static boolean lambda$update$0(com.intellij.database.model.basic.BasicElement);
+    Code:
+       0: aload_0
+       1: invokestatic  #94                 // Method com/intellij/database/util/DbImplUtilCore.getDbms:(Lcom/intellij/database/model/basic/BasicElement;)Lcom/intellij/database/Dbms;
+       4: getstatic     #100                // Field com/intellij/database/Dbms.MONGO:Lcom/intellij/database/Dbms;
+       7: if_acmpeq     14
+      10: iconst_1
+      11: goto          15
+      14: iconst_0
+      15: ireturn
+
+  private static void $$$reportNull$$$0(int);
+    Code:
+       0: iload_0
+       1: tableswitch   { // 0 to 2
+                     0: 28
+                     1: 33
+                     2: 33
+               default: 28
+          }
+      28: ldc           #174                // String @NotNull method %s.%s must not return null
+      30: goto          38
+      33: ldc           #176                // String Argument for @NotNull parameter \'%s\' of %s.%s must not be null
+      35: goto          38
+      38: iload_0
+      39: tableswitch   { // 0 to 2
+                     0: 64
+                     1: 68
+                     2: 68
+               default: 64
+          }
+      64: iconst_2
+      65: goto          72
+      68: iconst_3
+      69: goto          72
+      72: anewarray     #178                // class java/lang/Object
+      75: iload_0
+      76: tableswitch   { // 0 to 2
+                     0: 104
+                     1: 112
+                     2: 112
+               default: 104
+          }
+     104: dup
+     105: iconst_0
+     106: ldc           #179                // String com/intellij/database/actions/GenerateSqlActions$CopyDdlAction
+     108: aastore
+     109: goto          120
+     112: dup
+     113: iconst_0
+     114: ldc           #180                // String e
+     116: aastore
+     117: goto          120
+     120: iload_0
+     121: tableswitch   { // 0 to 2
+                     0: 148
+                     1: 156
+                     2: 156
+               default: 148
+          }
+     148: dup
+     149: iconst_1
+     150: ldc           #181                // String getActionUpdateThread
+     152: aastore
+     153: goto          164
+     156: dup
+     157: iconst_1
+     158: ldc           #179                // String com/intellij/database/actions/GenerateSqlActions$CopyDdlAction
+     160: aastore
+     161: goto          164
+     164: iload_0
+     165: tableswitch   { // 0 to 2
+                     0: 192
+                     1: 195
+                     2: 203
+               default: 192
+          }
+     192: goto          211
+     195: dup
+     196: iconst_2
+     197: ldc           #182                // String update
+     199: aastore
+     200: goto          211
+     203: dup
+     204: iconst_2
+     205: ldc           #183                // String actionPerformed
+     207: aastore
+     208: goto          211
+     211: invokestatic  #189                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     214: iload_0
+     215: tableswitch   { // 0 to 2
+                     0: 240
+                     1: 251
+                     2: 251
+               default: 240
+          }
+     240: new           #191                // class java/lang/IllegalStateException
+     243: dup_x1
+     244: swap
+     245: invokespecial #192                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     248: goto          262
+     251: new           #194                // class java/lang/IllegalArgumentException
+     254: dup_x1
+     255: swap
+     256: invokespecial #195                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     259: goto          262
+     262: athrow
+}

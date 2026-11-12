@@ -1,0 +1,896 @@
+Compiled from "DumpHandler.java"
+public abstract class com.intellij.database.dump.DumpHandler<T> {
+  private static final com.intellij.openapi.diagnostic.Logger LOG;
+
+  protected final com.intellij.openapi.project.Project myProject;
+
+  protected final com.intellij.util.containers.JBIterable<? extends T> mySources;
+
+  protected final com.intellij.database.run.actions.DumpSourceNameProvider<T> myNameProvider;
+
+  protected final java.lang.String myTitle;
+
+  private final com.intellij.database.extractors.DataExtractorFactory myFactory;
+
+  protected final com.intellij.database.extractors.ExtractionConfig myConfig;
+
+  protected final com.intellij.database.dump.ExtractionHelper myManager;
+
+  private final com.intellij.database.util.ErrorHandler myHandler;
+
+  private long myLength;
+
+  protected int myRowsCount;
+
+  private int myProcessedCount;
+
+  protected com.intellij.database.dump.DumpHandler(com.intellij.openapi.project.Project, com.intellij.util.containers.JBIterable<? extends T>, com.intellij.database.run.actions.DumpSourceNameProvider<T>, com.intellij.database.dump.ExtractionHelper, java.lang.String, com.intellij.database.extractors.DataExtractorFactory, com.intellij.database.extractors.ExtractionConfig);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_0
+       5: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+       8: aload_2
+       9: ifnonnull     16
+      12: iconst_1
+      13: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      16: aload_3
+      17: ifnonnull     24
+      20: iconst_2
+      21: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      24: aload         4
+      26: ifnonnull     33
+      29: iconst_3
+      30: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      33: aload         5
+      35: ifnonnull     42
+      38: iconst_4
+      39: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      42: aload         6
+      44: ifnonnull     51
+      47: iconst_5
+      48: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      51: aload         7
+      53: ifnonnull     61
+      56: bipush        6
+      58: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      61: aload_0
+      62: invokespecial #1                  // Method java/lang/Object."<init>":()V
+      65: aload_0
+      66: aload_1
+      67: putfield      #7                  // Field myProject:Lcom/intellij/openapi/project/Project;
+      70: aload_0
+      71: aload         4
+      73: putfield      #13                 // Field myManager:Lcom/intellij/database/dump/ExtractionHelper;
+      76: aload_0
+      77: aload_2
+      78: putfield      #17                 // Field mySources:Lcom/intellij/util/containers/JBIterable;
+      81: aload_0
+      82: aload_3
+      83: putfield      #21                 // Field myNameProvider:Lcom/intellij/database/run/actions/DumpSourceNameProvider;
+      86: aload_0
+      87: aload_0
+      88: getfield      #13                 // Field myManager:Lcom/intellij/database/dump/ExtractionHelper;
+      91: aload         5
+      93: invokeinterface #25,  2           // InterfaceMethod com/intellij/database/dump/ExtractionHelper.getTitle:(Ljava/lang/String;)Ljava/lang/String;
+      98: putfield      #31                 // Field myTitle:Ljava/lang/String;
+     101: aload_0
+     102: aload         6
+     104: putfield      #35                 // Field myFactory:Lcom/intellij/database/extractors/DataExtractorFactory;
+     107: aload_0
+     108: aload         7
+     110: putfield      #39                 // Field myConfig:Lcom/intellij/database/extractors/ExtractionConfig;
+     113: aload_0
+     114: new           #43                 // class com/intellij/database/util/ErrorHandler
+     117: dup
+     118: invokespecial #45                 // Method com/intellij/database/util/ErrorHandler."<init>":()V
+     121: putfield      #46                 // Field myHandler:Lcom/intellij/database/util/ErrorHandler;
+     124: return
+
+  protected abstract com.intellij.database.extractors.ExtractorConfig createExtractorConfig(T, com.intellij.openapi.project.Project);
+
+  protected int getSubQueryIndex(T);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        7
+       6: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+       9: iconst_0
+      10: ireturn
+
+  protected abstract int getResultSetIndex(T);
+
+  protected abstract com.intellij.database.datagrid.ModelIndexSet<com.intellij.database.datagrid.GridColumn> getSelectedColumns(T);
+
+  protected abstract org.jetbrains.concurrency.AsyncPromise<java.lang.Void> run(T, com.intellij.database.extractors.DataExtractor, com.intellij.database.util.Out, com.intellij.database.dump.DumpHandler$DumpHandlerParameters);
+
+  protected abstract java.lang.String getDatabaseSystemName();
+
+  protected abstract java.lang.String getProducerName();
+
+  protected abstract java.lang.String getSourceName(int);
+
+  protected com.intellij.database.extractors.ObjectFormatter getFormatter(T);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        8
+       6: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+       9: aconst_null
+      10: areturn
+
+  protected com.intellij.util.NotNullFunction<com.intellij.database.extractors.DataExtractor, com.intellij.database.datagrid.GridDataRequest> newSimpleRunner(com.intellij.database.datagrid.DataProducer, com.intellij.database.datagrid.GridDataRequest$GridDataRequestOwner, com.intellij.database.util.Out, com.intellij.database.dump.DumpHandler$DumpHandlerParameters);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        9
+       6: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+       9: aload_3
+      10: ifnonnull     18
+      13: bipush        10
+      15: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      18: aload         4
+      20: ifnonnull     28
+      23: bipush        11
+      25: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      28: aload_0
+      29: aload_2
+      30: aload_3
+      31: aload         4
+      33: aload_1
+      34: invokedynamic #50,  0             // InvokeDynamic #0:fun:(Lcom/intellij/database/dump/DumpHandler;Lcom/intellij/database/datagrid/GridDataRequest$GridDataRequestOwner;Lcom/intellij/database/util/Out;Lcom/intellij/database/dump/DumpHandler$DumpHandlerParameters;Lcom/intellij/database/datagrid/DataProducer;)Lcom/intellij/util/NotNullFunction;
+      39: dup
+      40: ifnonnull     48
+      43: bipush        12
+      45: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      48: areturn
+
+  protected final boolean isSingleSource();
+    Code:
+       0: aload_0
+       1: getfield      #17                 // Field mySources:Lcom/intellij/util/containers/JBIterable;
+       4: iconst_1
+       5: invokevirtual #54                 // Method com/intellij/util/containers/JBIterable.skip:(I)Lcom/intellij/util/containers/JBIterable;
+       8: invokevirtual #60                 // Method com/intellij/util/containers/JBIterable.isEmpty:()Z
+      11: ireturn
+
+  private void processError(java.lang.Throwable);
+    Code:
+       0: aload_0
+       1: getfield      #46                 // Field myHandler:Lcom/intellij/database/util/ErrorHandler;
+       4: aconst_null
+       5: aload_1
+       6: invokevirtual #64                 // Method com/intellij/database/util/ErrorHandler.addError:(Ljava/lang/String;Ljava/lang/Throwable;)Z
+       9: pop
+      10: return
+
+  public void performDump(com.intellij.openapi.project.Project);
+    Code:
+       0: aload_0
+       1: aload_0
+       2: getfield      #35                 // Field myFactory:Lcom/intellij/database/extractors/DataExtractorFactory;
+       5: aload_1
+       6: invokevirtual #68                 // Method buildTask:(Lcom/intellij/database/extractors/DataExtractorFactory;Lcom/intellij/openapi/project/Project;)Lcom/intellij/openapi/progress/Task$Backgroundable;
+       9: astore_2
+      10: aload_2
+      11: ifnonnull     15
+      14: return
+      15: invokestatic  #72                 // Method com/intellij/openapi/progress/ProgressManager.getInstance:()Lcom/intellij/openapi/progress/ProgressManager;
+      18: aload_2
+      19: invokevirtual #78                 // Method com/intellij/openapi/progress/ProgressManager.run:(Lcom/intellij/openapi/progress/Task;)V
+      22: return
+
+  public com.intellij.openapi.progress.Task$Backgroundable buildTask(com.intellij.database.extractors.DataExtractorFactory, com.intellij.openapi.project.Project);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        13
+       6: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+       9: invokestatic  #82                 // Method com/intellij/util/concurrency/ThreadingAssertions.assertEventDispatchThread:()V
+      12: aload_0
+      13: getfield      #17                 // Field mySources:Lcom/intellij/util/containers/JBIterable;
+      16: aload_0
+      17: aload_1
+      18: aload_2
+      19: invokedynamic #87,  0             // InvokeDynamic #1:fun:(Lcom/intellij/database/dump/DumpHandler;Lcom/intellij/database/extractors/DataExtractorFactory;Lcom/intellij/openapi/project/Project;)Lcom/intellij/util/Function;
+      24: invokevirtual #90                 // Method com/intellij/util/containers/JBIterable.map:(Lcom/intellij/util/Function;)Lcom/intellij/util/containers/JBIterable;
+      27: invokedynamic #94,  0             // InvokeDynamic #2:value:()Lcom/intellij/openapi/util/Condition;
+      32: invokevirtual #98                 // Method com/intellij/util/containers/JBIterable.filter:(Lcom/intellij/openapi/util/Condition;)Lcom/intellij/util/containers/JBIterable;
+      35: invokevirtual #102                // Method com/intellij/util/containers/JBIterable.toList:()Ljava/util/List;
+      38: astore_3
+      39: aload_3
+      40: invokeinterface #106,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+      45: ifeq          50
+      48: aconst_null
+      49: areturn
+      50: new           #109                // class com/intellij/database/dump/DumpHandler$1
+      53: dup
+      54: aload_0
+      55: aload_0
+      56: getfield      #7                  // Field myProject:Lcom/intellij/openapi/project/Project;
+      59: aload_0
+      60: getfield      #31                 // Field myTitle:Ljava/lang/String;
+      63: aload_3
+      64: invokespecial #111                // Method com/intellij/database/dump/DumpHandler$1."<init>":(Lcom/intellij/database/dump/DumpHandler;Lcom/intellij/openapi/project/Project;Ljava/lang/String;Ljava/util/List;)V
+      67: areturn
+
+  private void dumpFinished(com.intellij.database.util.Out);
+    Code:
+       0: aload_0
+       1: invokevirtual #114                // Method getDatabaseSystemName:()Ljava/lang/String;
+       4: astore_2
+       5: new           #118                // class com/intellij/database/dump/DumpInfo
+       8: dup
+       9: aload_2
+      10: ifnull        17
+      13: aload_2
+      14: goto          26
+      17: ldc           #120                // String notification.title.data.dump
+      19: iconst_0
+      20: anewarray     #2                  // class java/lang/Object
+      23: invokestatic  #122                // Method com/intellij/database/DataGridBundle.message:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      26: aload_0
+      27: getfield      #46                 // Field myHandler:Lcom/intellij/database/util/ErrorHandler;
+      30: invokevirtual #128                // Method com/intellij/database/util/ErrorHandler.getSummary:()Ljava/lang/String;
+      33: aload_0
+      34: aload_0
+      35: getfield      #131                // Field myProcessedCount:I
+      38: invokevirtual #135                // Method getSourceName:(I)Ljava/lang/String;
+      41: aload_0
+      42: invokevirtual #139                // Method getProducerName:()Ljava/lang/String;
+      45: aload_0
+      46: getfield      #142                // Field myRowsCount:I
+      49: i2l
+      50: aload_0
+      51: getfield      #131                // Field myProcessedCount:I
+      54: invokespecial #145                // Method com/intellij/database/dump/DumpInfo."<init>":(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JI)V
+      57: astore_3
+      58: aload_1
+      59: ifnull        80
+      62: aload_0
+      63: getfield      #13                 // Field myManager:Lcom/intellij/database/dump/ExtractionHelper;
+      66: invokeinterface #148,  1          // InterfaceMethod com/intellij/database/dump/ExtractionHelper.isSingleFileMode:()Z
+      71: ifeq          80
+      74: aload_1
+      75: invokeinterface #151,  1          // InterfaceMethod com/intellij/database/util/Out.close:()V
+      80: aload_0
+      81: getfield      #13                 // Field myManager:Lcom/intellij/database/dump/ExtractionHelper;
+      84: aload_0
+      85: getfield      #7                  // Field myProject:Lcom/intellij/openapi/project/Project;
+      88: aload_3
+      89: invokeinterface #156,  3          // InterfaceMethod com/intellij/database/dump/ExtractionHelper.after:(Lcom/intellij/openapi/project/Project;Lcom/intellij/database/dump/DumpInfo;)V
+      94: goto          153
+      97: astore_2
+      98: aload_2
+      99: invokevirtual #162                // Method java/lang/Exception.getMessage:()Ljava/lang/String;
+     102: astore_3
+     103: aload_3
+     104: ifnonnull     115
+     107: getstatic     #165                // Field LOG:Lcom/intellij/openapi/diagnostic/Logger;
+     110: aload_2
+     111: invokevirtual #169                // Method com/intellij/openapi/diagnostic/Logger.warn:(Ljava/lang/Throwable;)V
+     114: return
+     115: invokestatic  #175                // InterfaceMethod com/intellij/notification/NotificationGroupManager.getInstance:()Lcom/intellij/notification/NotificationGroupManager;
+     118: ldc           #182                // String Extractors
+     120: invokeinterface #184,  2          // InterfaceMethod com/intellij/notification/NotificationGroupManager.getNotificationGroup:(Ljava/lang/String;)Lcom/intellij/notification/NotificationGroup;
+     125: ldc           #120                // String notification.title.data.dump
+     127: iconst_0
+     128: anewarray     #2                  // class java/lang/Object
+     131: invokestatic  #122                // Method com/intellij/database/DataGridBundle.message:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     134: aload_3
+     135: getstatic     #188                // Field com/intellij/notification/NotificationType.ERROR:Lcom/intellij/notification/NotificationType;
+     138: invokevirtual #194                // Method com/intellij/notification/NotificationGroup.createNotification:(Ljava/lang/String;Ljava/lang/String;Lcom/intellij/notification/NotificationType;)Lcom/intellij/notification/Notification;
+     141: ldc           #200                // String DumpHandler.error
+     143: invokevirtual #202                // Method com/intellij/notification/Notification.setDisplayId:(Ljava/lang/String;)Lcom/intellij/notification/Notification;
+     146: aload_0
+     147: getfield      #7                  // Field myProject:Lcom/intellij/openapi/project/Project;
+     150: invokevirtual #208                // Method com/intellij/notification/Notification.notify:(Lcom/intellij/openapi/project/Project;)V
+     153: return
+    Exception table:
+       from    to  target type
+           0    94    97   Class java/lang/Exception
+
+  private com.intellij.database.util.Out processSource(T, com.intellij.database.extractors.DataExtractor, com.intellij.openapi.progress.ProgressIndicator, com.intellij.database.dump.DumpHandler$DumpHandlerParameters, com.intellij.database.util.Out);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        14
+       6: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+       9: aload_2
+      10: ifnonnull     18
+      13: bipush        15
+      15: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      18: aload_3
+      19: ifnonnull     27
+      22: bipush        16
+      24: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      27: aload         4
+      29: ifnonnull     37
+      32: bipush        17
+      34: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      37: invokestatic  #212                // Method com/intellij/concurrency/AsyncFutureFactory.getInstance:()Lcom/intellij/concurrency/AsyncFutureFactory;
+      40: invokevirtual #217                // Method com/intellij/concurrency/AsyncFutureFactory.createAsyncFutureResult:()Lcom/intellij/concurrency/AsyncFutureResult;
+      43: astore        6
+      45: aload_0
+      46: aload         4
+      48: getfield      #221                // Field com/intellij/database/dump/DumpHandler$DumpHandlerParameters.name:Ljava/lang/String;
+      51: aload_2
+      52: aload         5
+      54: invokevirtual #226                // Method refreshOut:(Ljava/lang/String;Lcom/intellij/database/extractors/DataExtractor;Lcom/intellij/database/util/Out;)Lcom/intellij/database/util/Out;
+      57: astore        7
+      59: goto          72
+      62: astore        8
+      64: aload_0
+      65: aload         8
+      67: invokevirtual #230                // Method processError:(Ljava/lang/Throwable;)V
+      70: aconst_null
+      71: areturn
+      72: aload_3
+      73: ldc           #233                // String progress.text.running.query
+      75: iconst_0
+      76: anewarray     #2                  // class java/lang/Object
+      79: invokestatic  #122                // Method com/intellij/database/DataGridBundle.message:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      82: invokeinterface #235,  2          // InterfaceMethod com/intellij/openapi/progress/ProgressIndicator.setText:(Ljava/lang/String;)V
+      87: aload_0
+      88: aload_1
+      89: aload_2
+      90: aload         7
+      92: aload         4
+      94: invokevirtual #241                // Method run:(Ljava/lang/Object;Lcom/intellij/database/extractors/DataExtractor;Lcom/intellij/database/util/Out;Lcom/intellij/database/dump/DumpHandler$DumpHandlerParameters;)Lorg/jetbrains/concurrency/AsyncPromise;
+      97: astore        8
+      99: aload         8
+     101: ifnonnull     107
+     104: aload         7
+     106: areturn
+     107: aload         8
+     109: aload         6
+     111: invokedynamic #244,  0            // InvokeDynamic #3:accept:(Lcom/intellij/concurrency/AsyncFutureResult;)Ljava/util/function/Consumer;
+     116: invokevirtual #248                // Method org/jetbrains/concurrency/AsyncPromise.onProcessed:(Ljava/util/function/Consumer;)Lorg/jetbrains/concurrency/AsyncPromise;
+     119: pop
+     120: aload         6
+     122: invokeinterface #254,  1          // InterfaceMethod com/intellij/concurrency/AsyncFutureResult.get:()Ljava/lang/Object;
+     127: pop
+     128: aload_0
+     129: dup
+     130: getfield      #131                // Field myProcessedCount:I
+     133: iconst_1
+     134: iadd
+     135: putfield      #131                // Field myProcessedCount:I
+     138: aload_0
+     139: aload_2
+     140: aload         7
+     142: invokevirtual #260                // Method sourceDumped:(Lcom/intellij/database/extractors/DataExtractor;Lcom/intellij/database/util/Out;)V
+     145: goto          198
+     148: astore        9
+     150: aload_0
+     151: aload         9
+     153: invokevirtual #230                // Method processError:(Ljava/lang/Throwable;)V
+     156: aload_0
+     157: dup
+     158: getfield      #131                // Field myProcessedCount:I
+     161: iconst_1
+     162: iadd
+     163: putfield      #131                // Field myProcessedCount:I
+     166: aload_0
+     167: aload_2
+     168: aload         7
+     170: invokevirtual #260                // Method sourceDumped:(Lcom/intellij/database/extractors/DataExtractor;Lcom/intellij/database/util/Out;)V
+     173: goto          198
+     176: astore        10
+     178: aload_0
+     179: dup
+     180: getfield      #131                // Field myProcessedCount:I
+     183: iconst_1
+     184: iadd
+     185: putfield      #131                // Field myProcessedCount:I
+     188: aload_0
+     189: aload_2
+     190: aload         7
+     192: invokevirtual #260                // Method sourceDumped:(Lcom/intellij/database/extractors/DataExtractor;Lcom/intellij/database/util/Out;)V
+     195: aload         10
+     197: athrow
+     198: aload         7
+     200: areturn
+    Exception table:
+       from    to  target type
+          45    59    62   Class java/lang/Exception
+         120   128   148   Class java/lang/Exception
+         120   128   176   any
+         148   156   176   any
+         176   178   176   any
+
+  private com.intellij.database.util.Out refreshOut(java.lang.String, com.intellij.database.extractors.DataExtractor, com.intellij.database.util.Out) throws java.lang.Exception;
+    Code:
+       0: aload_2
+       1: ifnonnull     9
+       4: bipush        18
+       6: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+       9: aload_0
+      10: getfield      #13                 // Field myManager:Lcom/intellij/database/dump/ExtractionHelper;
+      13: invokeinterface #148,  1          // InterfaceMethod com/intellij/database/dump/ExtractionHelper.isSingleFileMode:()Z
+      18: ifeq          96
+      21: aload_3
+      22: ifnull        96
+      25: aload_3
+      26: instanceof    #264                // class java/io/ByteArrayOutputStream
+      29: ifeq          85
+      32: aload_3
+      33: checkcast     #264                // class java/io/ByteArrayOutputStream
+      36: astore        4
+      38: aload_2
+      39: invokeinterface #266,  1          // InterfaceMethod com/intellij/database/extractors/DataExtractor.supportsText:()Z
+      44: ifeq          85
+      47: aload         4
+      49: invokevirtual #271                // Method java/io/ByteArrayOutputStream.size:()I
+      52: i2l
+      53: aload_0
+      54: getfield      #275                // Field myLength:J
+      57: lcmp
+      58: ifle          75
+      61: aload         4
+      63: ldc_w         #279                // String \n
+      66: getstatic     #281                // Field java/nio/charset/StandardCharsets.UTF_8:Ljava/nio/charset/Charset;
+      69: invokevirtual #287                // Method java/lang/String.getBytes:(Ljava/nio/charset/Charset;)[B
+      72: invokevirtual #293                // Method java/io/ByteArrayOutputStream.write:([B)V
+      75: aload_0
+      76: aload         4
+      78: invokevirtual #271                // Method java/io/ByteArrayOutputStream.size:()I
+      81: i2l
+      82: putfield      #275                // Field myLength:J
+      85: aload_3
+      86: dup
+      87: ifnonnull     95
+      90: bipush        19
+      92: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      95: areturn
+      96: aload_0
+      97: getfield      #13                 // Field myManager:Lcom/intellij/database/dump/ExtractionHelper;
+     100: aload_1
+     101: aload_2
+     102: invokeinterface #297,  3          // InterfaceMethod com/intellij/database/dump/ExtractionHelper.createOut:(Ljava/lang/String;Lcom/intellij/database/extractors/DataExtractor;)Lcom/intellij/database/util/Out;
+     107: dup
+     108: ifnonnull     116
+     111: bipush        20
+     113: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+     116: areturn
+
+  private void sourceDumped(com.intellij.database.extractors.DataExtractor, com.intellij.database.util.Out);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        21
+       6: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+       9: aload_2
+      10: ifnonnull     18
+      13: bipush        22
+      15: invokestatic  #539                // Method $$$reportNull$$$0:(I)V
+      18: aload_0
+      19: getfield      #13                 // Field myManager:Lcom/intellij/database/dump/ExtractionHelper;
+      22: invokeinterface #148,  1          // InterfaceMethod com/intellij/database/dump/ExtractionHelper.isSingleFileMode:()Z
+      27: ifeq          31
+      30: return
+      31: aload_0
+      32: getfield      #13                 // Field myManager:Lcom/intellij/database/dump/ExtractionHelper;
+      35: aload_1
+      36: aload_2
+      37: invokeinterface #301,  3          // InterfaceMethod com/intellij/database/dump/ExtractionHelper.sourceDumped:(Lcom/intellij/database/extractors/DataExtractor;Lcom/intellij/database/util/Out;)V
+      42: aload_2
+      43: invokeinterface #151,  1          // InterfaceMethod com/intellij/database/util/Out.close:()V
+      48: goto          57
+      51: astore_3
+      52: aload_0
+      53: aload_3
+      54: invokevirtual #230                // Method processError:(Ljava/lang/Throwable;)V
+      57: return
+    Exception table:
+       from    to  target type
+          31    48    51   Class java/lang/Exception
+
+  protected abstract com.intellij.database.datagrid.GridDataRequest createDumpRequest(com.intellij.database.datagrid.GridDataRequest$GridDataRequestOwner, com.intellij.database.extractors.DataExtractor, com.intellij.database.util.Out, java.lang.String, com.intellij.database.dump.DumpHandler$DumpHandlerParameters);
+
+  private static void lambda$processSource$0(com.intellij.concurrency.AsyncFutureResult, java.lang.Void);
+    Code:
+       0: aload_0
+       1: iconst_1
+       2: invokestatic  #302                // Method java/lang/Boolean.valueOf:(Z)Ljava/lang/Boolean;
+       5: invokeinterface #308,  2          // InterfaceMethod com/intellij/concurrency/AsyncFutureResult.set:(Ljava/lang/Object;)V
+      10: return
+
+  private static boolean lambda$buildTask$1(kotlin.Triple);
+    Code:
+       0: aload_0
+       1: ifnull        8
+       4: iconst_1
+       5: goto          9
+       8: iconst_0
+       9: ireturn
+
+  private kotlin.Triple lambda$buildTask$0(com.intellij.database.extractors.DataExtractorFactory, com.intellij.openapi.project.Project, java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_3
+       2: invokevirtual #312                // Method getSubQueryIndex:(Ljava/lang/Object;)I
+       5: istore        4
+       7: aload_0
+       8: aload_3
+       9: invokevirtual #316                // Method getResultSetIndex:(Ljava/lang/Object;)I
+      12: istore        5
+      14: aload_0
+      15: aload_3
+      16: invokevirtual #319                // Method getSelectedColumns:(Ljava/lang/Object;)Lcom/intellij/database/datagrid/ModelIndexSet;
+      19: astore        6
+      21: aload_0
+      22: getfield      #21                 // Field myNameProvider:Lcom/intellij/database/run/actions/DumpSourceNameProvider;
+      25: aload_3
+      26: invokeinterface #323,  2          // InterfaceMethod com/intellij/database/run/actions/DumpSourceNameProvider.getQueryText:(Ljava/lang/Object;)Ljava/lang/String;
+      31: astore        7
+      33: aload         7
+      35: ifnonnull     43
+      38: ldc_w         #329                // String
+      41: astore        7
+      43: aload_0
+      44: getfield      #21                 // Field myNameProvider:Lcom/intellij/database/run/actions/DumpSourceNameProvider;
+      47: aload_3
+      48: invokeinterface #331,  2          // InterfaceMethod com/intellij/database/run/actions/DumpSourceNameProvider.getName:(Ljava/lang/Object;)Ljava/lang/String;
+      53: astore        8
+      55: aload_1
+      56: aload_0
+      57: aload_3
+      58: aload_2
+      59: invokevirtual #334                // Method createExtractorConfig:(Ljava/lang/Object;Lcom/intellij/openapi/project/Project;)Lcom/intellij/database/extractors/ExtractorConfig;
+      62: invokeinterface #338,  2          // InterfaceMethod com/intellij/database/extractors/DataExtractorFactory.createExtractor:(Lcom/intellij/database/extractors/ExtractorConfig;)Lcom/intellij/database/extractors/DataExtractor;
+      67: astore        9
+      69: aload         9
+      71: ifnull        104
+      74: new           #344                // class kotlin/Triple
+      77: dup
+      78: aload_3
+      79: aload         9
+      81: new           #222                // class com/intellij/database/dump/DumpHandler$DumpHandlerParameters
+      84: dup
+      85: aload         6
+      87: aload         7
+      89: iload         4
+      91: iload         5
+      93: aload         8
+      95: invokespecial #346                // Method com/intellij/database/dump/DumpHandler$DumpHandlerParameters."<init>":(Lcom/intellij/database/datagrid/ModelIndexSet;Ljava/lang/String;IILjava/lang/String;)V
+      98: invokespecial #349                // Method kotlin/Triple."<init>":(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V
+     101: goto          105
+     104: aconst_null
+     105: areturn
+
+  private com.intellij.database.datagrid.GridDataRequest lambda$newSimpleRunner$0(com.intellij.database.datagrid.GridDataRequest$GridDataRequestOwner, com.intellij.database.util.Out, com.intellij.database.dump.DumpHandler$DumpHandlerParameters, com.intellij.database.datagrid.DataProducer, com.intellij.database.extractors.DataExtractor);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload         5
+       4: aload_2
+       5: aconst_null
+       6: aload_3
+       7: invokevirtual #352                // Method createDumpRequest:(Lcom/intellij/database/datagrid/GridDataRequest$GridDataRequestOwner;Lcom/intellij/database/extractors/DataExtractor;Lcom/intellij/database/util/Out;Ljava/lang/String;Lcom/intellij/database/dump/DumpHandler$DumpHandlerParameters;)Lcom/intellij/database/datagrid/GridDataRequest;
+      10: astore        6
+      12: aload         4
+      14: aload         6
+      16: invokeinterface #356,  2          // InterfaceMethod com/intellij/database/datagrid/DataProducer.processRequest:(Lcom/intellij/database/datagrid/GridDataRequest;)V
+      21: aload         6
+      23: areturn
+
+  static {};
+    Code:
+       0: ldc           #8                  // class com/intellij/database/dump/DumpHandler
+       2: invokestatic  #362                // Method com/intellij/openapi/diagnostic/Logger.getInstance:(Ljava/lang/Class;)Lcom/intellij/openapi/diagnostic/Logger;
+       5: putstatic     #165                // Field LOG:Lcom/intellij/openapi/diagnostic/Logger;
+       8: return
+
+  private static void $$$reportNull$$$0(int);
+    Code:
+       0: iload_0
+       1: tableswitch   { // 0 to 22
+                     0: 108
+                     1: 108
+                     2: 108
+                     3: 108
+                     4: 108
+                     5: 108
+                     6: 108
+                     7: 108
+                     8: 108
+                     9: 108
+                    10: 108
+                    11: 108
+                    12: 114
+                    13: 108
+                    14: 108
+                    15: 108
+                    16: 108
+                    17: 108
+                    18: 108
+                    19: 114
+                    20: 114
+                    21: 108
+                    22: 108
+               default: 108
+          }
+     108: ldc_w         #543                // String Argument for @NotNull parameter \'%s\' of %s.%s must not be null
+     111: goto          120
+     114: ldc_w         #545                // String @NotNull method %s.%s must not return null
+     117: goto          120
+     120: iload_0
+     121: tableswitch   { // 0 to 22
+                     0: 228
+                     1: 228
+                     2: 228
+                     3: 228
+                     4: 228
+                     5: 228
+                     6: 228
+                     7: 228
+                     8: 228
+                     9: 228
+                    10: 228
+                    11: 228
+                    12: 232
+                    13: 228
+                    14: 228
+                    15: 228
+                    16: 228
+                    17: 228
+                    18: 228
+                    19: 232
+                    20: 232
+                    21: 228
+                    22: 228
+               default: 228
+          }
+     228: iconst_3
+     229: goto          236
+     232: iconst_2
+     233: goto          236
+     236: anewarray     #2                  // class java/lang/Object
+     239: iload_0
+     240: tableswitch   { // 0 to 22
+                     0: 348
+                     1: 357
+                     2: 366
+                     3: 375
+                     4: 384
+                     5: 393
+                     6: 402
+                     7: 411
+                     8: 411
+                     9: 420
+                    10: 429
+                    11: 438
+                    12: 447
+                    13: 393
+                    14: 411
+                    15: 456
+                    16: 465
+                    17: 438
+                    18: 456
+                    19: 447
+                    20: 447
+                    21: 456
+                    22: 429
+               default: 348
+          }
+     348: dup
+     349: iconst_0
+     350: ldc_w         #546                // String project
+     353: aastore
+     354: goto          474
+     357: dup
+     358: iconst_0
+     359: ldc_w         #547                // String sources
+     362: aastore
+     363: goto          474
+     366: dup
+     367: iconst_0
+     368: ldc_w         #548                // String nameProvider
+     371: aastore
+     372: goto          474
+     375: dup
+     376: iconst_0
+     377: ldc_w         #549                // String manager
+     380: aastore
+     381: goto          474
+     384: dup
+     385: iconst_0
+     386: ldc_w         #550                // String displayName
+     389: aastore
+     390: goto          474
+     393: dup
+     394: iconst_0
+     395: ldc_w         #551                // String factory
+     398: aastore
+     399: goto          474
+     402: dup
+     403: iconst_0
+     404: ldc_w         #552                // String config
+     407: aastore
+     408: goto          474
+     411: dup
+     412: iconst_0
+     413: ldc_w         #553                // String source
+     416: aastore
+     417: goto          474
+     420: dup
+     421: iconst_0
+     422: ldc_w         #554                // String producer
+     425: aastore
+     426: goto          474
+     429: dup
+     430: iconst_0
+     431: ldc_w         #555                // String out
+     434: aastore
+     435: goto          474
+     438: dup
+     439: iconst_0
+     440: ldc_w         #556                // String dumpParameters
+     443: aastore
+     444: goto          474
+     447: dup
+     448: iconst_0
+     449: ldc_w         #557                // String com/intellij/database/dump/DumpHandler
+     452: aastore
+     453: goto          474
+     456: dup
+     457: iconst_0
+     458: ldc_w         #558                // String extractor
+     461: aastore
+     462: goto          474
+     465: dup
+     466: iconst_0
+     467: ldc_w         #559                // String indicator
+     470: aastore
+     471: goto          474
+     474: iload_0
+     475: tableswitch   { // 0 to 22
+                     0: 580
+                     1: 580
+                     2: 580
+                     3: 580
+                     4: 580
+                     5: 580
+                     6: 580
+                     7: 580
+                     8: 580
+                     9: 580
+                    10: 580
+                    11: 580
+                    12: 589
+                    13: 580
+                    14: 580
+                    15: 580
+                    16: 580
+                    17: 580
+                    18: 580
+                    19: 598
+                    20: 598
+                    21: 580
+                    22: 580
+               default: 580
+          }
+     580: dup
+     581: iconst_1
+     582: ldc_w         #557                // String com/intellij/database/dump/DumpHandler
+     585: aastore
+     586: goto          607
+     589: dup
+     590: iconst_1
+     591: ldc_w         #560                // String newSimpleRunner
+     594: aastore
+     595: goto          607
+     598: dup
+     599: iconst_1
+     600: ldc_w         #561                // String refreshOut
+     603: aastore
+     604: goto          607
+     607: iload_0
+     608: tableswitch   { // 0 to 22
+                     0: 716
+                     1: 716
+                     2: 716
+                     3: 716
+                     4: 716
+                     5: 716
+                     6: 716
+                     7: 725
+                     8: 734
+                     9: 743
+                    10: 743
+                    11: 743
+                    12: 752
+                    13: 755
+                    14: 764
+                    15: 764
+                    16: 764
+                    17: 764
+                    18: 773
+                    19: 752
+                    20: 752
+                    21: 782
+                    22: 782
+               default: 716
+          }
+     716: dup
+     717: iconst_2
+     718: ldc_w         #562                // String <init>
+     721: aastore
+     722: goto          791
+     725: dup
+     726: iconst_2
+     727: ldc_w         #563                // String getSubQueryIndex
+     730: aastore
+     731: goto          791
+     734: dup
+     735: iconst_2
+     736: ldc_w         #564                // String getFormatter
+     739: aastore
+     740: goto          791
+     743: dup
+     744: iconst_2
+     745: ldc_w         #560                // String newSimpleRunner
+     748: aastore
+     749: goto          791
+     752: goto          791
+     755: dup
+     756: iconst_2
+     757: ldc_w         #565                // String buildTask
+     760: aastore
+     761: goto          791
+     764: dup
+     765: iconst_2
+     766: ldc_w         #566                // String processSource
+     769: aastore
+     770: goto          791
+     773: dup
+     774: iconst_2
+     775: ldc_w         #561                // String refreshOut
+     778: aastore
+     779: goto          791
+     782: dup
+     783: iconst_2
+     784: ldc_w         #567                // String sourceDumped
+     787: aastore
+     788: goto          791
+     791: invokestatic  #570                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     794: iload_0
+     795: tableswitch   { // 0 to 22
+                     0: 900
+                     1: 900
+                     2: 900
+                     3: 900
+                     4: 900
+                     5: 900
+                     6: 900
+                     7: 900
+                     8: 900
+                     9: 900
+                    10: 900
+                    11: 900
+                    12: 911
+                    13: 900
+                    14: 900
+                    15: 900
+                    16: 900
+                    17: 900
+                    18: 900
+                    19: 911
+                    20: 911
+                    21: 900
+                    22: 900
+               default: 900
+          }
+     900: new           #572                // class java/lang/IllegalArgumentException
+     903: dup_x1
+     904: swap
+     905: invokespecial #574                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     908: goto          922
+     911: new           #576                // class java/lang/IllegalStateException
+     914: dup_x1
+     915: swap
+     916: invokespecial #577                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     919: goto          922
+     922: athrow
+}

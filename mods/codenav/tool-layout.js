@@ -7,6 +7,20 @@ export function orderedTools(names, order = []) {
   const available = new Set(names);
   return [...new Set([...(Array.isArray(order) ? order : []).filter(name => available.has(name)), ...names])];
 }
+
+// Hidden split slots still keep their saved sizes and contents. Hide only the
+// enclosing column so an empty side does not reserve horizontal space.
+export function hideEmptyToolColumns(tree) {
+  let changed = false;
+  for (const [side, id] of [["left", "sidebar"], ["right", "tool-right"]]) {
+    const outer = find(tree, id);
+    if (outer && !outer.hidden && ["main", "aux"].every(slot => find(outer, `${side}-${slot}`)?.hidden === true)) {
+      outer.hidden = true;
+      changed = true;
+    }
+  }
+  return changed;
+}
 export function ensureToolSplits(tree) {
   let changed = false;
   for (const [side, id] of [["left", "sidebar"], ["right", "tool-right"]]) {

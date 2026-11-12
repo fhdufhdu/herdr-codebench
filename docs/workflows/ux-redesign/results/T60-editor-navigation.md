@@ -1,0 +1,26 @@
+# T60 code pointer and context navigation
+
+The CodeInput owner supplies exact UTF-16 pointer offsets/revisions and ignores navigation during pending native IME input. TextEditor routes primary-click, toolbar and context actions through the same retained worker queue, checking active project/path, source revision and cursor again before dispatch. A successful empty definition result may fall back to references; failed/unsupported requests never masquerade as empty successful results.
+
+The installed SDK has no dedicated context-menu builder. The implementation uses documented `on_mouse_down("right")` events and native `openOverlay({kind:"popup",at,...})` with definite bounds. `editor-menu.js` uses the canonical ADE managed list, MenuController and icon factories. It offers information/definition/references plus explicit definition-location and reference-file lists from actual LSP results. Unsupported source/foreign locations remain disabled. Keyboard arrows select only; Enter or the opt-in click activation executes once.
+
+Popup actions carry only source path/revision/offset, action and location metadata through project-scoped `ade.editor-request`. The owning editor consumes the descriptor; no source text, LSP handle or callback crosses mod copies. Reference-file grouping preserves actual occurrence counts. Single definitions use existing navigation; multiple locations are reviewable choices. Empty results have neutral messages.
+
+`check_ade_editor_menu.mjs` passes popup bounds, scoped metadata, disabled/external rows, reference grouping, icon factories and selection-versus-activation. Editor tests pass primary-click fallback, error/no-fallback and stale revision guards. LSP tests verify definition lists suppress automatic navigation. Native mod checks pass. Root owns installation and actual pointer/menu/IME validation; no live user file or engine was touched by this work.
+
+Native followup: root는 CtrlSpace 적용/저장, formatting/undo/저장, CmdClick definition 이동을 확인했다. 참조는 실제 UI에서 requesting 상태가 남았으며, 같은 엔진에 대한 별도 session probe는 refs 결과를 반환했다. 따라서 Go 실패로 단정하지 않는다.
+
+확정된 클라이언트 결함은 동일 revision의 커서 이동 시 응답을 버리면서 requesting을 복구하지 않던 경로다. 커서가 이동하면 현재 semantic/completion query를 무효화하고 ready로 돌리며 기존 hover/locations를 지운다. formatting은 커서 이동만으로 취소하지 않는다. hover/definition/references에는 30초 deadline을 두어, 해결되지 않은 transport도 명시적 오류와 수동 재시도 경로를 남긴다. 요청을 자동 replay하지 않고 늦은 응답은 query guard로 버린다.
+
+실제 native 원인 진단을 위해 optional backend onPhase(read-state/health/request/reply)를 semantic 요청에만 연결했다. ade.outline의 일시적 analysis metadata에는 kind/phase/query/reason/startedAt만 게시하며 문서 내용·토큰·결과 행은 포함하지 않는다. popup 자체 context가 아닌 TextEditor의 init retained worker가 모든 요청을 시작하는 구조임을 확인했다. 실제 native 참조 실패 원인은 후속 phase 관측이 필요하다. VM 회귀검증은 phase 순서, 커서 취소 즉시 ready, deadline/늦은 응답 거절을 통과했다.
+
+Native phase 관측: root의 새 references-ui.ts는 refs 요청에서 analysis.phase=read-state에 머물렀다. 별도 같은 엔진 probe는 정상이며 이 UI 경로는 Go HTTP 이전이었다. shared descriptor가 popup close callback 도중 retained worker를 동기적으로 깨우거나, onPhase→outline setShared가 native call frame을 재진입시키는 가능성에 대응해 owner task의 다음 turn(`await cx.sleep(1)`)에서 host 작업을 시작한다. 각 diagnostic phase callback 뒤에도 owner turn을 거쳐 read-state/health/request를 dispatch한다. 정의 navigation/result popup도 publication 뒤 owner turn에서 현재 query/caret를 재확인한다. DB 등 onPhase 미사용 호출에는 이 phase sleep을 추가하지 않았다. VM 테스트는 dispatch 순서만 입증하며 실제 native 원인 해결은 root의 후속 UI 검증 대상이다.
+
+
+SDK 원인 확인 및 수정: TaskOptions.owner는 AsyncContext의 owner가 아니라 **현재 실행 중인 view**를 기본으로 사용한다(gpui-kit.d.ts TaskOptions). overlay의 shared callback이 retained worker를 깨우면 중첩 spawn이 popup 소유가 되어 closeOverlay 때 취소될 수 있다. 취소된 host promise는 영원히 pending일 수 있어 read-state에 머무는 관측과 맞는다. 실제 등록된 ADEFrame을 props.owner로 EditorHost→TextEditor→LspSession에 전달하고, 모든 소유 작업과 timer에 `{owner:taskOwner}`를 명시했다. lease UUID owner와 native taskOwner는 별개다. 수동 생성한 helper의 this를 owner로 사용하지 않는다. 앞서 추가한 추측성 1ms sleep은 제거했다. VM 검증은 실제 host를 나타내는 sentinel 객체가 중첩 spawn/timer 옵션으로 전달되는지 확인한다. 최종 실제 UI 재검증은 root가 수행한다.
+
+후속 native 관측에서 explicit-owner 설치 후 popup request metadata는 갱신됐지만 analysis가 시작되지 않았다. TextEditor queue는 개별 job의 동기 예외가 전체 retained worker를 종료하지 않도록 보호했고, spawn의 동기 TaskOptions 오류와 비동기 body 오류를 현재 문서의 visible error 및 outline.analysis(worker-error)로 전달한다. EditorHost queue도 같은 reporter를 사용한다. Fixture는 throw 뒤 후속 job 실행과 오류 metadata를 검증한다. 실제 TaskOptions 오류 유무/내용은 root native 관측 대기이며 owner:null 우회는 사용하지 않았다.
+
+실제 native 예외는 `TypeError: opts.owner must be the view that is running, or null; a task cannot yet be owned by another view.`였다. owner 옵션만으로 popup call frame에서 root 작업을 생성할 수 없다는 런타임 제한을 확인했다. 따라서 root에서 처음 생성된 retained worker 자체가 job을 처리하기 전에 `await taskCx.sleep(1)`로 자신의 foreground turn에 돌아오게 했다. 이 경계는 자식 spawn 이전에 있어야 한다. TextEditor/EditorHost 양쪽에 적용했고, popup running owner에서 spawn하면 거절하는 fixture로 순서를 검증했다. native 실제 해결 여부는 root 재검증 중이다.
+
+최종 queue 경계 변경: native에서는 worker sleep 후에도 새 참조 descriptor가 처리되지 않는 사례가 남았다. TextEditor와 EditorHost의 cross-view Promise wake worker를 제거하고, native owner가 실행 중인 init에서 만든 25ms Timer.every callback이 queue를 drain하게 했다. idle callback은 즉시 반환하며 notify하지 않는다. release는 timer를 취소하고 남은 jobs를 지운다. owner:null이나 cross-view task 생성은 사용하지 않고 per-job 예외 보고를 유지한다. fixture는 init timer owner, popup→owner callback 전환 뒤 nested spawn, idle 무갱신, 오류 뒤 후속 job, release cancellation을 검증했다. 실제 native 참조 성공은 root batch 후 검증 대상이다.

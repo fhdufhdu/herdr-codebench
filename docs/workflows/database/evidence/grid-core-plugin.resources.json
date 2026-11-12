@@ -1,0 +1,26 @@
+{
+  "source_jar": "/Applications/IntelliJ IDEA.app/Contents/plugins/grid-core-plugin/lib/grid-core-plugin.jar",
+  "sha256": "b607de0d2e8d0ea8b78d3f9480bcf44476a2d5565f7c31495f4f48dcc72f43e7",
+  "matches": [
+    {
+      "resource": "META-INF/plugin.xml",
+      "line": 34,
+      "text": "    <extensionPoint qualifiedName=\"com.intellij.database.datagrid.formatterCreatorProvider\" interface=\"com.intellij.database.datagrid.FormatterCreatorProvider\" dynamic=\"true\" />\n    <extensionPoint qualifiedName=\"com.intellij.database.datagrid.extractorsHelper\" interface=\"com.intellij.database.extractors.ExtractorsHelper\" dynamic=\"true\" />\n  </extensionPoints>\n  <extensions defaultExtensionNs=\"com.intellij\">"
+    },
+    {
+      "resource": "META-INF/plugin.xml",
+      "line": 281,
+      "text": "      <action id=\"Console.TableResult.Copy\" class=\"com.intellij.database.actions.GridCopyAction\" use-shortcut-of=\"$Copy\" icon=\"AllIcons.Actions.Copy\" />\n      <group id=\"Console.TableResult.ChooseExtractor\" class=\"com.intellij.database.run.actions.ChooseExtractorAction\" />\n      <reference ref=\"Console.TableResult.CopyAggregatorResult\" />\n      <reference ref=\"$Paste\" />"
+    },
+    {
+      "resource": "META-INF/plugin.xml",
+      "line": 375,
+      "text": "    </group>\n    <reference ref=\"Console.TableResult.ChooseExtractor\" />\n    <group id=\"Console.TableResult.ChooseExtractor.Group\">\n      <group id=\"Console.TableResult.BuiltInExtractor.Group\" class=\"com.intellij.database.run.actions.ChooseExtractorAction$BuiltInGroup\" popup=\"false\" />"
+    },
+    {
+      "resource": "META-INF/plugin.xml",
+      "line": 376,
+      "text": "    <reference ref=\"Console.TableResult.ChooseExtractor\" />\n    <group id=\"Console.TableResult.ChooseExtractor.Group\">\n      <group id=\"Console.TableResult.BuiltInExtractor.Group\" class=\"com.intellij.database.run.actions.ChooseExtractorAction$BuiltInGroup\" popup=\"false\" />\n      <separator />"
+    }
+  ]
+}

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
 import { find } from '../../mods/codenav/layout-tree.js';
-import { orderedTools, ensureBottomSpan } from '../../mods/codenav/tool-layout.js';
+import { orderedTools, ensureBottomSpan, hideEmptyToolColumns } from '../../mods/codenav/tool-layout.js';
 import { navigationMarkers } from '../../mods/codenav/editor-model.js';
 const markers=navigationMarkers(['@Service','class Service(', ' private val repo: UserRepository,', ') : BaseService {', ' override fun find() = repo.find()', '}'],'/Service.kt');
 assert.ok(!markers.some(item=>item.kind==='spring'),'Spring markers come from the Go parser rather than file-wide annotation guessing');
@@ -56,7 +56,7 @@ console.log('PASS full-width bottom shell, legacy custom widths/ratios/aux/activ
 const store={}, actions=[];
 const source=await readFile(new URL('../../mods/codenav/tool-windows.js',import.meta.url),'utf8');
 const context=vm.createContext({console,Date,Math});
-const overrides={find,orderedTools,layout:()=>structuredClone(tree),shared:k=>store[k],setShared:(k,v)=>{store[k]=v},run:(name,args)=>{actions.push([name,args]);if(name==='layout.set')tree=structuredClone(args.layout);},IDEA:{islandRadius:8,islandGap:4},icon:()=>({})};
+const overrides={find,orderedTools,hideEmptyToolColumns,layout:()=>structuredClone(tree),shared:k=>store[k],setShared:(k,v)=>{store[k]=v},run:(name,args)=>{actions.push([name,args]);if(name==='layout.set')tree=structuredClone(args.layout);else if(name==='layout.hide'||name==='layout.show')find(tree,args.id).hidden=name==='layout.hide';else if(name==='layout.select')find(tree,args.stack).active=args.child;},IDEA:{islandRadius:8,islandGap:4},icon:()=>({})};
 const mod=new vm.SourceTextModule(source,{context});
 await mod.link(id=>{const names=[...new Set([...source.matchAll(/import\s*\{([^}]+)\}\s*from\s*"([^"]+)"/g)].filter(m=>m[2]===id).flatMap(m=>m[1].split(',').map(name=>name.trim().split(/\s+as\s+/)[0])))];return new vm.SyntheticModule(names,function(){for(const name of names)this.setExport(name,overrides[name]??(()=>{}))},{context});});
 await mod.evaluate();
@@ -74,3 +74,42 @@ store['codenav.toolOrder']={left:['future',...left.slice().reverse(),left[0]]};
 assert.deepEqual(Array.from(ui.toolsOn('left')),left.slice().reverse(),'runtime stripe reads stored per-position order, omits unknowns and deduplicates');
 assert.deepEqual(orderedTools(['new','old'],['old','future','old']),['old','new'],'new tools append without losing existing order');
 console.log('PASS saved per-position tool order, missing/new names and duplicates');
+
+// Exercise both secondary slots, serialized metadata, and the real hide/show
+// command path. Use detached side metadata as callers may hold a snapshot.
+ui.moveTool('database','right2');
+for (const [upper,lower,outer,tool] of [['left','left2','sidebar','structure'],['right','right2','tool-right','database']]) {
+  const top=ui.SIDES[upper], bottom=ui.SIDES[lower];
+  find(tree,outer).size={px:387};
+  find(tree,bottom.column).size={weight:.63};
+  find(tree,bottom.stack).future={keep:'metadata'};
+  const before=structuredClone(find(tree,outer));
+  ui.hideSlot({...top});
+  assert.equal(find(tree,outer).hidden,false,'one open secondary slot keeps its outer column');
+  ui.hideSlot({...bottom});
+  assert.equal(find(tree,outer).hidden,true,'last closed slot releases horizontal space');
+  assert.equal(find(tree,bottom.stack).active,find(before,bottom.stack).active);
+  ui.toggleTool(tool,true);
+  assert.equal(find(tree,outer).hidden,false);
+  assert.equal(find(tree,bottom.column).hidden,false);
+  assert.equal(find(tree,top.column).hidden,true,'reopening lower slot leaves upper slot closed');
+  assert.deepEqual(find(tree,outer).size,before.size);
+  assert.deepEqual(find(tree,bottom.column).size,find(before,bottom.column).size);
+  assert.deepEqual(find(tree,bottom.stack),find(before,bottom.stack),'active child, node payload and unknown metadata survive reopening');
+}
+assert.equal(JSON.stringify(find(tree,'bottom-terminal').content),terminal);
+const stale=structuredClone(tree);
+for(const id of ['left-main','left-aux','right-main','right-aux'])find(stale,id).hidden=true;
+for(const id of ['sidebar','tool-right'])find(stale,id).hidden=false;
+const staleBefore=structuredClone(stale);
+assert.equal(hideEmptyToolColumns(stale),true);
+for(const id of ['sidebar','tool-right'])find(staleBefore,id).hidden=true;
+assert.deepEqual(stale,staleBefore,'normalization only changes the empty outer columns visibility');
+assert.equal(hideEmptyToolColumns(stale),false,'empty-column repair is idempotent');
+assert.equal(hideEmptyToolColumns(codebench),false);
+assert.equal(JSON.stringify(codebench),oldCodebench,'codebench without IDEA split slots stays intact');
+assert.equal(ui.DEFAULT_SIDES['run-results'],'bottom');
+assert.equal(ui.TOOLS['run-results'].child,'bottom-run-results');
+assert.equal(ui.TOOLS['run-results'].content.props.view,'run-results');
+assert.equal(ui.TOOLS['run-results'].headerActions[0].command,'codenav.run-results-stop');
+console.log('PASS empty outer repair, last-slot close, lower-slot reopen with sizes/active/payload preserved, codebench isolation and Run Results registry');

@@ -1,0 +1,36 @@
+Compiled from "DumpSource.java"
+public interface com.intellij.database.run.actions.DumpSource<T> {
+  public abstract com.intellij.util.containers.JBIterable<T> getSources();
+
+  public abstract com.intellij.database.run.actions.DumpSourceNameProvider<T> getNameProvider();
+
+  public default int estimateSize();
+    Code:
+       0: aload_0
+       1: invokeinterface #1,  1            // InterfaceMethod getSources:()Lcom/intellij/util/containers/JBIterable;
+       6: astore_1
+       7: aload_1
+       8: invokevirtual #7                  // Method com/intellij/util/containers/JBIterable.isEmpty:()Z
+      11: ifeq          18
+      14: iconst_0
+      15: goto          34
+      18: aload_1
+      19: iconst_1
+      20: invokevirtual #13                 // Method com/intellij/util/containers/JBIterable.skip:(I)Lcom/intellij/util/containers/JBIterable;
+      23: invokevirtual #7                  // Method com/intellij/util/containers/JBIterable.isEmpty:()Z
+      26: ifeq          33
+      29: iconst_1
+      30: goto          34
+      33: iconst_2
+      34: ireturn
+
+  public static int getSize(com.intellij.database.run.actions.DumpSource<?>);
+    Code:
+       0: aload_0
+       1: ifnonnull     8
+       4: iconst_1
+       5: goto          14
+       8: aload_0
+       9: invokeinterface #17,  1           // InterfaceMethod estimateSize:()I
+      14: ireturn
+}

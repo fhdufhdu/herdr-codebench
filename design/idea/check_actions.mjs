@@ -10,13 +10,17 @@ const module = new vm.SourceTextModule(raw, { context: vm.createContext({}) });
 await module.link(() => { throw Error('pure registry imported a runtime dependency'); });
 await module.evaluate();
 const { ACTIONS, ACTION_GROUPS, getAction, listActions, actionPresentation, effectiveShortcuts, formatShortcut, actionForTerminalKey, normalizeChord } = module.namespace;
+const iconRegistry = JSON.parse(await readFile(new URL('./icons.json', import.meta.url), 'utf8'));
 assert.ok(ACTIONS.length >= 50);
 assert.equal(new Set(ACTIONS.map(action => action.id)).size, ACTIONS.length);
 for (const action of ACTIONS) {
   assert.equal(action.command, action.id);
   assert.equal(getAction(action.id), action);
   assert.ok(action.label && action.category && action.owner);
-  await access(new URL(`../../mods/codenav/idea-icons/${action.icon}.svg`, import.meta.url));
+  const role = iconRegistry.aliases[action.icon] ?? action.icon;
+  const asset = iconRegistry.roles[role];
+  assert.ok(asset, `Action icon role exists: ${action.icon}`);
+  await access(new URL(`../../mods/codenav/ui-icons/${asset}.svg`, import.meta.url));
 }
 for (const [name, group] of Object.entries(ACTION_GROUPS)) {
   assert.equal(new Set(group.items.map(item => item.id)).size, group.items.length, `${name}: stable unique occurrence IDs`);
@@ -33,7 +37,16 @@ assert.equal(actionPresentation('definition', local).enabled, true);
 assert.equal(actionPresentation('definition', { ...local, document: { ...local.document, on: 'sshbox' } }).enabled, false);
 assert.equal(actionPresentation('definition', { ...local, area: 'review' }).enabled, false);
 assert.equal(actionPresentation('definition', { ...local, document: { kind: 'file', path: '/repo/image.png' } }).enabled, false);
-assert.equal(actionPresentation('activity.save', local).enabled, false);
+for (const suffix of ['db','sqlite','flac','tiff','class','dylib','tar','woff2']) {
+  assert.equal(actionPresentation('activity.save', { ...local, document: { kind: 'file', path: '/repo/sample.'+suffix } }).enabled, false, 'media viewers do not become owned source editors');
+}
+assert.equal(actionPresentation('activity.save', local).enabled, true, 'IDEA source and editing share one editable document');
+assert.equal(actionPresentation('activity.save', local).command, 'codenav.save', 'UI actions reach the shown owned editor');
+assert.equal(actionPresentation('activity.preview', { ...local, document: { kind: 'file', path: '/repo/README.md' } }).command, 'codenav.rich-view');
+assert.equal(actionPresentation('activity.save', { ...local, document: { kind: 'file', path: '/repo/a.kt', on: 'remote', edit: true } }).command, 'activity.save');
+assert.equal(actionPresentation('activity.save', { ...local, document: { kind: 'database', path: 'db://console', database: { kind: 'console' } } }).command, 'codenav.save');
+assert.equal(actionPresentation('activity.save', { ...local, layout: 'codebench' }).enabled, false, 'codebench keeps explicit native editing');
+assert.equal(actionPresentation('definition', { ...local, document: { ...local.document, edit: true } }).enabled, true);
 assert.equal(actionPresentation('activity.save', { ...local, document: { ...local.document, edit: true } }).enabled, true);
 assert.equal(actionPresentation('codenav.http-run-all', local).enabled, false);
 assert.equal(actionPresentation('codenav.http-run-all', { ...local, document: { kind: 'file', path: '/repo/requests.http' } }).enabled, true);

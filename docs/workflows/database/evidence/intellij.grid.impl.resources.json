@@ -1,0 +1,21 @@
+{
+  "source_jar": "/Applications/IntelliJ IDEA.app/Contents/plugins/grid-core-plugin/lib/modules/intellij.grid.impl.jar",
+  "sha256": "5eb5eeb70231618ee3369c244346fceb8e9181101655f0752daede47fefd35e1",
+  "matches": [
+    {
+      "resource": "intellij.grid.impl.xml",
+      "line": 286,
+      "text": "              use-shortcut-of=\"$Copy\" icon=\"AllIcons.Actions.Copy\"/>\n      <group id=\"Console.TableResult.ChooseExtractor\" class=\"com.intellij.database.run.actions.ChooseExtractorAction\"/>\n      <reference ref=\"Console.TableResult.CopyAggregatorResult\"/>\n      <reference ref=\"$Paste\"/>"
+    },
+    {
+      "resource": "intellij.grid.impl.xml",
+      "line": 397,
+      "text": "    </group>\n    <reference ref=\"Console.TableResult.ChooseExtractor\"/>\n    <group id=\"Console.TableResult.ChooseExtractor.Group\">\n      <group id=\"Console.TableResult.BuiltInExtractor.Group\" class=\"com.intellij.database.run.actions.ChooseExtractorAction$BuiltInGroup\" popup=\"false\"/>"
+    },
+    {
+      "resource": "intellij.grid.impl.xml",
+      "line": 398,
+      "text": "    <reference ref=\"Console.TableResult.ChooseExtractor\"/>\n    <group id=\"Console.TableResult.ChooseExtractor.Group\">\n      <group id=\"Console.TableResult.BuiltInExtractor.Group\" class=\"com.intellij.database.run.actions.ChooseExtractorAction$BuiltInGroup\" popup=\"false\"/>\n      <separator/>"
+    }
+  ]
+}

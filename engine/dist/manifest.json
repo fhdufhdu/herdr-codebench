@@ -1,50 +1,50 @@
 {
   "engine": "herdr-codebench-go",
-  "version": "0.1.0-8049c1ec7054",
-  "source_sha256": "8049c1ec70542780fdf646a34fee242903155dfdddea8cff624c807bd563e9e8",
+  "version": "0.1.0-6136907d549b",
+  "source_sha256": "6136907d549ba15e17eb5785780edc0fe085d007cd896ffee1704d0c5cc40bb9",
   "go": "go1.27.1",
   "targets": [
     {
       "os": "darwin",
       "arch": "amd64",
       "file": "darwin-amd64/herdr-engine",
-      "size": 7691424,
-      "sha256": "40ee4ad002405f06d82b4253be30a6cc77107f9d8eed96e736d93fa769cf4fad"
+      "size": 19052464,
+      "sha256": "7c4846f6098b2a6ff3987d2d9d35acac328ad6cbae81c5f61d9153341123e017"
     },
     {
       "os": "darwin",
       "arch": "arm64",
       "file": "darwin-arm64/herdr-engine",
-      "size": 7115426,
-      "sha256": "d04aa2cf6791e6fa8a1b33f86423f6cc8dc3a36a8b175d09e2a78af4135d80b1"
+      "size": 18057490,
+      "sha256": "4215e2309e612545ae439907fd311af61f36f6383eda9dd71e9379ebb1b03164"
     },
     {
       "os": "linux",
       "arch": "amd64",
       "file": "linux-amd64/herdr-engine",
-      "size": 7536764,
-      "sha256": "54575765af1266874b8f3c8416111a677bd56179fa71a954695c9cdeeff8d4e9"
+      "size": 18751612,
+      "sha256": "5698298795c68ff8b6286f48912831735d5e990f9b855a3e5986bcb70efb5e53"
     },
     {
       "os": "linux",
       "arch": "arm64",
       "file": "linux-arm64/herdr-engine",
-      "size": 6946940,
-      "sha256": "582fb5f893661dc939767f955ada6c64d20cd7d969408d9237b008c8b90c21d2"
+      "size": 17629308,
+      "sha256": "e653c5e4ce08a88773dfa066cd59e90f5db2bf068231a732c3b299270d949c17"
     },
     {
       "os": "windows",
       "arch": "amd64",
       "file": "windows-amd64/herdr-engine.exe",
-      "size": 7767552,
-      "sha256": "af684c11d6517e4f0bf435baf0a9e7d3693ddeefa1d5fdbd9919a4b21043dbea"
+      "size": 19216896,
+      "sha256": "4fb1499f3af7636417ca8889e3dbf5cd4349a653506f2e6d7ace62ff8bd4ca2a"
     },
     {
       "os": "windows",
       "arch": "arm64",
       "file": "windows-arm64/herdr-engine.exe",
-      "size": 7040512,
-      "sha256": "3379732284e7cddd12d32ea59664d4f941f91072797d4e6fe3df0b659c1ed9fb"
+      "size": 17866240,
+      "sha256": "d2bd9becb55b56792cfaba7b59a068f7571e2d490734e19b1145a5cd07e4b8aa"
     }
   ]
 }

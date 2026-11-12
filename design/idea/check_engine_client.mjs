@@ -47,4 +47,7 @@ test=await setup({platform:'windows',arch:'amd64'});await test.client.lsp('info'
 assert.ok(test.calls.some(c=>c[0]==='powershell'));assert.ok(test.binary.endsWith('windows-amd64/herdr-engine.exe'));
 test=await setup({missing:true});await assert.rejects(test.client.lsp('info',{},async()=>{}),/not installed/);
 assert.equal(test.calls.length,0,'missing binary never starts a Python fallback');
+test=await setup({running:true});test.error('network reply lost');
+await assert.rejects(test.client.lsp('db_apply',{database:{changes:[{op:'insert',values:{id:1}}]}},async()=>{}),/could not be confirmed/);
+assert.equal(test.http.filter(method=>method==='db_apply').length,1,'a lost database reply must never replay a potentially committed write');
 console.log('PASS native Go client host selection, single startup, version/PID ownership, legacy retirement, error propagation and passive polling');

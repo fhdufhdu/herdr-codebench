@@ -12,6 +12,7 @@ const KO = {
   "Add Machine…": "머신 추가…", "Project": "프로젝트", "Add machine": "머신 추가", "Settings": "설정", "Cancel": "취소", "Clear results": "결과 지우기", "Close editor": "편집기 닫기",
   "Collapse folders": "폴더 모두 접기", "Dismiss": "닫기", "Hide Panel (Ctrl+`)": "패널 숨기기 (Ctrl+`)",
   "New File…": "새 파일…", "New Folder…": "새 폴더…", "New Space": "새 스페이스", "Show spaces": "스페이스 펼치기", "New Terminal or Agent": "새 터미널 또는 에이전트",
+  "Edit": "편집", "Preview": "미리보기",
   "Open as text anyway": "텍스트로 열기", "Open file": "파일 열기",
   "Open with the system's app": "기본 앱으로 열기", "Refresh": "새로고침", "Reload sessions": "세션 다시 불러오기",
   "Save (Ctrl+S)": "저장 (Ctrl+S)", "Split Terminal": "터미널 분할", "Stage all": "모두 스테이징", "Unstage all": "모두 스테이징 취소",

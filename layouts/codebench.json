@@ -188,6 +188,16 @@
                           "part": "main"
                         }
                       }
+                    },
+                    {
+                      "id": "editor-database",
+                      "type": "block",
+                      "content": {
+                        "mod": "codenav",
+                        "props": {
+                          "view": "database-editor"
+                        }
+                      }
                     }
                   ],
                   "active": "editor-code"

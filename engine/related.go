@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
+	"path/filepath"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -21,18 +21,101 @@ func related(ctx context.Context, e *Engine, req Request) ([]Location, error) {
 	if err != nil {
 		return nil, err
 	}
-	uri, err := srv.Open(ctx, req.Path)
+	uri, err := e.legacyOpen(ctx, srv, req.Path)
 	if err != nil {
 		return nil, err
 	}
+	return superDocumentNavigation(ctx, e, req, srv, uri, nil)
+}
+
+// Source text is tied to the request snapshot. Other active targets are
+// supported only in this server's language/root, and must remain unchanged
+// throughout navigation; no lock is held while the server answers RPCs.
+func superDocumentNavigation(ctx context.Context, e *Engine, req Request, srv *LSPServer, uri string, snapshot *documentSnapshot) ([]Location, error) {
+	targets := map[string]bufferedDocument{}
+	read := e.legacyRead
+	open := func(ctx context.Context, path string) (string, error) { return e.legacyOpen(ctx, srv, path) }
+	if snapshot != nil {
+		read = func(path string) ([]byte, error) {
+			abs, err := filepath.Abs(path)
+			if err != nil {
+				return nil, err
+			}
+			if abs == snapshot.Path {
+				return []byte(snapshot.text), nil
+			}
+			if target, ok := targets[abs]; ok {
+				return []byte(target.text), nil
+			}
+			return e.legacyRead(path)
+		}
+		open = func(ctx context.Context, path string) (string, error) {
+			abs, err := filepath.Abs(path)
+			if err != nil {
+				return "", err
+			}
+			e.documentMu.Lock()
+			defer e.documentMu.Unlock()
+			doc, leased := e.documents[abs]
+			if !leased {
+				return srv.Open(ctx, abs)
+			}
+			if abs == snapshot.Path && (doc.owner != snapshot.Owner || doc.revision != snapshot.Revision) {
+				return "", errors.New("stale source document during super navigation")
+			}
+			if previous, ok := targets[abs]; ok && (previous.owner != doc.owner || previous.revision != doc.revision) {
+				return "", errors.New("stale target document during super navigation")
+			}
+			lang, cfg := e.language(abs)
+			if lang != srv.lang || findRoot(abs, cfg) != srv.Root {
+				return "", errors.New("buffered super target belongs to another language server/root")
+			}
+			targetURI, version, err := srv.syncText(ctx, abs, doc.text, doc.owner)
+			if err != nil {
+				return "", err
+			}
+			doc.server = srv
+			doc.version = version
+			e.documents[abs] = doc
+			targets[abs] = doc
+			return targetURI, nil
+		}
+	}
 	result, err := superNavigation(ctx, req, superCallbacks{
-		uri: uri, call: srv.Call, open: srv.Open, read: os.ReadFile,
+		uri: uri, call: srv.Call,
+		open: open, read: read,
 		locations: func(ctx context.Context, raw json.RawMessage) ([]Location, error) {
 			return e.Locations(ctx, raw, srv)
 		},
 	})
 	if err != nil {
 		return nil, err
+	}
+	if snapshot != nil {
+		texts := map[string]string{}
+		e.documentMu.Lock()
+		for path, previous := range targets {
+			doc, ok := e.documents[path]
+			if !ok || doc.owner != previous.owner || doc.revision != previous.revision {
+				e.documentMu.Unlock()
+				return nil, errors.New("stale target document during super navigation")
+			}
+		}
+		for _, loc := range result {
+			path, err := filepath.Abs(loc.Path)
+			if err != nil {
+				continue
+			}
+			if path == snapshot.Path {
+				texts[loc.Path] = snapshot.text
+			} else if target, ok := targets[path]; ok {
+				texts[loc.Path] = target.text
+			} else if doc, ok := e.documents[path]; ok {
+				texts[loc.Path] = doc.text
+			}
+		}
+		e.documentMu.Unlock()
+		return withPreviewTexts(result, texts), nil
 	}
 	return withPreviews(result), nil
 }

@@ -1,0 +1,4749 @@
+<!doctype html>
+<html lang="ko">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Codebench · UX 방향 데모</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --canvas: #14171d;
+      --editor: #181c23;
+      --surface: #20252e;
+      --popup: #272e39;
+      --text: #eef2f7;
+      --secondary: #b4bfce;
+      --dim: #7d899c;
+      --border: #6b7c95;
+      --line: #394352;
+      --hover: #303a49;
+      --selection: #29466b;
+      --accent: #88b9ff;
+      --primary: #386fb8;
+      --success: #8ed6aa;
+      --warning: #eac476;
+      --error: #ff8f9b;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--text);
+      font:
+        var(--ui-font-size, 13px) / 1.5 -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+      color: inherit;
+    }
+    button {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      background: transparent;
+      min-height: var(--control-height, 28px);
+      padding: 4px 8px;
+      white-space: nowrap;
+    }
+    button:hover {
+      background: var(--hover);
+    }
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    button:disabled {
+      color: var(--dim);
+      cursor: default;
+      opacity: 0.65;
+    }
+    button:disabled:hover {
+      background: transparent;
+    }
+    svg {
+      width: 16px;
+      height: 16px;
+      flex: none;
+      stroke: currentColor;
+    }
+    .icon {
+      width: 30px;
+      padding: 4px;
+    }
+    .primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .primary:hover {
+      filter: brightness(1.12);
+      background: var(--primary);
+    }
+    .outline {
+      border-color: var(--line);
+      background: transparent;
+    }
+    .muted {
+      color: var(--secondary);
+    }
+    .dim {
+      color: var(--dim);
+    }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .spacer {
+      flex: 1;
+      min-width: 0;
+    }
+    .badge {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--secondary);
+      font-size: 11px;
+    }
+    .ok {
+      color: var(--success);
+    }
+    .warn {
+      color: var(--warning);
+    }
+    .hidden {
+      display: none !important;
+    }
+    .demo-bar {
+      height: 58px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .demo-bar strong {
+      font-size: 14px;
+    }
+    .demo-bar .tag {
+      letter-spacing: 0.1em;
+      font-size: 10px;
+      color: var(--accent);
+    }
+    .demo-bar p {
+      margin: 0;
+      color: var(--secondary);
+      font-size: 12px;
+    }
+    .demo-bar a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .frame {
+      height: calc(100vh - 58px);
+      min-height: 710px;
+      display: grid;
+      grid-template-rows: 48px minmax(0, 1fr) 26px;
+      max-width: 1920px;
+      margin: auto;
+    }
+    .appbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      background: var(--canvas);
+    }
+    .brand {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      background: var(--primary);
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 11px;
+    }
+    .project-button {
+      font-weight: 600;
+    }
+    .branch {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--secondary);
+    }
+    kbd {
+      font:
+        11px/1.3 -apple-system,
+        sans-serif;
+      color: var(--secondary);
+      border: 1px solid var(--line);
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .workspace {
+      display: grid;
+      grid-template-columns:
+        44px var(--left-track, var(--left-width, 218px)) minmax(360px, 1fr)
+        var(--right-track, var(--right-width, 244px)) 44px;
+      gap: 2px;
+      min-height: 0;
+    }
+    .stripe {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding-top: 4px;
+    }
+    .stripe button {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      padding: 8px;
+    }
+    .stripe svg {
+      width: 20px;
+      height: 20px;
+    }
+    .stripe button.active {
+      color: var(--accent);
+      background: var(--selection);
+    }
+    .stripe button.active:before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: var(--accent);
+    }
+    .stripe .bottom {
+      margin-top: auto;
+      margin-bottom: 8px;
+    }
+    .panel {
+      background: var(--editor);
+      border-radius: 4px;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .panel-heading {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 10px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--secondary);
+    }
+    .panel-heading .icon {
+      margin-right: -5px;
+    }
+    .tree {
+      padding: 8px 6px;
+      overflow: auto;
+    }
+    .tree-row {
+      min-height: var(--tree-row-height, 28px);
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .tree-row:hover {
+      background: var(--hover);
+    }
+    .tree-row.active {
+      background: var(--selection);
+    }
+    .tree-row small {
+      color: var(--dim);
+      margin-left: auto;
+    }
+    .depth1 {
+      padding-left: 20px;
+    }
+    .depth2 {
+      padding-left: 34px;
+    }
+    .depth3 {
+      padding-left: 48px;
+    }
+    .tree-section {
+      padding: 14px 8px 5px;
+      color: var(--dim);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .tree .database-icon {
+      color: var(--accent);
+    }
+    .project-foot {
+      border-top: 1px solid var(--line);
+      padding: 12px;
+      color: var(--secondary);
+      font-size: 11px;
+      margin-top: 16px;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      display: inline-block;
+      margin-right: 5px;
+    }
+    .center {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--editor);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .tabs {
+      display: flex;
+      align-items: center;
+      min-height: 40px;
+      gap: 4px;
+      padding: 3px 6px;
+      border-bottom: 1px solid var(--line);
+    }
+    .tab {
+      color: var(--secondary);
+      border-radius: 4px 4px 0 0;
+      height: 34px;
+      padding: 0 12px;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      color: var(--text);
+      background: #283340;
+      border-bottom-color: var(--accent);
+    }
+    .tab .close {
+      margin-left: 12px;
+      color: var(--dim);
+    }
+    .context {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .context .connection {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--secondary);
+      font-size: 12px;
+    }
+    .toolbar {
+      min-height: 42px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 5px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .divider {
+      height: 18px;
+      width: 1px;
+      background: var(--line);
+      margin: 0 4px;
+    }
+    .mode {
+      display: inline-flex;
+      padding: 2px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--canvas);
+      gap: 2px;
+    }
+    .mode button {
+      font-size: 12px;
+      min-height: 26px;
+      padding: 3px 10px;
+    }
+    .mode button[aria-pressed="true"] {
+      background: var(--hover);
+      color: var(--text);
+      box-shadow: inset 0 -2px var(--accent);
+    }
+    .mode button[aria-pressed="false"] {
+      color: var(--secondary);
+    }
+    .sql-area {
+      position: relative;
+      flex: 1;
+      min-height: 185px;
+      display: flex;
+      overflow: hidden;
+    }
+    .gutter {
+      padding: 18px 12px;
+      width: 42px;
+      text-align: right;
+      color: var(--dim);
+      background: var(--editor);
+      font:
+        12px/26px ui-monospace,
+        SFMono-Regular,
+        monospace;
+      user-select: none;
+    }
+    textarea {
+      resize: none;
+      padding: 18px 10px;
+      border: 0;
+      outline: none;
+      background: var(--editor);
+      line-height: 26px;
+      font-size: 13px;
+      width: 100%;
+      min-height: 100%;
+      tab-size: 2;
+      white-space: pre;
+      overflow: auto;
+    }
+    .sql-area textarea {
+      color: #c8ddfa;
+    }
+    .sql-caption {
+      color: var(--secondary);
+      font-size: 11px;
+      padding: 5px 14px;
+      border-top: 1px solid var(--line);
+    }
+    .result {
+      border-top: 2px solid var(--canvas);
+      min-height: 140px;
+      height: var(--result-height, 42%);
+      flex: none;
+      display: flex;
+      flex-direction: column;
+    }
+    .result-heading {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .result-heading button {
+      font-size: 12px;
+    }
+    .grid-wrap {
+      overflow: auto;
+      flex: 1;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12px;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      color: var(--secondary);
+      font-weight: 500;
+      text-align: left;
+      z-index: 1;
+    }
+    td,
+    th {
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      height: 32px;
+      padding: 4px 10px;
+      white-space: nowrap;
+    }
+    td {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    td:first-child,
+    th:first-child {
+      width: 38px;
+      text-align: right;
+      color: var(--dim);
+    }
+    tr.selected td {
+      background: var(--selection);
+    }
+    td.edited {
+      box-shadow: inset 3px 0 var(--warning);
+    }
+    td input {
+      width: 100%;
+      min-width: 100px;
+      border: 1px solid var(--accent);
+      background: var(--surface);
+      padding: 2px 4px;
+    }
+    .null {
+      color: var(--dim);
+      font-style: italic;
+    }
+    .result-footer {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      padding: 4px 12px;
+      gap: 10px;
+      border-top: 1px solid var(--line);
+      color: var(--secondary);
+      font-size: 11px;
+    }
+    .pending {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 6px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #302b22;
+      font-size: 12px;
+    }
+    .pending .primary {
+      min-height: 25px;
+    }
+    .statusbar {
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 15px;
+      color: var(--secondary);
+      font-size: 11px;
+    }
+    .statusbar svg {
+      width: 13px;
+      height: 13px;
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .note {
+      padding: 12px;
+      font-size: 11px;
+      color: var(--secondary);
+      border-top: 1px solid var(--line);
+    }
+    .markdown {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+    .markdown-content {
+      flex: 1;
+      overflow: auto;
+      min-height: 0;
+    }
+    .markdown-content textarea {
+      min-height: 460px;
+    }
+    article {
+      max-width: 760px;
+      margin: auto;
+      padding: 28px 40px;
+      line-height: 1.9;
+      color: var(--secondary);
+    }
+    article h1 {
+      font-size: 26px;
+      color: var(--text);
+      margin: 0 0 8px;
+      letter-spacing: -0.02em;
+    }
+    article h2 {
+      color: var(--text);
+      margin-top: 28px;
+      font-size: 18px;
+    }
+    article code {
+      background: var(--surface);
+      color: var(--accent);
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+    article blockquote {
+      margin: 20px 0;
+      border-left: 3px solid var(--accent);
+      padding: 8px 16px;
+      background: var(--surface);
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .toast {
+      position: fixed;
+      bottom: 42px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 1px solid var(--border);
+      padding: 10px 16px;
+      background: var(--popup);
+      border-radius: 8px;
+      box-shadow: 0 8px 30px #0005;
+      max-width: 80vw;
+      z-index: 20;
+    }
+    dialog {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0;
+      width: 600px;
+      max-width: 90vw;
+      max-height: 88vh;
+      box-shadow: 0 24px 80px #0007;
+    }
+    dialog::backdrop {
+      background: #070a1099;
+    }
+    .dialog-title {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+      font-size: 15px;
+      font-weight: 600;
+      gap: 8px;
+    }
+    .dialog-body {
+      padding: 20px;
+      max-height: 65vh;
+      overflow: auto;
+    }
+    .dialog-body p {
+      margin-top: 0;
+      color: var(--secondary);
+    }
+    .dialog-footer {
+      border-top: 1px solid var(--line);
+      padding: 12px 20px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .field {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 12px;
+      align-items: center;
+      margin: 12px 0;
+    }
+    input,
+    select {
+      background: var(--editor);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 6px 9px;
+      min-height: 32px;
+    }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .choice {
+      text-align: left;
+      justify-content: flex-start;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .choice small {
+      display: block;
+      color: var(--secondary);
+      margin-top: 3px;
+    }
+    .choice.selected {
+      border-color: var(--accent);
+      background: var(--selection);
+    }
+    .choice div {
+      flex: 1;
+    }
+    .preview-text {
+      border: 1px solid var(--line);
+      background: var(--editor);
+      padding: 12px;
+      border-radius: 5px;
+      font:
+        12px/1.7 ui-monospace,
+        monospace;
+      white-space: pre-wrap;
+      max-height: 250px;
+      overflow: auto;
+    }
+    .dialog-hint {
+      margin-top: 14px;
+      color: var(--dim);
+      font-size: 11px;
+    }
+    #projectsDialog {
+      width: 400px;
+    }
+    .compact-select {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 400;
+    }
+    .compact-select select {
+      appearance: none;
+      width: 108px;
+      height: 26px;
+      min-height: 26px;
+      padding: 0 23px 0 7px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--secondary);
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .compact-select select:hover {
+      background: var(--hover);
+      color: var(--text);
+    }
+    .compact-select select:focus-visible {
+      outline: 1px solid var(--accent);
+      outline-offset: 1px;
+    }
+    .compact-select > svg {
+      position: absolute;
+      right: 7px;
+      width: 12px;
+      height: 12px;
+      pointer-events: none;
+      color: var(--secondary);
+    }
+    .side-column.collapsed {
+      visibility: hidden;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .side-column {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      min-height: 0;
+    }
+    .side-column > .tool-slot {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+    .side-column > .lower-panel {
+      flex: 0 0 var(--lower-height, 180px);
+    }
+    .side-column:has(> .tool-slot:not(.lower-panel).hidden) > .lower-panel {
+      flex: 1;
+    }
+    .tool-slot > .panel .tree {
+      flex: 1;
+      min-height: 0;
+    }
+    .tool-slot {
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .tool-slot > .panel {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+    }
+    .stripe-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .query-statement {
+      padding: 4px 12px;
+      flex: none;
+      color: var(--secondary);
+      font-size: 11px;
+      border-bottom: 1px solid var(--line);
+    }
+    .query-statement summary {
+      cursor: pointer;
+    }
+    .query-statement pre {
+      max-height: 100px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font:
+        12px/1.6 ui-monospace,
+        monospace;
+      color: var(--text);
+      margin: 6px 0;
+      user-select: text;
+    }
+    .query-run-view {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .query-run-view .grid-wrap {
+      flex: 1;
+    }
+    .run-tabs {
+      display: flex;
+      flex: none;
+      min-height: 0;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--line);
+    }
+    .run-tabs:empty {
+      display: none;
+    }
+    .run-tab {
+      display: flex;
+      flex: none;
+      align-items: center;
+      border-bottom: 2px solid transparent;
+    }
+    .run-tab.active {
+      background: var(--hover);
+      border-color: var(--accent);
+    }
+    .run-tab.running .run-tab-button::before {
+      content: "●";
+      color: var(--accent);
+      margin-right: 6px;
+    }
+    .run-tab-button {
+      white-space: nowrap;
+      font-size: 12px;
+      padding: 6px 8px;
+    }
+    .run-tab-close {
+      width: 24px;
+      height: 24px;
+      min-height: 24px;
+      padding: 4px;
+      margin-right: 4px;
+    }
+    .run-tab-close svg {
+      width: 14px;
+      height: 14px;
+    }
+    .run-entry-meta {
+      color: var(--secondary);
+      font-size: 11px;
+      padding: 5px 12px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: none;
+    }
+    .run-output {
+      flex: 1;
+    }
+    .run-empty {
+      color: var(--secondary);
+    }
+    .slot-divider {
+      width: 24px;
+      border-top: 1px solid var(--line);
+      margin: 6px 0;
+    }
+    .terminal-preview {
+      padding: 10px;
+      color: var(--secondary);
+      font:
+        12px/1.8 ui-monospace,
+        SFMono-Regular,
+        monospace;
+      overflow: auto;
+    }
+    .terminal-preview .ok {
+      color: var(--success);
+    }
+    .center-column {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+    }
+    .run-controls {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      border-right: 1px solid var(--line);
+      padding-right: 8px;
+      margin-right: 4px;
+    }
+    .run-controls .icon {
+      width: 28px;
+      height: 28px;
+      min-height: 28px;
+    }
+    .run-status {
+      color: var(--secondary);
+      font-size: 11px;
+      min-width: 38px;
+    }
+    .run-output {
+      margin: 0;
+      padding: 12px;
+      min-height: 0;
+      overflow: auto;
+      color: var(--secondary);
+      font:
+        12px/1.8 ui-monospace,
+        SFMono-Regular,
+        monospace;
+      white-space: pre-wrap;
+    }
+    .bottom-dock {
+      flex: 0 0 var(--dock-height, 280px);
+    }
+    .resize-handle {
+      position: relative;
+      flex: none;
+      z-index: 10;
+      touch-action: none;
+      outline: none;
+    }
+    .resize-handle::before {
+      content: "";
+      position: absolute;
+    }
+    .resize-handle.horizontal {
+      height: 2px;
+      cursor: row-resize;
+    }
+    .resize-handle.horizontal::before {
+      inset: -4px 0;
+    }
+    .resize-handle.vertical {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      cursor: col-resize;
+    }
+    .resize-handle.vertical::before {
+      inset: 0 -4px;
+    }
+    .resize-handle.edge-right {
+      right: -2px;
+    }
+    .resize-handle.edge-left {
+      left: -2px;
+    }
+    .resize-handle:hover,
+    .resize-handle:focus-visible,
+    .resize-handle.dragging {
+      background: var(--accent);
+    }
+    .side-column:has(> .tool-slot.hidden) > .resize-handle.horizontal {
+      display: none;
+    }
+    body.resizing {
+      user-select: none;
+    }
+    .settings-shell {
+      display: flex;
+      min-height: 360px;
+    }
+    .settings-nav {
+      width: 140px;
+      flex: none;
+      padding: 12px 8px;
+      border-right: 1px solid var(--line);
+      background: var(--editor);
+    }
+    .settings-nav button {
+      width: 100%;
+      justify-content: flex-start;
+      padding: 8px 12px;
+    }
+    .settings-nav button.active {
+      background: var(--selection);
+      color: var(--text);
+    }
+    .settings-content {
+      flex: 1;
+      min-width: 0;
+      padding: 20px 24px;
+      overflow: auto;
+    }
+    .settings-content h3 {
+      margin: 0 0 20px;
+      font-size: 15px;
+    }
+    .settings-content .field {
+      grid-template-columns: 110px 1fr;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .check-row input {
+      width: 16px;
+      height: 16px;
+      min-height: 0;
+      accent-color: var(--primary);
+    }
+    .shortcut-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .collection {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .collection section {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .collection h3 {
+      margin: 0 0 14px;
+      font-size: 14px;
+    }
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .swatch-color {
+      height: 32px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+    .swatch small {
+      color: var(--secondary);
+      font-size: 10px;
+    }
+    .icon-collection {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .icon-sample {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: var(--secondary);
+      font-size: 10px;
+    }
+    .state-samples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .sample-selected {
+      background: var(--selection);
+      color: var(--accent);
+    }
+    .sample-busy svg {
+      animation: spin 1.5s linear infinite;
+    }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    #settingsDialog,
+    #systemDialog {
+      width: 820px;
+    }
+    #projectList .tree-row {
+      min-height: 36px;
+    }
+    #projectList .tree-row button {
+      width: 26px;
+      height: 26px;
+      min-height: 26px;
+      padding: 4px;
+      color: var(--secondary);
+    }
+    #projectList .tree-row button:disabled {
+      opacity: 0.25;
+    }
+    .collection section {
+      background: var(--editor);
+      border-color: transparent;
+    }
+    .manager-shell {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      height: 410px;
+      max-height: 65vh;
+    }
+    .manager-master {
+      min-width: 0;
+      min-height: 0;
+      border-right: 1px solid var(--line);
+      background: var(--editor);
+    }
+    .manager-detail {
+      min-width: 0;
+      padding: 20px 24px;
+      overflow: auto;
+    }
+    .manager-detail h3,
+    .manager-detail h4 {
+      margin: 0 0 20px;
+      font-size: 14px;
+    }
+    .manager-detail .field {
+      grid-template-columns: 84px 1fr;
+    }
+    .manager-detail input,
+    .manager-detail select {
+      width: 100%;
+      min-width: 0;
+    }
+    .manager-detail .check-row input {
+      width: 16px;
+      flex: none;
+    }
+    .managed-list {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+    .managed-list [hidden] {
+      display: none !important;
+    }
+    .managed-toolbar {
+      display: flex;
+      flex: none;
+      align-items: center;
+      gap: 2px;
+      padding: 5px 6px;
+      border-bottom: 1px solid var(--line);
+      min-height: 38px;
+    }
+    .managed-toolbar .icon {
+      width: 28px;
+      height: 28px;
+      min-height: 28px;
+      padding: 5px;
+    }
+    .managed-icon {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+    }
+    .managed-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+    .managed-separator {
+      width: 1px;
+      height: 18px;
+      margin: 0 5px;
+      background: var(--line);
+    }
+    .managed-search {
+      margin: 8px 10px 2px;
+      width: calc(100% - 20px);
+      min-height: 28px;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-color: var(--line);
+    }
+    .managed-caption,
+    .managed-group {
+      padding: 10px 14px 4px;
+      color: var(--secondary);
+      font-size: 11px;
+    }
+    .managed-rows {
+      min-height: 150px;
+      max-height: 355px;
+      flex: 1;
+      overflow: auto;
+      padding: 4px 6px 8px;
+      outline: none;
+    }
+    .managed-rows:focus-visible {
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+    .managed-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 6px 8px;
+      margin: 1px 0;
+      border-radius: 4px;
+      cursor: default;
+    }
+    .managed-row:hover {
+      background: var(--hover);
+    }
+    .managed-row.selected {
+      background: var(--selection);
+      color: var(--text);
+    }
+    .managed-row-name {
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .managed-row-detail {
+      flex: none;
+      max-width: 92px;
+      color: var(--secondary);
+      font-size: 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .managed-empty {
+      padding: 24px 12px;
+      text-align: center;
+      color: var(--secondary);
+    }
+    .managed-status {
+      font-size: 11px;
+      color: var(--secondary);
+    }
+    .tool-manager {
+      grid-template-columns: minmax(200px, 0.9fr) minmax(180px, 1fr);
+      height: 300px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .tool-manager .manager-detail {
+      padding: 16px;
+    }
+    .tool-manager .field {
+      display: flex;
+      align-items: stretch;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #projectOrderDialog {
+      width: 460px;
+    }
+    #projectOrderList {
+      height: 380px;
+      background: var(--editor);
+    }
+    #connectionDialog,
+    #runDialog {
+      width: 840px;
+    }
+    #listCollection {
+      height: 215px;
+      background: var(--editor);
+    }
+    @media (max-width: 1150px) {
+      .workspace {
+        grid-template-columns:
+          40px var(--left-track, var(--left-width, 180px)) minmax(360px, 1fr)
+          var(--right-track, var(--right-width, 220px)) 40px;
+      }
+      .demo-bar p {
+        display: none;
+      }
+      .connection .optional {
+        display: none;
+      }
+      .appbar .branch {
+        display: none;
+      }
+    }
+    @media (max-width: 1000px) {
+      .workspace {
+        grid-template-columns:
+          40px var(--left-track, var(--left-width, 180px)) minmax(360px, 1fr)
+          40px;
+      }
+      .right-column {
+        display: none;
+      }
+    }
+    @media (max-width: 760px) {
+      .workspace {
+        grid-template-columns: 38px minmax(320px, 1fr) 38px;
+      }
+      .left-column {
+        display: none;
+      }
+      .frame {
+        min-width: 440px;
+      }
+      .demo-bar {
+        padding: 0 12px;
+      }
+      .demo-bar .spacer {
+        display: none;
+      }
+      .tab {
+        padding: 0 8px;
+        font-size: 11px;
+      }
+      .context .badge {
+        display: none;
+      }
+    }
+  </style>
+  <body>
+    <div class="demo-bar">
+      <div>
+        <div class="tag">CODEBENCH / DESIGN STUDY</div>
+        <strong>작업 상태가 읽히는 워크벤치</strong>
+      </div>
+      <p>
+        중앙 문서와 좌·우·아래 도구 영역 · 공통 색상과 아이콘 · 명시적 모드 전환
+      </p>
+      <span class="spacer"></span>
+      <button class="outline" onclick="openDesignSystem()">
+        <i data-icon="layers"></i>디자인 시스템
+      </button>
+      <span class="badge">HTML 데모 · 샘플 데이터</span>
+    </div>
+    <main class="frame">
+      <header class="appbar">
+        <span class="brand">HC</span
+        ><button class="project-button" id="projectPicker">
+          herdr-codebench <i data-icon="chevron-down"></i></button
+        ><span class="branch"
+          ><i data-icon="git-branch"></i>codex/ux-principles-redesign</span
+        ><span class="spacer"></span>
+        <div class="run-controls" role="group" aria-label="실행 구성">
+          <label class="compact-select">
+            <select id="runConfig" aria-label="실행 구성 선택">
+              <option value="ui">UI 검사</option>
+              <option value="engine">엔진 테스트</option>
+              <option value="build">엔진 빌드</option></select
+            ><i data-icon="chevron-down"></i>
+          </label>
+          <button
+            id="runStart"
+            class="icon"
+            title="선택한 구성 실행"
+            onclick="startConfiguredRun()"
+          >
+            <i data-icon="play"></i>
+          </button>
+          <button
+            id="runStop"
+            class="icon"
+            title="구성 실행 중지"
+            onclick="stopConfiguredRun()"
+            disabled
+          >
+            <i data-icon="square"></i>
+          </button>
+          <button
+            id="runEdit"
+            class="icon"
+            title="실행 구성 편집"
+            onclick="editRunConfiguration()"
+          >
+            <i data-icon="settings"></i>
+          </button>
+          <span id="runStatus" class="run-status" role="status">준비</span>
+        </div>
+        <button
+          title="전체 검색"
+          onclick="toast('데모에서는 SQL 콘솔·customers·README 탭을 전환할 수 있습니다.')"
+        >
+          <i data-icon="search"></i><span class="muted">검색</span
+          ><kbd>⌘K</kbd></button
+        ><button class="icon" title="설정" onclick="openSettings()">
+          <i data-icon="settings"></i>
+        </button>
+      </header>
+      <div class="workspace">
+        <nav class="stripe" aria-label="왼쪽 도구">
+          <button
+            class="active"
+            title="프로젝트 · 왼쪽 위"
+            aria-pressed="true"
+            onclick="toggleSlot('leftTop', this)"
+          >
+            <i data-icon="files"></i></button
+          ><button title="소스 제어" onclick="toast('소스 제어 도구 영역')">
+            <i data-icon="git-branch"></i></button
+          ><button title="검색" onclick="toast('검색 도구 영역')">
+            <i data-icon="search"></i>
+          </button>
+          <div class="slot-divider" role="separator"></div>
+          <button
+            class="active"
+            title="구조 · 왼쪽 아래"
+            aria-pressed="true"
+            onclick="toggleSlot('leftBottom', this)"
+          >
+            <i data-icon="list-tree"></i>
+          </button>
+          <span class="spacer"></span>
+          <button
+            title="문제 · 아래 도구 영역"
+            class="bottom"
+            aria-pressed="false"
+            onclick="toggleBottomDock()"
+          >
+            <i data-icon="triangle-alert"></i>
+          </button>
+        </nav>
+        <div class="side-column left-column">
+          <aside id="leftTop" class="panel project-panel">
+            <div class="panel-heading">
+              프로젝트 <span class="spacer"></span
+              ><button
+                class="icon"
+                title="새 파일"
+                onclick="toast('새 파일 만들기')"
+              >
+                <i data-icon="file-plus"></i></button
+              ><button
+                class="icon"
+                title="더 보기"
+                onclick="document.getElementById('projectsDialog').showModal()"
+              >
+                <i data-icon="ellipsis-vertical"></i>
+              </button>
+            </div>
+            <div class="tree">
+              <div class="tree-row">
+                <i data-icon="chevron-down"></i><i data-icon="folder-open"></i
+                ><b>herdr-codebench</b>
+              </div>
+              <div class="tree-row depth1">
+                <i data-icon="chevron-right"></i
+                ><i data-icon="folder"></i>design
+              </div>
+              <div class="tree-row depth1">
+                <i data-icon="chevron-right"></i
+                ><i data-icon="folder"></i>engine
+              </div>
+              <div class="tree-row depth1">
+                <i data-icon="chevron-down"></i
+                ><i data-icon="folder-open"></i>mods
+              </div>
+              <div class="tree-row depth2">
+                <i data-icon="folder"></i>activity
+              </div>
+              <div class="tree-row depth2">
+                <i data-icon="folder"></i>codenav
+              </div>
+              <div class="tree-row depth1" onclick="switchTab('markdown')">
+                <i data-icon="file-text"></i>README.md
+              </div>
+              <div class="tree-row depth1">
+                <i data-icon="file"></i>AGENTS.md
+              </div>
+              <div class="project-foot">
+                <span class="dot"></span>로컬 작업 공간<br />프로젝트 순서는
+                상단 메뉴에서<br />이름순·최근 사용순·직접 지정
+              </div>
+            </div>
+          </aside>
+          <div
+            id="leftSplitResize"
+            class="resize-handle horizontal"
+            role="separator"
+            aria-label="왼쪽 위아래 높이"
+            aria-orientation="horizontal"
+            tabindex="0"
+          ></div>
+          <aside id="leftBottom" class="panel lower-panel">
+            <div class="panel-heading">
+              구조<span class="spacer"></span
+              ><button
+                class="icon"
+                title="왼쪽 아래 닫기"
+                onclick="toggleSlot('leftBottom')"
+              >
+                <i data-icon="minus"></i>
+              </button>
+            </div>
+            <div class="tree">
+              <div class="tree-row" onclick="switchTab('markdown')">
+                <i data-icon="hash"></i>Herdr Codebench
+              </div>
+              <div class="tree-row depth1" onclick="switchTab('markdown')">
+                <i data-icon="hash"></i>예측 가능한 작업 흐름
+              </div>
+              <div class="tree-row depth1" onclick="switchTab('markdown')">
+                <i data-icon="hash"></i>데이터 변경
+              </div>
+            </div>
+          </aside>
+          <div
+            id="leftWidthResize"
+            class="resize-handle vertical edge-right"
+            role="separator"
+            aria-label="왼쪽 도구 너비"
+            aria-orientation="vertical"
+            tabindex="0"
+          ></div>
+        </div>
+        <div class="center-column">
+          <section class="center">
+            <div class="tabs" role="group" aria-label="열린 문서">
+              <button
+                class="tab active"
+                data-tab="query"
+                onclick="switchTab('query')"
+              >
+                <i data-icon="code"></i>SQL 콘솔
+                <span class="close">×</span></button
+              ><button
+                class="tab"
+                data-tab="table"
+                onclick="switchTab('table')"
+              >
+                <i data-icon="table"></i>customers<span
+                  id="dirtyDot"
+                  class="warn hidden"
+                  >●</span
+                ><span class="close">×</span></button
+              ><button
+                class="tab"
+                data-tab="markdown"
+                onclick="switchTab('markdown')"
+              >
+                <i data-icon="file-text"></i>README.md<span class="close"
+                  >×</span
+                >
+              </button>
+            </div>
+            <section
+              id="dbView"
+              style="
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                min-height: 0;
+              "
+            >
+              <div class="context">
+                <span class="connection"
+                  ><i data-icon="database"></i><b>UX Lab</b
+                  ><span class="optional">/ SQLite / main</span></span
+                ><span class="badge ok">로컬</span><span class="spacer"></span
+                ><button
+                  class="icon"
+                  title="연결 정보"
+                  onclick="openConnections()"
+                >
+                  <i data-icon="settings"></i>
+                </button>
+              </div>
+              <div id="queryToolbar" class="toolbar">
+                <button class="primary" id="runButton">
+                  <i data-icon="play"></i>실행 범위 선택 <kbd>⌘↵</kbd></button
+                ><button
+                  class="icon"
+                  title="쿼리 취소"
+                  id="cancelButton"
+                  disabled
+                >
+                  <i data-icon="square"></i></button
+                ><span class="divider"></span
+                ><button
+                  class="icon"
+                  title="SQL 초안 저장"
+                  onclick="toast('데모의 SQL 초안이 현재 화면에 유지됩니다.')"
+                >
+                  <i data-icon="save"></i></button
+                ><span class="spacer"></span
+                ><span class="muted" style="font-size: 11px"
+                  >실행할 대상을 먼저 확인하세요</span
+                >
+              </div>
+              <div id="sqlArea" class="sql-area">
+                <div class="gutter">
+                  1<br />2<br />3<br />4<br />5<br />6<br />7<br />8
+                </div>
+                <textarea
+                  id="sqlInput"
+                  aria-label="SQL 편집기"
+                  spellcheck="false"
+                >
+-- 활성 고객을 최근 가입순으로 확인합니다.
+SELECT id, name, email, plan, joined_at
+FROM customers
+WHERE active = 1
+ORDER BY joined_at DESC;
+
+-- 전체 고객 수
+SELECT COUNT(*) AS total FROM customers;</textarea
+                >
+              </div>
+              <div id="sqlCaption" class="sql-caption">
+                실행 범위를 확인한 뒤 실행합니다. 결과는 하단 실행 결과의 새
+                탭에 표시됩니다.
+              </div>
+              <div id="pendingBar" class="pending hidden">
+                <i data-icon="pencil"></i><b id="pendingText">미반영 수정 1행</b
+                ><span class="spacer"></span
+                ><button onclick="revertChanges()">되돌리기</button
+                ><button class="primary" onclick="applyChanges()">
+                  변경 반영
+                </button>
+              </div>
+              <section class="result hidden">
+                <div class="result-heading">
+                  <i data-icon="table"></i
+                  ><strong id="resultTitle">결과 1</strong
+                  ><span id="queryTime" class="badge">8행 · 12 ms</span
+                  ><span class="spacer"></span
+                  ><button id="ddlButton" class="hidden" onclick="showDDL()">
+                    DDL</button
+                  ><button title="데이터 내보내기" onclick="showExport()">
+                    <i data-icon="download"></i>내보내기
+                  </button>
+                </div>
+                <div class="grid-wrap">
+                  <table aria-label="샘플 고객 데이터">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>id <span class="dim">PK</span></th>
+                        <th>name</th>
+                        <th>email</th>
+                        <th>plan</th>
+                        <th>joined_at</th>
+                      </tr>
+                    </thead>
+                    <tbody id="gridBody"></tbody>
+                  </table>
+                </div>
+                <div class="result-footer">
+                  <span id="selectionInfo">8행을 불러왔습니다</span
+                  ><span class="spacer"></span
+                  ><span id="gridHint"
+                    >customers 탭에서 셀을 더블클릭해 편집</span
+                  >
+                </div>
+              </section>
+            </section>
+            <section id="markdownView" class="markdown hidden">
+              <div class="context">
+                <span class="muted">herdr-codebench / README.md</span
+                ><span class="spacer"></span>
+                <div class="mode" role="group" aria-label="마크다운 표시 모드">
+                  <button
+                    id="mdSourceButton"
+                    aria-pressed="true"
+                    onclick="markdownMode('source')"
+                  >
+                    원문</button
+                  ><button
+                    id="mdPreviewButton"
+                    aria-pressed="false"
+                    onclick="markdownMode('preview')"
+                  >
+                    미리보기
+                  </button>
+                </div>
+                <button
+                  id="mdEditButton"
+                  class="outline"
+                  onclick="toggleMarkdownEditing()"
+                >
+                  편집
+                </button>
+              </div>
+              <div class="markdown-content">
+                <textarea
+                  readonly
+                  id="mdInput"
+                  class="mono"
+                  aria-label="마크다운 원문"
+                  spellcheck="false"
+                >
+# Herdr Codebench
+
+코드와 데이터를 한 작업 공간에서 다룹니다.
+
+## 예측 가능한 작업 흐름
+
+- 중앙에서 문서를 읽고 편집합니다.
+- 왼쪽에서 파일을 탐색합니다.
+- 오른쪽에서 데이터베이스를 관리합니다.
+- 아래에서 실행 결과를 확인합니다.
+
+## 데이터 변경
+
+수정한 행은 변경 반영 전까지 로컬에 보관됩니다.
+실행 범위와 연결 대상을 먼저 확인할 수 있습니다.
+
+> 같은 행동은 같은 이름과 아이콘을 사용합니다.</textarea
+                >
+                <article id="mdPreview" class="hidden"></article>
+              </div>
+            </section>
+          </section>
+          <div
+            id="dockResize"
+            class="resize-handle horizontal hidden"
+            role="separator"
+            aria-label="하단 도구 높이"
+            aria-orientation="horizontal"
+            tabindex="0"
+          ></div>
+          <div
+            id="bottomDock"
+            class="tool-slot bottom-dock hidden"
+            data-slot="bottom"
+          >
+            <aside id="problems" class="panel hidden">
+              <div class="panel-heading">
+                <i data-icon="triangle-alert"></i>문제<span
+                  class="spacer"
+                ></span
+                ><button
+                  class="icon"
+                  title="문제 닫기"
+                  onclick="toggleSlot('problems')"
+                >
+                  <i data-icon="minus"></i>
+                </button>
+              </div>
+              <div id="problemBody" class="note">
+                <span class="ok">✓ 현재 파일에 문제가 없습니다.</span>
+                <p>위쪽 경계를 드래그해 높이를 조절할 수 있습니다.</p>
+              </div>
+            </aside>
+            <aside id="run" class="panel hidden">
+              <div class="panel-heading">
+                <i data-icon="play"></i>실행 결과<span class="spacer"></span
+                ><span id="runEntryStatus" class="run-status"
+                  >실행 기록 없음</span
+                ><button
+                  class="icon"
+                  title="실행 결과 닫기"
+                  onclick="toggleSlot('run')"
+                >
+                  <i data-icon="minus"></i>
+                </button>
+              </div>
+              <div id="runTabStrip" class="run-tabs"></div>
+              <div id="runEntryMeta" class="run-entry-meta"></div>
+              <div
+                id="queryRunView"
+                class="query-run-view hidden"
+                role="tabpanel"
+                tabindex="0"
+              >
+                <details class="query-statement">
+                  <summary>실행한 SQL</summary>
+                  <pre id="queryRunStatement"></pre>
+                </details>
+                <div class="result-heading">
+                  <i data-icon="table"></i><span id="queryRunSummary"></span
+                  ><span class="spacer"></span
+                  ><button onclick="showExport(selectedRunId)">
+                    <i data-icon="download"></i>내보내기
+                  </button>
+                </div>
+                <div class="grid-wrap">
+                  <table aria-label="SQL 실행 결과">
+                    <thead id="queryRunTableHead"></thead>
+                    <tbody id="queryRunTableBody"></tbody>
+                  </table>
+                </div>
+                <div class="result-footer" id="queryRunSelection">
+                  행을 클릭해 선택 · ⌘/Ctrl 클릭으로 여러 행 선택
+                </div>
+              </div>
+              <pre id="runOutput" class="run-output"></pre>
+            </aside>
+          </div>
+        </div>
+        <div class="side-column right-column">
+          <aside id="rightTop" class="panel database-panel">
+            <div class="panel-heading">
+              데이터베이스<span class="spacer"></span
+              ><button
+                class="icon"
+                title="연결 관리"
+                onclick="openConnections()"
+              >
+                <i data-icon="settings"></i></button
+              ><button
+                class="icon"
+                title="새 연결"
+                onclick="openConnections(null, true)"
+              >
+                <i data-icon="plus"></i>
+              </button>
+            </div>
+            <div class="toolbar" style="padding: 6px">
+              <button onclick="switchTab('query')">
+                <i data-icon="code"></i>SQL 콘솔</button
+              ><span class="spacer"></span
+              ><button
+                class="icon"
+                title="새로고침"
+                onclick="toast('샘플 객체 목록을 새로고침했습니다.')"
+              >
+                <i data-icon="refresh-cw"></i>
+              </button>
+            </div>
+            <div class="tree">
+              <div class="tree-row">
+                <i data-icon="chevron-down"></i
+                ><span class="database-icon"><i data-icon="database"></i></span
+                ><b>UX Lab</b><small>SQLite</small>
+              </div>
+              <div class="tree-row depth1">
+                <i data-icon="chevron-down"></i><i data-icon="layers"></i>main
+              </div>
+              <div class="tree-row depth2">
+                <i data-icon="chevron-down"></i
+                ><i data-icon="folder"></i>테이블<small>4</small>
+              </div>
+              <div class="tree-row depth3 active" onclick="switchTab('table')">
+                <i data-icon="table"></i>customers
+              </div>
+              <div
+                class="tree-row depth3"
+                onclick="toast('이 HTML에는 customers 샘플만 포함되어 있습니다.')"
+              >
+                <i data-icon="table"></i>orders
+              </div>
+              <div class="tree-row depth3">
+                <i data-icon="table"></i>memberships
+              </div>
+              <div class="tree-row depth3">
+                <i data-icon="table"></i>audit_log
+              </div>
+              <div class="tree-row depth2">
+                <i data-icon="chevron-right"></i
+                ><i data-icon="layers"></i>뷰<small>1</small>
+              </div>
+              <div class="tree-section">연결</div>
+              <div class="tree-row" onclick="openConnections()">
+                <i data-icon="database"></i>MySQL · Development
+              </div>
+              <div class="tree-row" onclick="openConnections()">
+                <i data-icon="database"></i>PostgreSQL · Analytics
+              </div>
+            </div>
+            <div class="note">
+              테이블을 클릭하면 중앙 탭에서 열립니다. 연결 설정은 모든 작업
+              공간에서 공유합니다.
+            </div>
+          </aside>
+          <div
+            id="rightSplitResize"
+            class="resize-handle horizontal"
+            role="separator"
+            aria-label="오른쪽 위아래 높이"
+            aria-orientation="horizontal"
+            tabindex="0"
+          ></div>
+          <aside id="rightBottom" class="panel lower-panel">
+            <div class="panel-heading">
+              터미널<span class="spacer"></span
+              ><button
+                class="icon"
+                title="오른쪽 아래 닫기"
+                onclick="toggleSlot('rightBottom')"
+              >
+                <i data-icon="minus"></i>
+              </button>
+            </div>
+            <div class="terminal-preview">
+              <span class="ok">● 로컬 세션</span><br />$ sqlite3
+              ux-lab.sqlite<br />SQLite ready<br /><span class="muted"
+                >데모 출력 · 실제 세션은 유지됩니다.</span
+              >
+            </div>
+          </aside>
+          <div
+            id="rightWidthResize"
+            class="resize-handle vertical edge-left"
+            role="separator"
+            aria-label="오른쪽 도구 너비"
+            aria-orientation="vertical"
+            tabindex="0"
+          ></div>
+        </div>
+        <nav class="stripe" aria-label="오른쪽 도구">
+          <button
+            class="active"
+            title="데이터베이스 · 오른쪽 위"
+            aria-pressed="true"
+            onclick="toggleSlot('rightTop', this)"
+          >
+            <i data-icon="database"></i>
+          </button>
+          <div class="slot-divider" role="separator"></div>
+          <button
+            class="active"
+            title="터미널 · 오른쪽 아래"
+            aria-pressed="true"
+            onclick="toggleSlot('rightBottom', this)"
+          >
+            <i data-icon="terminal"></i></button
+          ><button
+            title="알림"
+            onclick="toast('작업 완료·실패는 실제 결과와 함께 알립니다.')"
+          >
+            <i data-icon="bell"></i>
+          </button>
+        </nav>
+      </div>
+      <footer class="statusbar">
+        <span class="status-item"
+          ><i data-icon="git-branch"></i>ux-principles-redesign</span
+        ><span id="operationStatus" class="status-item"
+          ><span class="dot"></span>준비됨</span
+        ><span class="spacer"></span><span>UTF-8</span
+        ><span id="languageStatus">SQL</span><span>디자인 방향 데모</span>
+      </footer>
+    </main>
+    <dialog id="queryDialog">
+      <div class="dialog-title">
+        실행할 SQL 선택<span class="spacer"></span
+        ><button
+          class="icon"
+          onclick="closeDialog('queryDialog')"
+          aria-label="닫기"
+        >
+          <i data-icon="x"></i>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <p>UX Lab / SQLite / main</p>
+        <div class="choices">
+          <button
+            class="choice selected"
+            onclick="chooseScope(this,'현재 구문 · 2–5줄')"
+          >
+            <i data-icon="code"></i>
+            <div>
+              <b>현재 구문</b
+              ><small>2–5줄 · SELECT id, name, email, plan, joined_at…</small>
+            </div>
+            <kbd>↵</kbd></button
+          ><button
+            id="selectionChoice"
+            class="choice"
+            onclick="chooseScope(this,'선택한 SQL')"
+          >
+            <i data-icon="text-select"></i>
+            <div>
+              <b>선택한 SQL</b
+              ><small id="selectionSample"
+                >편집기에서 실행할 텍스트를 선택하세요</small
+              >
+            </div></button
+          ><button
+            class="choice"
+            onclick="chooseScope(this,'전체 스크립트 · 2개 구문')"
+          >
+            <i data-icon="files"></i>
+            <div>
+              <b>전체 스크립트</b
+              ><small>1–8줄 · 2개 구문을 순서대로 실행</small>
+            </div>
+          </button>
+        </div>
+        <div class="dialog-hint">
+          HTML 데모의 실행은 샘플 데이터를 사용합니다.
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button onclick="closeDialog('queryDialog')">취소</button
+        ><button class="primary" onclick="executeSample()">
+          <i data-icon="play"></i>선택 범위 실행
+        </button>
+      </div>
+    </dialog>
+    <dialog id="connectionDialog">
+      <div class="dialog-title">
+        연결 관리<span class="spacer"></span><span class="badge">전역</span>
+        <button
+          class="icon"
+          aria-label="연결 관리 닫기"
+          onclick="closeDialog('connectionDialog')"
+        >
+          <i data-icon="x"></i>
+        </button>
+      </div>
+      <div class="manager-shell">
+        <div id="connectionList" class="manager-master"></div>
+        <div class="manager-detail">
+          <div id="connectionFields">
+            <h3 id="connectionDetailTitle">연결</h3>
+            <label class="field"
+              ><span>이름</span
+              ><input
+                id="connectionName"
+                oninput="updateConnectionField('name', this.value)"
+            /></label>
+            <label class="field"
+              ><span>DB 종류</span
+              ><select
+                id="connectionDriver"
+                onchange="changeConnectionDriver(this.value)"
+              >
+                <option>SQLite</option>
+                <option>MySQL</option>
+                <option>MariaDB</option>
+                <option>PostgreSQL</option>
+                <option>SQL Server</option>
+              </select></label
+            >
+            <label id="connectionPathField" class="field"
+              ><span>파일</span
+              ><input
+                id="connectionPath"
+                oninput="updateConnectionField('path', this.value)"
+            /></label>
+            <div id="connectionNetworkFields">
+              <label class="field"
+                ><span>호스트</span
+                ><input
+                  id="connectionHost"
+                  oninput="updateConnectionField('host', this.value)"
+              /></label>
+              <label class="field"
+                ><span>포트</span
+                ><input
+                  id="connectionPort"
+                  type="number"
+                  min="1"
+                  max="65535"
+                  oninput="updateConnectionField('port', this.value)"
+              /></label>
+              <label class="field"
+                ><span>사용자</span
+                ><input
+                  id="connectionUser"
+                  oninput="updateConnectionField('user', this.value)"
+              /></label>
+            </div>
+            <p class="muted">
+              <i data-icon="lock-keyhole"></i> 비밀번호 보관 · macOS 키체인
+            </p>
+            <p class="managed-status">
+              연결 프로필은 모든 프로젝트에서 공유합니다.
+            </p>
+          </div>
+          <p id="connectionEmpty" class="muted hidden">
+            왼쪽 툴바에서 연결을 추가하세요.
+          </p>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <span id="connectionFeedback" class="managed-status" role="status"
+          >HTML 데모 · 샘플 연결</span
+        ><span class="spacer"></span>
+        <button onclick="closeDialog('connectionDialog')">취소</button>
+        <button
+          id="connectionTest"
+          class="outline"
+          onclick="testDemoConnection()"
+        >
+          연결 테스트
+        </button>
+        <button class="primary" onclick="saveConnections()">확인</button>
+      </div>
+    </dialog>
+    <dialog id="exportDialog">
+      <div class="dialog-title">
+        데이터 추출<span class="spacer"></span
+        ><button
+          class="icon"
+          aria-label="닫기"
+          onclick="closeDialog('exportDialog')"
+        >
+          <i data-icon="x"></i>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <p>UX Lab / main / customers</p>
+        <label class="field"
+          ><span>범위</span
+          ><select id="exportScope" onchange="updateExport()">
+            <option value="selected">선택한 행</option>
+            <option value="loaded">불러온 8행</option>
+          </select></label
+        ><label class="field"
+          ><span>형식</span
+          ><select id="exportFormat" onchange="updateExport()">
+            <option value="csv">CSV</option>
+            <option value="json">JSON</option>
+            <option value="sql">SQL INSERT</option>
+            <option value="tsv">TSV</option>
+          </select></label
+        >
+        <div id="exportPreview" class="preview-text"></div>
+        <div class="dialog-hint">
+          복사와 파일 출력이 같은 추출 형식을 사용합니다. 미반영 변경은 원본
+          값으로 출력합니다.
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button onclick="closeDialog('exportDialog')">닫기</button
+        ><button class="outline" onclick="copyExport()">
+          <i data-icon="copy"></i>복사</button
+        ><button class="primary" onclick="downloadExport()">
+          <i data-icon="download"></i>파일로 저장
+        </button>
+      </div>
+    </dialog>
+    <dialog id="ddlDialog">
+      <div class="dialog-title">customers · DDL</div>
+      <div class="dialog-body">
+        <p>UX Lab / SQLite / main</p>
+        <div class="preview-text">
+          CREATE TABLE customers ( id INTEGER PRIMARY KEY, name TEXT NOT NULL,
+          email TEXT, plan TEXT DEFAULT 'free', joined_at TEXT, active INTEGER
+          DEFAULT 1 );
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button onclick="closeDialog('ddlDialog')">닫기</button
+        ><button
+          class="primary"
+          onclick="copyText(document.querySelector('#ddlDialog .preview-text').textContent)"
+        >
+          <i data-icon="copy"></i>DDL 복사
+        </button>
+      </div>
+    </dialog>
+    <dialog id="settingsDialog">
+      <div class="dialog-title">
+        설정<span class="spacer"></span
+        ><button
+          class="icon"
+          aria-label="설정 닫기"
+          onclick="closeDialog('settingsDialog')"
+        >
+          <i data-icon="x"></i>
+        </button>
+      </div>
+      <div class="settings-shell">
+        <nav class="settings-nav" aria-label="설정 항목">
+          <button
+            class="active"
+            data-settings-nav="appearance"
+            onclick="settingsPage('appearance')"
+          >
+            화면
+          </button>
+          <button data-settings-nav="tools" onclick="settingsPage('tools')">
+            도구 영역
+          </button>
+          <button
+            data-settings-nav="keyboard"
+            onclick="settingsPage('keyboard')"
+          >
+            키보드
+          </button>
+          <button
+            data-settings-nav="database"
+            onclick="settingsPage('database')"
+          >
+            데이터베이스
+          </button>
+        </nav>
+        <div class="settings-content">
+          <section data-settings-page="appearance">
+            <h3>화면</h3>
+            <label class="field"
+              ><span>밀도</span
+              ><select id="settingDensity" onchange="readSettingsDraft()">
+                <option value="normal">기본</option>
+                <option value="compact">촘촘하게</option>
+              </select></label
+            >
+            <label class="field"
+              ><span>UI 글자 크기</span
+              ><input
+                id="settingFont"
+                type="number"
+                min="11"
+                max="16"
+                step="1"
+                oninput="readSettingsDraft()"
+            /></label>
+            <p class="muted">
+              읽기 편한 간격과 명확한 포커스를 기본으로 사용합니다.
+            </p>
+            <div class="note">
+              변경은 적용을 누른 뒤 데모 화면에 반영됩니다.
+            </div>
+          </section>
+          <section data-settings-page="tools" class="hidden">
+            <h3>도구 영역</h3>
+            <div class="manager-shell tool-manager">
+              <div id="toolList" class="manager-master"></div>
+              <div class="manager-detail">
+                <h4 id="toolDetailTitle">프로젝트</h4>
+                <label class="check-row"
+                  ><input
+                    id="toolVisible"
+                    type="checkbox"
+                    onchange="setSelectedToolVisible(this.checked)"
+                  />도구 영역에 표시</label
+                >
+                <label class="field"
+                  ><span>위치</span
+                  ><select
+                    id="toolPosition"
+                    onchange="moveSelectedTool(this.value)"
+                  >
+                    <option value="leftTop">왼쪽 위</option>
+                    <option value="leftBottom">왼쪽 아래</option>
+                    <option value="rightTop">오른쪽 위</option>
+                    <option value="rightBottom">오른쪽 아래</option>
+                    <option value="bottom">하단</option>
+                  </select></label
+                >
+                <p class="managed-status">
+                  위·아래 버튼은 같은 위치 안의 순서를 바꿉니다. 다른 영역으로
+                  옮기려면 위치를 선택하세요.
+                </p>
+              </div>
+            </div>
+          </section>
+          <section data-settings-page="keyboard" class="hidden">
+            <h3>키보드</h3>
+            <div class="shortcut-row">
+              <span>실행할 SQL 범위 선택</span><kbd>⌘ Enter</kbd>
+            </div>
+            <div class="shortcut-row">
+              <span>프로젝트 순서 조정</span><kbd>⌥ ↑ / ↓</kbd>
+            </div>
+            <div class="shortcut-row">
+              <span>셀 값 확정 · 취소</span><kbd>Enter / Esc</kbd>
+            </div>
+            <div class="shortcut-row">
+              <span>크기 조절 경계</span><kbd>방향키 / Home / End</kbd>
+            </div>
+            <p class="muted">
+              이 목록은 HTML 데모의 조작입니다. 앱의 실제 키맵 설정은
+              유지됩니다.
+            </p>
+          </section>
+          <section data-settings-page="database" class="hidden">
+            <h3>데이터베이스</h3>
+            <p>연결 프로필은 모든 작업 공간에서 공유합니다.</p>
+            <p>실제 앱은 macOS 키체인으로 저장한 비밀번호를 관리합니다.</p>
+            <button
+              class="outline"
+              onclick="closeDialog('settingsDialog');openConnections()"
+            >
+              <i data-icon="database"></i>연결 관리
+            </button>
+            <p class="muted">이 HTML에서는 샘플 연결 설정만 보여줍니다.</p>
+          </section>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <span id="settingsFeedback" class="muted" role="status"></span
+        ><span class="spacer"></span
+        ><button onclick="closeDialog('settingsDialog')">취소</button
+        ><button class="outline" onclick="applySettings(false)">적용</button
+        ><button class="primary" onclick="applySettings(true)">확인</button>
+      </div>
+    </dialog>
+    <dialog id="systemDialog">
+      <div class="dialog-title">
+        디자인 시스템<span class="badge">확인용</span
+        ><span class="spacer"></span
+        ><button
+          class="icon"
+          aria-label="디자인 시스템 닫기"
+          onclick="closeDialog('systemDialog')"
+        >
+          <i data-icon="x"></i>
+        </button>
+      </div>
+      <div class="dialog-body collection">
+        <section>
+          <h3>의미 색상</h3>
+          <div id="colorCollection" class="swatches"></div>
+        </section>
+        <section>
+          <h3>타이포그래피</h3>
+          <p style="font-size: 16px; font-weight: 600">영역 제목 · 16</p>
+          <p>본문과 제어 label · 13</p>
+          <p class="muted" style="font-size: 11px">보조 설명 · 11</p>
+          <pre class="mono">SELECT id FROM customers;</pre>
+        </section>
+        <section>
+          <h3>컨트롤과 상태</h3>
+          <div class="state-samples">
+            <button
+              class="outline"
+              onclick="document.getElementById('collectionFeedback').textContent='기본 버튼 활성화 확인'"
+            >
+              기본</button
+            ><button
+              class="primary"
+              onclick="document.getElementById('collectionFeedback').textContent='주요 버튼 활성화 확인'"
+            >
+              주요 동작</button
+            ><button disabled>사용 불가</button
+            ><button class="sample-selected" aria-pressed="true">선택됨</button
+            ><button class="sample-busy" disabled>
+              <i data-icon="refresh-cw"></i>진행 상태 예제
+            </button>
+          </div>
+          <p id="collectionFeedback" class="muted" role="status">
+            Tab으로 포커스 경계를 확인할 수 있습니다.
+          </p>
+          <p class="ok">완료 · 결과가 반영됨</p>
+          <p class="warn">주의 · 미반영 변경이 있음</p>
+          <p style="color: var(--error)">오류 · 입력을 확인해 주세요</p>
+        </section>
+        <section>
+          <h3>공통 아이콘 · 16 / 20</h3>
+          <div id="iconCollection" class="icon-collection"></div>
+        </section>
+        <section>
+          <h3>문서 모드</h3>
+          <div class="mode">
+            <button class="active" onclick="collectionMode(this)">원문</button
+            ><button onclick="collectionMode(this)">미리보기</button>
+          </div>
+          <p class="muted">현재 상태와 가능한 목적지를 함께 표시합니다.</p>
+        </section>
+        <section>
+          <h3>레이아웃과 크기</h3>
+          <p>중앙 문서와 좌·우·하단 도구 영역을 유지합니다.</p>
+          <p class="muted">
+            경계를 잡아 크기를 조절하고 방향키로도 변경할 수 있습니다.
+          </p>
+          <p class="muted">목록 순서 조정은 직접 지정 모드에서 제공합니다.</p>
+        </section>
+        <section style="grid-column: 1 / -1">
+          <h3>목록 관리</h3>
+          <div id="listCollection"></div>
+          <p class="muted">
+            항목 선택과 공통 툴바를 연결합니다. 첫째·마지막 항목의 이동은
+            비활성입니다.
+          </p>
+        </section>
+      </div>
+      <div class="dialog-footer">
+        <span class="muted"
+          >현재 HTML과 같은 색상·컨트롤·아이콘을 사용합니다.</span
+        ><span class="spacer"></span
+        ><button onclick="closeDialog('systemDialog')">닫기</button>
+      </div>
+    </dialog>
+    <dialog id="runDialog">
+      <div class="dialog-title">
+        실행 구성<span class="spacer"></span
+        ><button
+          class="icon"
+          aria-label="닫기"
+          onclick="closeDialog('runDialog')"
+        >
+          <i data-icon="x"></i>
+        </button>
+      </div>
+      <div class="manager-shell">
+        <div id="runList" class="manager-master"></div>
+        <div class="manager-detail">
+          <div id="runFields">
+            <label class="field"
+              ><span>이름</span
+              ><input
+                id="runName"
+                aria-label="실행 구성 이름"
+                oninput="updateRunField('name',this.value)"
+            /></label>
+            <label class="field"
+              ><span>명령</span
+              ><input
+                id="runCommand"
+                class="mono"
+                aria-label="실행 명령"
+                oninput="updateRunField('command',this.value)"
+            /></label>
+            <label class="field"
+              ><span>작업 폴더</span
+              ><input
+                id="runFolder"
+                class="mono"
+                aria-label="실행 작업 폴더"
+                oninput="updateRunField('folder',this.value)"
+            /></label>
+            <div class="dialog-hint">
+              HTML 안에서만 설정을 바꿉니다. 실행 버튼은 샘플 상태·로그를
+              보여줍니다.
+            </div>
+          </div>
+          <p id="runEmpty" class="muted hidden">
+            왼쪽 툴바에서 실행 구성을 추가하세요.
+          </p>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <span id="runFeedback" class="managed-status" role="status"></span
+        ><span class="spacer"></span>
+        <button onclick="closeDialog('runDialog')">취소</button
+        ><button class="primary" onclick="saveRunConfiguration()">저장</button>
+      </div>
+    </dialog>
+    <dialog id="projectsDialog">
+      <div class="dialog-title">
+        프로젝트<span class="spacer"></span
+        ><label class="compact-select">
+          <select
+            id="projectSort"
+            aria-label="프로젝트 정렬 기준"
+            onchange="chooseProjectSort(this.value)"
+          >
+            <option value="name">이름순</option>
+            <option value="recent">최근 사용순</option>
+            <option value="manual">직접 지정</option></select
+          ><i data-icon="chevron-down"></i> </label
+        ><button
+          class="icon"
+          aria-label="닫기"
+          onclick="closeDialog('projectsDialog')"
+        >
+          <i data-icon="x"></i>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <div id="projectList"></div>
+        <div class="dialog-hint" id="projectHint" role="status">
+          목록은 데모 데이터입니다.
+        </div>
+        <button
+          id="projectManageAgain"
+          class="outline hidden"
+          onclick="openProjectOrder()"
+        >
+          순서 관리…
+        </button>
+      </div>
+    </dialog>
+    <dialog id="projectOrderDialog">
+      <div class="dialog-title">
+        프로젝트 순서<span class="spacer"></span
+        ><button
+          class="icon"
+          aria-label="프로젝트 순서 닫기"
+          onclick="closeDialog('projectOrderDialog')"
+        >
+          <i data-icon="x"></i>
+        </button>
+      </div>
+      <div id="projectOrderList"></div>
+      <div class="dialog-footer">
+        <span id="projectOrderFeedback" class="managed-status" role="status"
+          >항목을 선택한 뒤 위·아래로 이동하세요.</span
+        ><span class="spacer"></span
+        ><button onclick="closeDialog('projectOrderDialog')">취소</button
+        ><button class="primary" onclick="saveProjectOrder()">확인</button>
+      </div>
+    </dialog>
+    <div id="toast" class="toast hidden" role="status"></div>
+    <!-- Inline Lucide icons. ISC License
+
+Copyright (c) 2026 Lucide Icons and Contributors
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+—-
+
+The following Lucide icons are derived from the Feather project:
+
+airplay, alert-circle, alert-octagon, alert-triangle, aperture, arrow-down-circle, arrow-down-left, arrow-down-right, arrow-down, arrow-left-circle, arrow-left, arrow-right-circle, arrow-right, arrow-up-circle, arrow-up-left, arrow-up-right, arrow-up, at-sign, calendar, cast, check, chevron-down, chevron-left, chevron-right, chevron-up, chevrons-down, chevrons-left, chevrons-right, chevrons-up, circle, clipboard, clock, code, columns, command, compass, corner-down-left, corner-down-right, corner-left-down, corner-left-up, corner-right-down, corner-right-up, corner-up-left, corner-up-right, crosshair, database, divide-circle, divide-square, dollar-sign, download, external-link, feather, frown, hash, headphones, help-circle, info, italic, key, layout, life-buoy, link-2, link, loader, lock, log-in, log-out, maximize, meh, minimize, minimize-2, minus-circle, minus-square, minus, monitor, moon, more-horizontal, more-vertical, move, music, navigation-2, navigation, octagon, pause-circle, percent, plus-circle, plus-square, plus, power, radio, rss, search, server, share, shopping-bag, sidebar, smartphone, smile, square, table-2, tablet, target, terminal, trash-2, trash, triangle, tv, type, upload, x-circle, x-octagon, x-square, x, zoom-in, zoom-out
+
+The MIT License (MIT) (for the icons listed above)
+
+Copyright (c) 2013-present Cole Bemis
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ -->
+    <script>
+      // Self-contained design snapshot. Colors and icon paths come from the repo's canonical registry.
+      const ICONS = {
+        "chevron-down":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="m6 9 6 6 6-6" />\n</svg>',
+        "git-branch":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M15 6a9 9 0 0 0-9 9V3" />\n  <circle cx="18" cy="6" r="3" />\n  <circle cx="6" cy="18" r="3" />\n</svg>',
+        search:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="m21 21-4.34-4.34" />\n  <circle cx="11" cy="11" r="8" />\n</svg>',
+        settings:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />\n  <circle cx="12" cy="12" r="3" />\n</svg>',
+        files:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />\n  <path d="M14 2v5a1 1 0 0 0 1 1h5" />\n  <path d="M10 9H8" />\n  <path d="M16 13H8" />\n  <path d="M16 17H8" />\n</svg>',
+        "list-tree":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M8 5h13" />\n  <path d="M13 12h8" />\n  <path d="M13 19h8" />\n  <path d="M3 10a2 2 0 0 0 2 2h3" />\n  <path d="M3 5v12a2 2 0 0 0 2 2h3" />\n</svg>',
+        "triangle-alert":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />\n  <path d="M12 9v4" />\n  <path d="M12 17h.01" />\n</svg>',
+        "file-plus":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />\n  <path d="M14 2v5a1 1 0 0 0 1 1h5" />\n  <path d="M9 15h6" />\n  <path d="M12 18v-6" />\n</svg>',
+        "ellipsis-vertical":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <circle cx="12" cy="12" r="1" />\n  <circle cx="12" cy="5" r="1" />\n  <circle cx="12" cy="19" r="1" />\n</svg>',
+        "folder-open":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" />\n</svg>',
+        "chevron-right":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="m9 18 6-6-6-6" />\n</svg>',
+        folder:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />\n</svg>',
+        "file-text":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />\n  <path d="M14 2v5a1 1 0 0 0 1 1h5" />\n  <path d="M10 9H8" />\n  <path d="M16 13H8" />\n  <path d="M16 17H8" />\n</svg>',
+        file: '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />\n  <path d="M14 2v5a1 1 0 0 0 1 1h5" />\n</svg>',
+        minus:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M5 12h14" />\n</svg>',
+        hash: '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <line x1="4" x2="20" y1="9" y2="9" />\n  <line x1="4" x2="20" y1="15" y2="15" />\n  <line x1="10" x2="8" y1="3" y2="21" />\n  <line x1="16" x2="14" y1="3" y2="21" />\n</svg>',
+        code: '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="m16 18 6-6-6-6" />\n  <path d="m8 6-6 6 6 6" />\n</svg>',
+        table:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M12 3v18" />\n  <rect width="18" height="18" x="3" y="3" rx="2" />\n  <path d="M3 9h18" />\n  <path d="M3 15h18" />\n</svg>',
+        database:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <ellipse cx="12" cy="5" rx="9" ry="3" />\n  <path d="M3 5V19A9 3 0 0 0 21 19V5" />\n  <path d="M3 12A9 3 0 0 0 21 12" />\n</svg>',
+        play: '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />\n</svg>',
+        square:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <rect width="18" height="18" x="3" y="3" rx="2" />\n</svg>',
+        save: '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />\n  <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />\n  <path d="M7 3v4a1 1 0 0 0 1 1h7" />\n</svg>',
+        pencil:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />\n  <path d="m15 5 4 4" />\n</svg>',
+        download:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M12 15V3" />\n  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />\n  <path d="m7 10 5 5 5-5" />\n</svg>',
+        plus: '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M5 12h14" />\n  <path d="M12 5v14" />\n</svg>',
+        "refresh-cw":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />\n  <path d="M21 3v5h-5" />\n  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />\n  <path d="M8 16H3v5" />\n</svg>',
+        layers:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />\n  <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" />\n  <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" />\n</svg>',
+        terminal:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M12 19h8" />\n  <path d="m4 17 6-6-6-6" />\n</svg>',
+        bell: '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M10.268 21a2 2 0 0 0 3.464 0" />\n  <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />\n</svg>',
+        x: '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M18 6 6 18" />\n  <path d="m6 6 12 12" />\n</svg>',
+        "text-select":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M17 22h-1a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4h1" />\n  <path d="M7 22h1a4 4 0 0 0 4-4" />\n  <path d="M7 2h1a4 4 0 0 1 4 4" />\n</svg>',
+        "lock-keyhole":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <circle cx="12" cy="16" r="1" />\n  <rect x="3" y="10" width="18" height="12" rx="2" />\n  <path d="M7 10V7a5 5 0 0 1 10 0v3" />\n</svg>',
+        copy: '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />\n  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />\n</svg>',
+        "arrow-up":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="m5 12 7-7 7 7" />\n  <path d="M12 19V5" />\n</svg>',
+        "arrow-down":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M12 5v14" />\n  <path d="m19 12-7 7-7-7" />\n</svg>',
+        check:
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M20 6 9 17l-5-5" />\n</svg>',
+        "key-round":
+          '<svg\n  xmlns="http://www.w3.org/2000/svg"\n  width="24"\n  height="24"\n  viewBox="0 0 24 24"\n  fill="none"\n  stroke="currentColor"\n  stroke-width="2"\n  stroke-linecap="round"\n  stroke-linejoin="round"\n>\n  <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" />\n  <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" />\n</svg>',
+      };
+      function icons(root = document) {
+        root.querySelectorAll("[data-icon]").forEach((el) => {
+          el.outerHTML = ICONS[el.dataset.icon] || ICONS.file;
+        });
+      }
+      icons();
+      // Callers own items, selection, query, mutations, and action availability.
+      function renderManagedList(
+        container,
+        {
+          label,
+          items,
+          selectedId,
+          onSelect,
+          actions = [],
+          caption = "",
+          query = "",
+          onQuery,
+          onActivate,
+        },
+      ) {
+        const states = (renderManagedList.states ||= new WeakMap());
+        let state = states.get(container);
+        const element = (tag, className, text) => {
+          const node = document.createElement(tag);
+          node.className = className;
+          if (text != null) node.textContent = text;
+          return node;
+        };
+        const graphic = (name) => {
+          const node = element("span", "managed-icon");
+          node.setAttribute("aria-hidden", "true");
+          node.innerHTML = ICONS[name] || ICONS.file;
+          return node;
+        };
+        if (!state) {
+          const root = element("div", "managed-list");
+          const toolbar = element("div", "managed-toolbar");
+          toolbar.setAttribute("role", "toolbar");
+          const search = element("input", "managed-search");
+          search.type = "search";
+          const captionNode = element("div", "managed-caption");
+          const rows = element("div", "managed-rows");
+          rows.tabIndex = 0;
+          rows.setAttribute("role", "listbox");
+          root.append(toolbar, search, captionNode, rows);
+          container.replaceChildren(root);
+          state = {
+            root,
+            toolbar,
+            search,
+            captionNode,
+            rows,
+            rowIds: new Map(),
+            selectedId: undefined,
+          };
+          state.prefix = `managed-list-${(renderManagedList.nextId = (renderManagedList.nextId || 0) + 1)}`;
+          states.set(container, state);
+        }
+        const { root, toolbar, search, captionNode, rows } = state;
+        if (root.parentNode !== container) container.replaceChildren(root);
+        const active = document.activeElement;
+        const focusedAction = toolbar.contains(active)
+          ? active.dataset.action
+          : null;
+        const scrollTop = rows.scrollTop;
+        const selectionChanged = state.selectedId !== selectedId;
+        state.selectedId = selectedId;
+        state.options = { onSelect, onQuery, onActivate, actions };
+        const needle = query.trim().toLocaleLowerCase();
+        state.visible = items.filter(
+          (item) =>
+            !needle ||
+            `${item.name} ${item.detail || ""}`
+              .toLocaleLowerCase()
+              .includes(needle),
+        );
+        const revealSelected = () => {
+          const row = Array.from(rows.children).find(
+            (node) => node.dataset.itemId === String(state.selectedId),
+          );
+          if (!row) return;
+          // Scroll this list only; scrollIntoView would also move the outer dialog.
+          const box = rows.getBoundingClientRect();
+          const target = row.getBoundingClientRect();
+          const top = box.top + rows.clientTop;
+          const bottom = top + rows.clientHeight;
+          if (target.top < top) rows.scrollTop -= top - target.top;
+          else if (target.bottom > bottom)
+            rows.scrollTop += target.bottom - bottom;
+        };
+        const updateSelection = () => {
+          let selectedRow;
+          for (const row of rows.children) {
+            if (row.getAttribute("role") !== "option") continue;
+            const selected = row.dataset.itemId === String(state.selectedId);
+            row.setAttribute("aria-selected", String(selected));
+            row.classList.toggle("selected", selected);
+            if (selected) selectedRow = row;
+          }
+          if (selectedRow)
+            rows.setAttribute("aria-activedescendant", selectedRow.id);
+          else rows.removeAttribute("aria-activedescendant");
+        };
+        const select = (id) => {
+          state.selectedId = id;
+          updateSelection();
+          state.options.onSelect?.(id);
+          revealSelected();
+        };
+        const invoke = (action) => {
+          if (
+            !action ||
+            action.disabled ||
+            typeof action.onClick !== "function"
+          )
+            return;
+          const moving = action.id === "move-up" || action.id === "move-down";
+          if (moving) state.reveal = true;
+          action.onClick();
+          if (moving) {
+            revealSelected();
+            state.reveal = false;
+          }
+        };
+        toolbar.setAttribute("aria-label", `${label} 관리`);
+        toolbar.replaceChildren();
+        for (const action of actions) {
+          if (action.separator) {
+            const separator = element("span", "managed-separator");
+            separator.setAttribute("role", "separator");
+            separator.setAttribute("aria-orientation", "vertical");
+            toolbar.append(separator);
+            if (!action.id) continue;
+          }
+          const button = element("button", action.icon ? "icon" : "");
+          button.type = "button";
+          button.dataset.action = action.id;
+          button.disabled = !!action.disabled;
+          button.setAttribute("aria-label", action.label);
+          button.title =
+            action.hint ||
+            action.label + (action.shortcut ? ` (${action.shortcut})` : "");
+          if (action.shortcut)
+            button.setAttribute("aria-keyshortcuts", action.shortcut);
+          if (action.icon) button.append(graphic(action.icon));
+          else button.textContent = action.label;
+          button.onclick = () => invoke(action);
+          toolbar.append(button);
+        }
+        toolbar.hidden = actions.length === 0;
+        search.hidden = typeof onQuery !== "function";
+        search.placeholder = `${label} 검색`;
+        search.setAttribute("aria-label", `${label} 검색`);
+        // Retain the input and skip equal values to preserve IME and caret.
+        if (search.value !== query) search.value = query;
+        search.oninput = () => state.options.onQuery?.(search.value);
+        captionNode.textContent = caption;
+        captionNode.hidden = !caption;
+        rows.setAttribute("aria-label", label);
+        rows.replaceChildren();
+        let previousGroup;
+        for (const item of state.visible) {
+          if (item.group && item.group !== previousGroup) {
+            const group = element("div", "managed-group", item.group);
+            group.setAttribute("role", "presentation");
+            rows.append(group);
+          }
+          previousGroup = item.group;
+          const row = element("div", "managed-row");
+          if (!state.rowIds.has(item.id))
+            state.rowIds.set(
+              item.id,
+              `${state.prefix}-option-${state.rowIds.size + 1}`,
+            );
+          row.id = state.rowIds.get(item.id);
+          row.dataset.itemId = String(item.id);
+          row.setAttribute("role", "option");
+          row.setAttribute(
+            "aria-label",
+            item.name + (item.detail ? `, ${item.detail}` : ""),
+          );
+          if (item.icon) row.append(graphic(item.icon));
+          row.append(element("span", "managed-row-name", item.name));
+          if (item.detail)
+            row.append(element("span", "managed-row-detail", item.detail));
+          row.onclick = () => {
+            rows.focus({ preventScroll: true });
+            select(item.id);
+          };
+          row.ondblclick = () => state.options.onActivate?.(item.id);
+          rows.append(row);
+        }
+        if (!state.visible.length) {
+          const empty = element(
+            "div",
+            "managed-empty",
+            needle ? "검색 결과가 없습니다." : "항목이 없습니다.",
+          );
+          empty.setAttribute("role", "presentation");
+          rows.append(empty);
+        }
+        updateSelection();
+        rows.onkeydown = (event) => {
+          if (
+            event.isComposing ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.shiftKey
+          )
+            return;
+          if (event.altKey) {
+            if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+            event.preventDefault();
+            event.stopPropagation();
+            invoke(
+              state.options.actions.find(
+                (action) =>
+                  action.id ===
+                  (event.key === "ArrowUp" ? "move-up" : "move-down"),
+              ),
+            );
+            return;
+          }
+          if (event.key === "Enter") {
+            if (
+              state.visible.some((item) => item.id === state.selectedId) &&
+              state.options.onActivate
+            ) {
+              event.preventDefault();
+              event.stopPropagation();
+              state.options.onActivate(state.selectedId);
+            }
+            return;
+          }
+          if (!["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key))
+            return;
+          event.preventDefault();
+          event.stopPropagation();
+          if (!state.visible.length) return;
+          const current = state.visible.findIndex(
+            (item) => item.id === state.selectedId,
+          );
+          let index;
+          if (event.key === "Home") index = 0;
+          else if (event.key === "End") index = state.visible.length - 1;
+          else if (current < 0)
+            index = event.key === "ArrowUp" ? state.visible.length - 1 : 0;
+          else
+            index = Math.max(
+              0,
+              Math.min(
+                state.visible.length - 1,
+                current + (event.key === "ArrowDown" ? 1 : -1),
+              ),
+            );
+          select(state.visible[index].id);
+        };
+        root.onkeydown = (event) => {
+          if (
+            !event.altKey ||
+            !toolbar.contains(event.target) ||
+            !["ArrowUp", "ArrowDown"].includes(event.key)
+          )
+            return;
+          event.preventDefault();
+          event.stopPropagation();
+          invoke(
+            state.options.actions.find(
+              (action) =>
+                action.id ===
+                (event.key === "ArrowUp" ? "move-up" : "move-down"),
+            ),
+          );
+        };
+        toolbar.onkeydown = (event) => {
+          if (
+            event.altKey ||
+            !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)
+          )
+            return;
+          const buttons = Array.from(
+            toolbar.querySelectorAll("button:not(:disabled)"),
+          );
+          const current = buttons.indexOf(document.activeElement);
+          const index =
+            event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? buttons.length - 1
+                : Math.max(
+                    0,
+                    Math.min(
+                      buttons.length - 1,
+                      current + (event.key === "ArrowLeft" ? -1 : 1),
+                    ),
+                  );
+          event.preventDefault();
+          event.stopPropagation();
+          buttons[index]?.focus();
+        };
+        rows.scrollTop = scrollTop;
+        if (focusedAction) {
+          const replacement = Array.from(toolbar.children).find(
+            (node) => node.dataset.action === focusedAction && !node.disabled,
+          );
+          (replacement || rows).focus({ preventScroll: true });
+        }
+        if (selectionChanged || state.reveal) revealSelected();
+        return root;
+      }
+
+      let markdownEditing = false;
+      let activeTab = "query",
+        scope = "현재 구문 · 2–5줄",
+        selectedRows = new Set(),
+        changes = new Map(),
+        running = null,
+        noticeTimer;
+      const original = [
+        [1, "김민서", "minseo@example.test", "team", "2026-11-05"],
+        [2, "Alex Chen", "alex@example.test", "pro", "2026-11-04"],
+        [3, "박지훈", null, "free", "2026-11-04"],
+        [4, "Sam Rivera", "sam@example.test", "team", "2026-11-03"],
+        [5, "이서연", "seoyeon@example.test", "pro", "2026-11-03"],
+        [6, "Taylor Kim", "taylor@example.test", "free", "2026-11-02"],
+        [7, "정하늘", "haneul@example.test", "pro", "2026-11-01"],
+        [8, "Jordan Lee", "jordan@example.test", "team", "2026-10-31"],
+      ];
+      let rows = structuredClone(original);
+      function toast(text) {
+        const el = document.getElementById("toast");
+        el.textContent = text;
+        el.classList.remove("hidden");
+        clearTimeout(noticeTimer);
+        noticeTimer = setTimeout(() => el.classList.add("hidden"), 3600);
+      }
+      function closeDialog(id) {
+        document.getElementById(id).close();
+      }
+      function selectedManagedItem(state) {
+        return state.items.find((item) => item.id === state.selectedId);
+      }
+      function moveManagedItem(state, destination, render) {
+        const index = state.items.findIndex(
+          (item) => item.id === state.selectedId,
+        );
+        if (
+          state.query ||
+          index < 0 ||
+          destination < 0 ||
+          destination >= state.items.length
+        )
+          return;
+        const item = state.items.splice(index, 1)[0];
+        state.items.splice(destination, 0, item);
+        state.notice = item.name + " · " + (destination + 1) + "번째로 이동됨";
+        render();
+      }
+      function appendManagedItem(state, item, render) {
+        state.items.push(item);
+        state.selectedId = item.id;
+        state.query = "";
+        state.notice = item.name + " 추가됨";
+        render();
+      }
+      function removeManagedItem(state, render) {
+        const index = state.items.findIndex(
+          (item) => item.id === state.selectedId,
+        );
+        if (index < 0) return;
+        const removed = state.items.splice(index, 1)[0];
+        state.selectedId =
+          state.items[Math.min(index, state.items.length - 1)]?.id ?? null;
+        state.notice = removed.name + " 삭제됨";
+        render();
+      }
+      function managedActions(
+        state,
+        render,
+        { add, remove, duplicate, edit } = {},
+      ) {
+        const selected = selectedManagedItem(state);
+        const index = state.items.indexOf(selected);
+        const actions = [];
+        if (add)
+          actions.push({
+            id: "add",
+            icon: "plus",
+            label: "추가",
+            onClick: add,
+          });
+        if (remove)
+          actions.push({
+            id: "remove",
+            icon: "minus",
+            label: "삭제",
+            disabled: !selected,
+            onClick: remove,
+          });
+        if (duplicate)
+          actions.push({
+            id: "duplicate",
+            icon: "copy",
+            label: "복제",
+            disabled: !selected,
+            onClick: duplicate,
+          });
+        if (actions.length) actions.push({ separator: true });
+        actions.push(
+          {
+            id: "move-up",
+            icon: "arrow-up",
+            label: "위로 이동",
+            shortcut: "Alt+ArrowUp",
+            hint: state.query
+              ? "해당 목록의 검색을 해제하면 순서를 변경할 수 있습니다."
+              : "",
+            disabled: !!state.query || index <= 0,
+            onClick: () => moveManagedItem(state, index - 1, render),
+          },
+          {
+            id: "move-down",
+            icon: "arrow-down",
+            label: "아래로 이동",
+            shortcut: "Alt+ArrowDown",
+            hint: state.query
+              ? "해당 목록의 검색을 해제하면 순서를 변경할 수 있습니다."
+              : "",
+            disabled:
+              !!state.query || index < 0 || index >= state.items.length - 1,
+            onClick: () => moveManagedItem(state, index + 1, render),
+          },
+        );
+        if (edit)
+          actions.push(
+            { separator: true },
+            {
+              id: "edit",
+              icon: "settings",
+              label: "세부 설정",
+              disabled: !selected,
+              onClick: edit,
+            },
+          );
+        return actions;
+      }
+      let demoItemId = 0;
+      const newDemoId = (prefix) => prefix + "-" + ++demoItemId;
+
+      const toolPositions = {
+        leftTop: "왼쪽 위",
+        leftBottom: "왼쪽 아래",
+        rightTop: "오른쪽 위",
+        rightBottom: "오른쪽 아래",
+        bottom: "하단",
+      };
+      let toolLayout = [
+        {
+          id: "leftTop",
+          name: "프로젝트",
+          icon: "files",
+          position: "leftTop",
+          visible: true,
+        },
+        {
+          id: "leftBottom",
+          name: "구조",
+          icon: "list-tree",
+          position: "leftBottom",
+          visible: true,
+        },
+        {
+          id: "rightTop",
+          name: "데이터베이스",
+          icon: "database",
+          position: "rightTop",
+          visible: true,
+        },
+        {
+          id: "rightBottom",
+          name: "터미널",
+          icon: "terminal",
+          position: "rightBottom",
+          visible: true,
+        },
+        {
+          id: "problems",
+          name: "문제",
+          icon: "triangle-alert",
+          position: "bottom",
+          visible: true,
+        },
+        {
+          id: "run",
+          name: "실행 결과",
+          icon: "play",
+          position: "bottom",
+          visible: true,
+        },
+      ];
+      const activeTools = {
+        leftTop: "leftTop",
+        leftBottom: "leftBottom",
+        rightTop: "rightTop",
+        rightBottom: "rightBottom",
+        bottom: null,
+      };
+      const toolSlots = {},
+        toolButtons = {},
+        stripeGroups = {};
+      function initToolSlots() {
+        for (const position of Object.keys(toolPositions)) {
+          if (position === "bottom") {
+            toolSlots[position] = document.getElementById("bottomDock");
+            continue;
+          }
+          const panel = document.getElementById(position);
+          const host = document.createElement("div");
+          host.className =
+            "tool-slot" + (position.endsWith("Bottom") ? " lower-panel" : "");
+          host.dataset.slot = position;
+          panel.before(host);
+          host.append(panel);
+          panel.classList.remove("lower-panel");
+          toolSlots[position] = host;
+        }
+        const left = document.querySelector('nav[aria-label="왼쪽 도구"]');
+        const right = document.querySelector('nav[aria-label="오른쪽 도구"]');
+        const otherLeft = [...left.querySelectorAll("button")].filter(
+          (b) => !b.getAttribute("onclick").includes("toggle"),
+        );
+        const otherRight = [...right.querySelectorAll("button")].filter(
+          (b) => !b.getAttribute("onclick").includes("toggle"),
+        );
+        for (const item of toolLayout) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.tool = item.id;
+          button.innerHTML = ICONS[item.icon];
+          button.onclick = () => toggleSlot(item.id);
+          toolButtons[item.id] = button;
+        }
+        for (const position of Object.keys(toolPositions)) {
+          const group = document.createElement("div");
+          group.className = "stripe-group";
+          group.setAttribute("role", "group");
+          group.setAttribute("aria-label", toolPositions[position] + " 도구");
+          stripeGroups[position] = group;
+        }
+        const divider = () => {
+          const node = document.createElement("div");
+          node.className = "slot-divider";
+          return node;
+        };
+        const spacer = document.createElement("span");
+        spacer.className = "spacer";
+        left.replaceChildren(
+          stripeGroups.leftTop,
+          ...otherLeft,
+          divider(),
+          stripeGroups.leftBottom,
+          spacer,
+          stripeGroups.bottom,
+        );
+        right.replaceChildren(
+          stripeGroups.rightTop,
+          divider(),
+          stripeGroups.rightBottom,
+          ...otherRight,
+        );
+        applyToolLayout(toolLayout);
+      }
+      function renderToolSlots() {
+        const workspace = document.querySelector(".workspace");
+        for (const side of ["left", "right"]) {
+          const open =
+            !!activeTools[side + "Top"] || !!activeTools[side + "Bottom"];
+          document
+            .querySelector("." + side + "-column")
+            .classList.toggle("collapsed", !open);
+          if (open) workspace.style.removeProperty("--" + side + "-track");
+          else workspace.style.setProperty("--" + side + "-track", "0px");
+        }
+
+        for (const [position, host] of Object.entries(toolSlots)) {
+          const active = activeTools[position];
+          host.classList.toggle("hidden", !active);
+          for (const item of toolLayout.filter(
+            (t) => t.position === position,
+          )) {
+            const opened = item.id === active;
+            document
+              .getElementById(item.id)
+              .classList.toggle("hidden", !opened);
+            const button = toolButtons[item.id];
+            button.classList.toggle("active", opened);
+            button.setAttribute("aria-pressed", String(opened));
+          }
+        }
+        document
+          .getElementById("dockResize")
+          .classList.toggle("hidden", !activeTools.bottom);
+      }
+      let appliedSettings = { density: "normal", font: 13 },
+        settingsDraft,
+        toolListState;
+      function settingsPage(name) {
+        document
+          .querySelectorAll("[data-settings-page]")
+          .forEach((section) =>
+            section.classList.toggle(
+              "hidden",
+              section.dataset.settingsPage !== name,
+            ),
+          );
+        document.querySelectorAll("[data-settings-nav]").forEach((button) => {
+          const selected = button.dataset.settingsNav === name;
+          button.classList.toggle("active", selected);
+          if (selected) button.setAttribute("aria-current", "page");
+          else button.removeAttribute("aria-current");
+        });
+      }
+      function openSettings() {
+        settingsDraft = structuredClone(appliedSettings);
+        document.getElementById("settingDensity").value = settingsDraft.density;
+        document.getElementById("settingFont").value = settingsDraft.font;
+        toolListState = {
+          items: structuredClone(toolLayout),
+          selectedId: toolLayout[0].id,
+          query: "",
+          notice: "",
+        };
+        renderToolManager();
+        document.getElementById("settingsFeedback").textContent = "";
+        settingsPage("appearance");
+        document.getElementById("settingsDialog").showModal();
+      }
+      function readSettingsDraft() {
+        settingsDraft.density = document.getElementById("settingDensity").value;
+        settingsDraft.font = Number(
+          document.getElementById("settingFont").value,
+        );
+        settingsDraft.tools = toolListState.items;
+        document.getElementById("settingsFeedback").textContent =
+          "적용 전 변경";
+      }
+      function renderToolManager() {
+        const item = selectedManagedItem(toolListState);
+        const actions = managedActions(toolListState, renderToolManager, {
+          edit: () => document.getElementById("toolPosition").focus(),
+        });
+        for (const action of actions) {
+          const direction =
+            action.id === "move-up" ? -1 : action.id === "move-down" ? 1 : 0;
+          if (!direction) continue;
+          const peers = toolListState.items.filter(
+            (t) => t.position === item?.position,
+          );
+          const next = peers[peers.indexOf(item) + direction];
+          action.disabled = !!toolListState.query || !next;
+          action.onClick = () => moveToolWithinSlot(direction);
+        }
+        actions.unshift(
+          {
+            id: "show",
+            icon: "plus",
+            label: "선택한 도구 표시",
+            disabled: !item || item.visible,
+            onClick: () => setSelectedToolVisible(true),
+          },
+          {
+            id: "hide",
+            icon: "minus",
+            label: "선택한 도구 숨기기",
+            disabled: !item || !item.visible,
+            onClick: () => setSelectedToolVisible(false),
+          },
+          { separator: true },
+        );
+        renderManagedList(document.getElementById("toolList"), {
+          label: "도구",
+          items: Object.keys(toolPositions).flatMap((position) =>
+            toolListState.items
+              .filter((tool) => tool.position === position)
+              .map((tool) => ({
+                ...tool,
+                group: toolPositions[position],
+                detail: tool.visible ? "" : "숨김",
+              })),
+          ),
+          selectedId: toolListState.selectedId,
+          query: toolListState.query,
+          onQuery: (value) => {
+            toolListState.query = value;
+            renderToolManager();
+          },
+          onSelect: (id) => {
+            toolListState.selectedId = id;
+            renderToolManager();
+          },
+          actions,
+          caption: "도구 영역 · " + toolListState.items.length + "개",
+        });
+        document.getElementById("toolDetailTitle").textContent =
+          item?.name || "도구 선택";
+        document.getElementById("toolVisible").checked = !!item?.visible;
+        document.getElementById("toolPosition").value =
+          item?.position || "leftTop";
+        document.getElementById("toolPosition").disabled =
+          !!toolListState.query;
+        settingsDraft.tools = toolListState.items;
+        if (toolListState.notice)
+          document.getElementById("settingsFeedback").textContent =
+            toolListState.notice + " · 적용 전";
+      }
+      function setSelectedToolVisible(visible) {
+        const item = selectedManagedItem(toolListState);
+        if (!item) return;
+        item.visible = visible;
+        toolListState.notice = item.name + (visible ? " 표시" : " 숨김");
+        renderToolManager();
+      }
+      function moveToolWithinSlot(direction) {
+        const item = selectedManagedItem(toolListState);
+        const peers = toolListState.items.filter(
+          (t) => t.position === item?.position,
+        );
+        const next = peers[peers.indexOf(item) + direction];
+        if (toolListState.query || !item || !next) return;
+        moveManagedItem(
+          toolListState,
+          toolListState.items.indexOf(next),
+          renderToolManager,
+        );
+      }
+      function moveSelectedTool(position) {
+        const item = selectedManagedItem(toolListState);
+        if (!item || !Object.hasOwn(toolPositions, position)) return;
+        item.position = position;
+        toolListState.notice =
+          item.name + " · " + toolPositions[position] + "로 이동";
+        renderToolManager();
+      }
+      function applyToolLayout(items) {
+        const opened = new Set(Object.values(activeTools));
+        toolLayout = structuredClone(items);
+        for (const position of Object.keys(toolPositions)) {
+          const peers = toolLayout.filter((item) => item.position === position);
+          const visible = peers.filter((item) => item.visible);
+          activeTools[position] =
+            visible.find((item) => opened.has(item.id))?.id ||
+            (position === "bottom" ? null : visible[0]?.id) ||
+            null;
+          stripeGroups[position].replaceChildren();
+          for (const item of peers) {
+            toolSlots[position].append(document.getElementById(item.id));
+            const button = toolButtons[item.id];
+            button.title = item.name + " · " + toolPositions[position];
+            button.classList.toggle("hidden", !item.visible);
+            stripeGroups[position].append(button);
+          }
+        }
+        renderToolSlots();
+      }
+      function applySettings(close) {
+        readSettingsDraft();
+        if (
+          !Number.isInteger(settingsDraft.font) ||
+          settingsDraft.font < 11 ||
+          settingsDraft.font > 16
+        ) {
+          document.getElementById("settingsFeedback").textContent =
+            "글자 크기는 11–16 사이의 정수로 입력해 주세요.";
+          return;
+        }
+        appliedSettings = structuredClone(settingsDraft);
+        const compact = appliedSettings.density === "compact";
+        document.documentElement.style.setProperty(
+          "--ui-font-size",
+          appliedSettings.font + "px",
+        );
+        document.documentElement.style.setProperty(
+          "--tree-row-height",
+          compact ? "26px" : "30px",
+        );
+        document.documentElement.style.setProperty(
+          "--control-height",
+          compact ? "26px" : "28px",
+        );
+        applyToolLayout(appliedSettings.tools);
+        document.getElementById("settingsFeedback").textContent =
+          "데모에 적용됨";
+        if (close) closeDialog("settingsDialog");
+      }
+
+      let connections = [
+        {
+          id: "lab",
+          name: "UX Lab",
+          driver: "SQLite",
+          path: "~/Databases/ux-lab.sqlite",
+          host: "",
+          port: "",
+          user: "",
+        },
+        {
+          id: "mysql",
+          name: "Development",
+          driver: "MySQL",
+          host: "localhost",
+          port: "3306",
+          user: "dev",
+          path: "",
+        },
+        {
+          id: "postgres",
+          name: "Analytics",
+          driver: "PostgreSQL",
+          host: "localhost",
+          port: "5432",
+          user: "analyst",
+          path: "",
+        },
+        {
+          id: "maria",
+          name: "Reporting",
+          driver: "MariaDB",
+          host: "localhost",
+          port: "3306",
+          user: "report",
+          path: "",
+        },
+        {
+          id: "sqlserver",
+          name: "Local SQL Server",
+          driver: "SQL Server",
+          host: "localhost",
+          port: "1433",
+          user: "dev",
+          path: "",
+        },
+      ];
+      let connectionListState;
+      function openConnections(id = "lab", create = false) {
+        connectionListState = {
+          items: structuredClone(connections),
+          selectedId: connections.some((item) => item.id === id)
+            ? id
+            : (connections[0]?.id ?? null),
+          query: "",
+          notice: "",
+        };
+        if (create) {
+          const item = {
+            id: newDemoId("source"),
+            name: "새 연결",
+            driver: "SQLite",
+            path: "~/Databases/new.sqlite",
+            host: "localhost",
+            port: "",
+            user: "",
+          };
+          connectionListState.items.push(item);
+          connectionListState.selectedId = item.id;
+        }
+        renderConnectionManager();
+        document.getElementById("connectionFeedback").textContent =
+          "HTML 데모 · 샘플 연결";
+        document.getElementById("connectionDialog").showModal();
+      }
+      function renderConnectionList() {
+        renderManagedList(document.getElementById("connectionList"), {
+          label: "연결",
+          items: connectionListState.items.map((item) => ({
+            ...item,
+            icon: "database",
+            detail: item.driver,
+          })),
+          selectedId: connectionListState.selectedId,
+          query: connectionListState.query,
+          onQuery: (value) => {
+            connectionListState.query = value;
+            renderConnectionList();
+          },
+          onSelect: (id) => {
+            connectionListState.selectedId = id;
+            renderConnectionManager();
+          },
+          caption:
+            "전역 데이터 소스 · " + connectionListState.items.length + "개",
+          actions: managedActions(
+            connectionListState,
+            renderConnectionManager,
+            {
+              add: () =>
+                appendManagedItem(
+                  connectionListState,
+                  {
+                    id: newDemoId("source"),
+                    name: "새 연결",
+                    driver: "SQLite",
+                    path: "~/Databases/new.sqlite",
+                    host: "localhost",
+                    port: "",
+                    user: "",
+                  },
+                  renderConnectionManager,
+                ),
+              remove: () =>
+                removeManagedItem(connectionListState, renderConnectionManager),
+              duplicate: () => {
+                const item = selectedManagedItem(connectionListState);
+                appendManagedItem(
+                  connectionListState,
+                  {
+                    ...item,
+                    id: newDemoId("source"),
+                    name: item.name + " 복사본",
+                  },
+                  renderConnectionManager,
+                );
+              },
+              edit: () => document.getElementById("connectionName").focus(),
+            },
+          ),
+        });
+        if (connectionListState.notice)
+          document.getElementById("connectionFeedback").textContent =
+            connectionListState.notice + " · 저장 전";
+      }
+      function renderConnectionManager() {
+        renderConnectionList();
+        const item = selectedManagedItem(connectionListState);
+        document
+          .getElementById("connectionFields")
+          .classList.toggle("hidden", !item);
+        document
+          .getElementById("connectionEmpty")
+          .classList.toggle("hidden", !!item);
+        document.getElementById("connectionTest").disabled = !item;
+        if (!item) return;
+        for (const field of ["name", "driver", "path", "host", "port", "user"])
+          document.getElementById(
+            "connection" + field[0].toUpperCase() + field.slice(1),
+          ).value = item[field] ?? "";
+        document.getElementById("connectionDetailTitle").textContent =
+          item.name;
+        document
+          .getElementById("connectionPathField")
+          .classList.toggle("hidden", item.driver !== "SQLite");
+        document
+          .getElementById("connectionNetworkFields")
+          .classList.toggle("hidden", item.driver === "SQLite");
+      }
+      function updateConnectionField(field, value) {
+        const item = selectedManagedItem(connectionListState);
+        if (!item) return;
+        item[field] = value;
+        connectionListState.notice = "";
+        document.getElementById("connectionDetailTitle").textContent =
+          item.name || "연결";
+        document.getElementById("connectionFeedback").textContent =
+          "저장 전 변경";
+        renderConnectionList();
+      }
+      function changeConnectionDriver(driver) {
+        const item = selectedManagedItem(connectionListState);
+        if (!item) return;
+        item.driver = driver;
+        item.port = {
+          MySQL: "3306",
+          MariaDB: "3306",
+          PostgreSQL: "5432",
+          "SQL Server": "1433",
+          SQLite: "",
+        }[driver];
+        renderConnectionManager();
+      }
+      function testDemoConnection() {
+        const item = selectedManagedItem(connectionListState);
+        if (item)
+          document.getElementById("connectionFeedback").textContent =
+            item.name + " · 샘플 테스트 완료";
+      }
+      function saveConnections() {
+        const invalid = connectionListState.items.find(
+          (item) =>
+            !item.name.trim() ||
+            (item.driver === "SQLite"
+              ? !item.path.trim()
+              : !item.host.trim() ||
+                !Number.isInteger(Number(item.port)) ||
+                Number(item.port) < 1 ||
+                Number(item.port) > 65535),
+        );
+        if (invalid) {
+          document.getElementById("connectionFeedback").textContent =
+            "이름과 연결 정보를 확인해 주세요.";
+          return;
+        }
+        connections = structuredClone(connectionListState.items);
+        closeDialog("connectionDialog");
+        toast("데모의 연결 목록을 저장했습니다.");
+      }
+
+      let runListState;
+      function editRunConfiguration() {
+        const items = Object.entries(runConfigurations).map(([id, config]) => ({
+          id,
+          ...config,
+        }));
+        runListState = {
+          items,
+          selectedId:
+            document.getElementById("runConfig").value || items[0]?.id || null,
+          query: "",
+          notice: "",
+        };
+        renderRunManager();
+        document.getElementById("runFeedback").textContent = "";
+        document.getElementById("runDialog").showModal();
+      }
+      function renderRunList() {
+        renderManagedList(document.getElementById("runList"), {
+          label: "실행 구성",
+          items: runListState.items.map((item) => ({ ...item, icon: "play" })),
+          selectedId: runListState.selectedId,
+          query: runListState.query,
+          onQuery: (value) => {
+            runListState.query = value;
+            renderRunList();
+          },
+          onSelect: (id) => {
+            runListState.selectedId = id;
+            renderRunManager();
+          },
+          caption: "프로젝트 구성 · " + runListState.items.length + "개",
+          actions: managedActions(runListState, renderRunManager, {
+            add: () =>
+              appendManagedItem(
+                runListState,
+                {
+                  id: newDemoId("run"),
+                  name: "새 실행 구성",
+                  command: "herdr-app check mods/codenav",
+                  folder: "~/project/herdr-codebench",
+                },
+                renderRunManager,
+              ),
+            remove: () => removeManagedItem(runListState, renderRunManager),
+            duplicate: () => {
+              const item = selectedManagedItem(runListState);
+              appendManagedItem(
+                runListState,
+                { ...item, id: newDemoId("run"), name: item.name + " 복사본" },
+                renderRunManager,
+              );
+            },
+            edit: () => document.getElementById("runName").focus(),
+          }),
+        });
+        if (runListState.notice)
+          document.getElementById("runFeedback").textContent =
+            runListState.notice + " · 저장 전";
+      }
+      function renderRunManager() {
+        renderRunList();
+        const item = selectedManagedItem(runListState);
+        document.getElementById("runFields").classList.toggle("hidden", !item);
+        document.getElementById("runEmpty").classList.toggle("hidden", !!item);
+        if (!item) return;
+        for (const field of ["name", "command", "folder"])
+          document.getElementById(
+            "run" + field[0].toUpperCase() + field.slice(1),
+          ).value = item[field];
+      }
+      function updateRunField(field, value) {
+        const item = selectedManagedItem(runListState);
+        if (!item) return;
+        item[field] = value;
+        runListState.notice = "";
+        document.getElementById("runFeedback").textContent = "저장 전 변경";
+        renderRunList();
+      }
+      function saveRunConfiguration() {
+        if (
+          runListState.items.some(
+            (item) =>
+              !item.name.trim() || !item.command.trim() || !item.folder.trim(),
+          )
+        ) {
+          document.getElementById("runFeedback").textContent =
+            "이름·명령·작업 폴더를 입력해 주세요.";
+          return;
+        }
+        for (const id of Object.keys(runConfigurations))
+          delete runConfigurations[id];
+        for (const { id, ...config } of runListState.items)
+          runConfigurations[id] = config;
+        const select = document.getElementById("runConfig");
+        select.replaceChildren(
+          ...runListState.items.map((item) => new Option(item.name, item.id)),
+        );
+        if (runListState.selectedId) select.value = runListState.selectedId;
+        if (!runListState.items.length)
+          select.append(new Option("구성 없음", ""));
+        setRunBusy(false);
+        closeDialog("runDialog");
+        toast("데모의 실행 구성을 저장했습니다.");
+      }
+
+      const projects = ["herdr-codebench", "altools-api-alsong", "estrack"];
+      let projectMode = "name",
+        projectOrderState;
+      function chooseProjectSort(mode) {
+        if (mode === "manual") {
+          openProjectOrder();
+          return;
+        }
+        projectMode = mode;
+        sortProjects(mode);
+      }
+      function sortProjects(mode) {
+        document.getElementById("projectSort").value = mode;
+        const list =
+          mode === "name"
+            ? [...projects].sort()
+            : mode === "recent"
+              ? [...projects].reverse()
+              : projects;
+        const container = document.getElementById("projectList");
+        container.replaceChildren();
+        for (const project of list) {
+          const row = document.createElement("button");
+          row.className = "tree-row";
+          row.style.width = "100%";
+          row.style.justifyContent = "flex-start";
+          row.textContent = project;
+          row.onclick = () => {
+            closeDialog("projectsDialog");
+            toast(project + " · 샘플 프로젝트 선택");
+          };
+          container.append(row);
+        }
+        document
+          .getElementById("projectManageAgain")
+          .classList.toggle("hidden", mode !== "manual");
+        document.getElementById("projectHint").textContent =
+          mode === "manual"
+            ? "직접 지정한 순서"
+            : "정렬 기준을 바꿔도 직접 지정 순서는 보존됩니다.";
+      }
+      function openProjectOrder() {
+        projectOrderState = {
+          items: projects.map((name) => ({ id: name, name, icon: "folder" })),
+          selectedId: projects.includes("herdr-codebench")
+            ? "herdr-codebench"
+            : projects[0],
+          query: "",
+          notice: "",
+        };
+        closeDialog("projectsDialog");
+        renderProjectOrder();
+        document.getElementById("projectOrderDialog").showModal();
+      }
+      function renderProjectOrder() {
+        renderManagedList(document.getElementById("projectOrderList"), {
+          label: "프로젝트 순서",
+          items: projectOrderState.items,
+          selectedId: projectOrderState.selectedId,
+          caption: "프로젝트 · " + projectOrderState.items.length + "개",
+          query: projectOrderState.query,
+          onQuery: (value) => {
+            projectOrderState.query = value;
+            renderProjectOrder();
+          },
+          onSelect: (id) => {
+            projectOrderState.selectedId = id;
+            renderProjectOrder();
+          },
+          actions: managedActions(projectOrderState, renderProjectOrder),
+        });
+        document.getElementById("projectOrderFeedback").textContent =
+          projectOrderState.notice ||
+          (projectOrderState.query
+            ? "검색을 해제하면 순서를 변경할 수 있습니다."
+            : "항목을 선택한 뒤 위·아래로 이동하세요.");
+      }
+      function saveProjectOrder() {
+        projects.splice(
+          0,
+          projects.length,
+          ...projectOrderState.items.map((item) => item.name),
+        );
+        projectMode = "manual";
+        closeDialog("projectOrderDialog");
+      }
+
+      const collectionListState = {
+        items: ["프로젝트", "도구 영역", "연결", "실행 구성"].map(
+          (name, id) => ({ id: String(id), name, icon: "layers" }),
+        ),
+        selectedId: "0",
+        query: "",
+        notice: "",
+      };
+      function renderCollectionList() {
+        renderManagedList(document.getElementById("listCollection"), {
+          label: "목록 관리 예제",
+          items: collectionListState.items,
+          selectedId: collectionListState.selectedId,
+          onSelect: (id) => {
+            collectionListState.selectedId = id;
+            renderCollectionList();
+          },
+          actions: managedActions(collectionListState, renderCollectionList),
+        });
+      }
+
+      function collectionMode(button) {
+        button
+          .closest(".mode")
+          .querySelectorAll("button")
+          .forEach((item) => {
+            item.classList.toggle("active", item === button);
+            item.setAttribute("aria-pressed", String(item === button));
+          });
+      }
+      function openDesignSystem() {
+        const colors = [
+          ["Canvas", "--canvas"],
+          ["Editor", "--editor"],
+          ["Surface", "--surface"],
+          ["Selection", "--selection"],
+          ["Accent", "--accent"],
+          ["Focus", "--accent"],
+          ["Text", "--text"],
+          ["Secondary", "--secondary"],
+          ["Border", "--border"],
+          ["Success", "--success"],
+          ["Warning", "--warning"],
+          ["Error", "--error"],
+        ];
+        const colorRoot = document.getElementById("colorCollection");
+        colorRoot.replaceChildren();
+        for (const [name, property] of colors) {
+          const sample = document.createElement("div");
+          sample.className = "swatch";
+          const swatch = document.createElement("div");
+          swatch.className = "swatch-color";
+          swatch.style.background = `var(${property})`;
+          const label = document.createElement("div");
+          label.textContent = name;
+          const value = document.createElement("small");
+          value.textContent = getComputedStyle(document.documentElement)
+            .getPropertyValue(property)
+            .trim();
+          sample.append(swatch, label, value);
+          colorRoot.append(sample);
+        }
+        const iconRoot = document.getElementById("iconCollection");
+        iconRoot.replaceChildren();
+        for (const [role, label] of [
+          ["files", "프로젝트"],
+          ["search", "검색"],
+          ["database", "데이터베이스"],
+          ["table", "테이블"],
+          ["play", "실행"],
+          ["square", "중지"],
+          ["copy", "복사"],
+          ["download", "내보내기"],
+          ["settings", "설정"],
+          ["pencil", "편집"],
+          ["check", "완료"],
+          ["triangle-alert", "문제"],
+        ]) {
+          const sample = document.createElement("div");
+          sample.className = "icon-sample";
+          const pair = document.createElement("div");
+          pair.style.display = "flex";
+          pair.style.alignItems = "center";
+          pair.style.gap = "8px";
+          pair.innerHTML = ICONS[role] + ICONS[role];
+          pair.lastElementChild.style.width = "20px";
+          pair.lastElementChild.style.height = "20px";
+          sample.append(pair);
+          const name = document.createElement("span");
+          name.textContent = label;
+          sample.append(name);
+          iconRoot.append(sample);
+        }
+        renderCollectionList();
+        document.getElementById("systemDialog").showModal();
+      }
+      function setBottomDock(kind) {
+        if (!kind) {
+          activeTools.bottom = null;
+          renderToolSlots();
+          return;
+        }
+        const item = toolLayout.find((tool) => tool.id === kind);
+        if (!item) return;
+        item.visible = true;
+        toolButtons[kind].classList.remove("hidden");
+        activeTools[item.position] = kind;
+        renderToolSlots();
+      }
+      function toggleBottomDock() {
+        toggleSlot("problems");
+      }
+      const runConfigurations = {
+        ui: {
+          name: "UI 검사",
+          command: "herdr-app check mods/codenav",
+          folder: "~/project/herdr-codebench",
+        },
+        engine: {
+          name: "엔진 테스트",
+          command: "go test ./...",
+          folder: "~/project/herdr-codebench/engine",
+        },
+        build: {
+          name: "엔진 빌드",
+          command: "python3 engine/build.py",
+          folder: "~/project/herdr-codebench",
+        },
+      };
+      let runTimer = null;
+      let runSequence = 0;
+      let activeRunId = null;
+      let selectedRunId = null;
+      const runEntries = [];
+
+      function setRunBusy(busy = activeRunId !== null) {
+        busy = busy || activeRunId !== null;
+        const empty = Object.keys(runConfigurations).length === 0;
+        document.getElementById("runStart").disabled = busy || empty;
+        document.getElementById("runStop").disabled = !busy;
+        document.getElementById("runEdit").disabled = busy;
+        document.getElementById("runConfig").disabled = busy || empty;
+      }
+
+      function renderRunTabs({ reveal = false, focus = false } = {}) {
+        const strip = document.getElementById("runTabStrip");
+        strip.setAttribute("role", "tablist");
+        strip.setAttribute("aria-label", "실행 결과");
+        strip.setAttribute("aria-orientation", "horizontal");
+        for (const row of [...strip.children]) {
+          if (!runEntries.some((entry) => entry.id === row.dataset.runId))
+            row.remove();
+        }
+        for (const entry of runEntries) {
+          let row = [...strip.children].find(
+            (item) => item.dataset.runId === entry.id,
+          );
+          if (!row) {
+            row = document.createElement("div");
+            row.className = "run-tab";
+            row.dataset.runId = entry.id;
+            row.setAttribute("role", "presentation");
+            const tab = document.createElement("button");
+            tab.type = "button";
+            tab.className = "run-tab-button";
+            tab.id = "run-tab-" + entry.id;
+            tab.setAttribute("role", "tab");
+            tab.setAttribute(
+              "aria-controls",
+              entry.kind === "sql" ? "queryRunView" : "runOutput",
+            );
+            tab.addEventListener("click", () => selectRunEntry(entry.id));
+            tab.addEventListener("keydown", (event) => {
+              const index = runEntries.findIndex(
+                (item) => item.id === entry.id,
+              );
+              let next;
+              if (event.key === "ArrowRight")
+                next = (index + 1) % runEntries.length;
+              else if (event.key === "ArrowLeft")
+                next = (index - 1 + runEntries.length) % runEntries.length;
+              else if (event.key === "Home") next = 0;
+              else if (event.key === "End") next = runEntries.length - 1;
+              else return;
+              event.preventDefault();
+              selectRunEntry(runEntries[next].id, true);
+            });
+            const close = document.createElement("button");
+            close.type = "button";
+            close.className = "run-tab-close";
+            close.innerHTML = ICONS.x;
+            close.addEventListener("click", () => closeRunEntry(entry.id));
+            row.append(tab, close);
+            strip.append(row);
+          }
+          const selected = entry.id === selectedRunId;
+          const running = entry.status === "실행 중";
+          row.classList.toggle("active", selected);
+          row.classList.toggle("running", running);
+          const [tab, close] = row.children;
+          tab.textContent =
+            (entry.kind === "sql" ? "SQL" : entry.name) +
+            " · " +
+            entry.sequence;
+          tab.title = entry.name + " · " + entry.status;
+          tab.setAttribute("aria-selected", String(selected));
+          tab.setAttribute(
+            "aria-label",
+            tab.textContent + " · " + entry.status,
+          );
+          tab.tabIndex = selected ? 0 : -1;
+          close.disabled = running;
+          close.tabIndex = selected && !running ? 0 : -1;
+          close.setAttribute("aria-label", tab.textContent + " 결과 닫기");
+          close.title = running ? "실행 중에는 닫을 수 없습니다" : "결과 닫기";
+        }
+        const selected = runEntries.find((entry) => entry.id === selectedRunId);
+        const output = document.getElementById("runOutput");
+        output.setAttribute("role", "tabpanel");
+        output.tabIndex = 0;
+        output.classList.toggle("run-empty", !selected);
+        document.getElementById("runEntryMeta").textContent = selected
+          ? selected.name +
+            " · " +
+            selected.folder +
+            (selected.kind === "sql" ? " · " : " · $ ") +
+            selected.command
+          : "실행 구성을 선택하고 시작하면 결과가 여기에 표시됩니다.";
+        document.getElementById("runEntryStatus").textContent = selected
+          ? selected.status
+          : "실행 기록 없음";
+        const text = selected ? selected.output : "아직 실행 결과가 없습니다.";
+        if (output.textContent !== text) output.textContent = text;
+        if (selected) {
+          const tab = document.getElementById("run-tab-" + selected.id);
+          output.setAttribute("aria-labelledby", tab.id);
+          output.removeAttribute("aria-label");
+          if (focus) tab.focus({ preventScroll: true });
+          if (reveal) {
+            const tabBounds = tab.parentElement.getBoundingClientRect();
+            const stripBounds = strip.getBoundingClientRect();
+            if (tabBounds.left < stripBounds.left)
+              strip.scrollLeft += tabBounds.left - stripBounds.left;
+            else if (tabBounds.right > stripBounds.right)
+              strip.scrollLeft += tabBounds.right - stripBounds.right;
+          }
+        } else {
+          output.removeAttribute("aria-labelledby");
+          output.setAttribute("aria-label", "실행 결과 없음");
+        }
+        const query = selected?.kind === "sql";
+        document
+          .getElementById("queryRunView")
+          .classList.toggle("hidden", !query);
+        output.classList.toggle("hidden", query);
+        if (query) {
+          document
+            .getElementById("queryRunView")
+            .setAttribute("aria-labelledby", "run-tab-" + selected.id);
+          renderQueryRun(selected);
+        }
+        setRunBusy();
+      }
+
+      function renderQueryRunTable(entry) {
+        const head = document.getElementById("queryRunTableHead");
+        const body = document.getElementById("queryRunTableBody");
+        const headerRow = document.createElement("tr");
+        for (const label of ["#", ...entry.columns]) {
+          const cell = document.createElement("th");
+          cell.scope = "col";
+          cell.textContent = label;
+          headerRow.append(cell);
+        }
+        head.replaceChildren(headerRow);
+        body.replaceChildren(
+          ...entry.rows.map((values, index) => {
+            const row = document.createElement("tr");
+            const number = document.createElement("td");
+            number.textContent = index + 1;
+            row.append(number);
+            for (
+              let columnIndex = 0;
+              columnIndex < entry.columns.length;
+              columnIndex++
+            ) {
+              const value = values[columnIndex];
+              const cell = document.createElement("td");
+              cell.textContent = value === null ? "NULL" : String(value ?? "");
+              cell.classList.toggle("null", value === null);
+              row.append(cell);
+            }
+            return row;
+          }),
+        );
+        document.getElementById("queryRunSummary").textContent =
+          entry.status +
+          " · " +
+          entry.rows.length +
+          "행 · " +
+          entry.columns.length +
+          "개 열";
+        document
+          .getElementById("queryRunView")
+          .setAttribute("aria-busy", String(entry.status === "실행 중"));
+      }
+
+      function renderQueryRun(entry) {
+        renderQueryRunTable(entry);
+        document.getElementById("queryRunStatement").textContent =
+          entry.command;
+        const updateSelection = () => {
+          [...document.getElementById("queryRunTableBody").children].forEach(
+            (row, index) =>
+              row.classList.toggle("selected", entry.selectedRows.has(index)),
+          );
+          document.getElementById("queryRunSelection").textContent = entry
+            .selectedRows.size
+            ? entry.selectedRows.size +
+              "행 선택됨 · 내보내기에서 선택한 행 복사"
+            : "행을 클릭해 선택 · ⌘/Ctrl 클릭으로 여러 행 선택";
+        };
+        [...document.getElementById("queryRunTableBody").children].forEach(
+          (row, index) => {
+            row.onclick = (event) => {
+              if (!event.metaKey && !event.ctrlKey) entry.selectedRows.clear();
+              if (entry.selectedRows.has(index))
+                entry.selectedRows.delete(index);
+              else entry.selectedRows.add(index);
+              updateSelection();
+            };
+          },
+        );
+        updateSelection();
+      }
+      function selectRunEntry(id, focus = false) {
+        if (!runEntries.some((entry) => entry.id === id)) return;
+        selectedRunId = id;
+        renderRunTabs({ reveal: true, focus });
+      }
+
+      function closeRunEntry(id) {
+        const index = runEntries.findIndex((entry) => entry.id === id);
+        if (index < 0 || runEntries[index].status === "실행 중") return;
+        const row = document.getElementById("run-tab-" + id).parentElement;
+        const hadFocus = row.contains(document.activeElement);
+        const wasSelected = selectedRunId === id;
+        runEntries.splice(index, 1);
+        if (wasSelected)
+          selectedRunId =
+            runEntries[Math.min(index, runEntries.length - 1)]?.id || null;
+        renderRunTabs({ reveal: wasSelected, focus: hadFocus });
+        if (hadFocus && !runEntries.length)
+          document.getElementById("runOutput").focus({ preventScroll: true });
+      }
+
+      function startConfiguredRun() {
+        if (activeRunId !== null) return;
+        const config =
+          runConfigurations[document.getElementById("runConfig").value];
+        if (!config) return;
+        const sequence = ++runSequence;
+        const entry = {
+          id: "execution-" + sequence,
+          sequence,
+          name: config.name,
+          command: config.command,
+          folder: config.folder,
+          status: "실행 중",
+          output:
+            config.name +
+            " · 샘플 실행\n" +
+            config.folder +
+            "\n$ " +
+            config.command +
+            "\n실행 상태와 출력 위치를 확인합니다.\n",
+        };
+        runEntries.push(entry);
+        activeRunId = selectedRunId = entry.id;
+        document.getElementById("runStatus").textContent = "실행 중";
+        setBottomDock("run");
+        renderRunTabs({ reveal: true });
+        runTimer = setTimeout(() => {
+          runTimer = null;
+          entry.status = "완료";
+          entry.output += "샘플 작업 완료 · 실제 명령 실행 없음\n";
+          activeRunId = null;
+          document.getElementById("runStatus").textContent = "완료";
+          renderRunTabs();
+        }, 2000);
+      }
+
+      function stopConfiguredRun() {
+        if (activeRunId === null) return;
+        clearTimeout(runTimer);
+        runTimer = null;
+        const entry = runEntries.find((item) => item.id === activeRunId);
+        entry.status = "중지";
+        entry.output += "사용자가 샘플 실행을 중지했습니다.\n";
+        activeRunId = null;
+        document.getElementById("runStatus").textContent = "중지";
+        renderRunTabs();
+      }
+
+      function initSplitters() {
+        const workspace = document.querySelector(".workspace");
+        const left = document.querySelector(".left-column");
+        const right = document.querySelector(".right-column");
+        const center = document.querySelector(".center-column");
+        const height = (element) => element.getBoundingClientRect().height;
+        const width = (element) => element.getBoundingClientRect().width;
+        const configs = [
+          {
+            id: "leftWidthResize",
+            axis: "x",
+            sign: 1,
+            parent: workspace,
+            property: "--left-width",
+            measure: () => width(left),
+            min: 140,
+            max: () => Math.min(480, width(workspace) - width(right) - 456),
+          },
+          {
+            id: "rightWidthResize",
+            axis: "x",
+            sign: -1,
+            parent: workspace,
+            property: "--right-width",
+            measure: () => width(right),
+            min: 160,
+            max: () => Math.min(480, width(workspace) - width(left) - 456),
+          },
+          {
+            id: "leftSplitResize",
+            axis: "y",
+            sign: -1,
+            parent: left,
+            property: "--lower-height",
+            measure: () => height(left.querySelector(".lower-panel")),
+            min: 100,
+            max: () => height(left) - 140,
+          },
+          {
+            id: "rightSplitResize",
+            axis: "y",
+            sign: -1,
+            parent: right,
+            property: "--lower-height",
+            measure: () => height(right.querySelector(".lower-panel")),
+            min: 100,
+            max: () => height(right) - 180,
+          },
+          {
+            id: "dockResize",
+            axis: "y",
+            sign: -1,
+            parent: center,
+            property: "--dock-height",
+            measure: () => height(document.getElementById("bottomDock")),
+            min: 100,
+            max: () => height(center) - 300,
+          },
+        ];
+        for (const config of configs) {
+          const handle = document.getElementById(config.id);
+          const setSize = (value) => {
+            const maximum = Math.max(config.min, config.max());
+            const size = Math.round(
+              Math.min(maximum, Math.max(config.min, value)),
+            );
+            config.parent.style.setProperty(config.property, size + "px");
+            handle.setAttribute("aria-valuenow", String(size));
+            handle.setAttribute("aria-valuemin", String(config.min));
+            handle.setAttribute("aria-valuemax", String(Math.round(maximum)));
+          };
+          let drag;
+          handle.addEventListener("pointerdown", (event) => {
+            if (event.button !== 0) return;
+            event.preventDefault();
+            drag = {
+              position: config.axis === "x" ? event.clientX : event.clientY,
+              size: config.measure(),
+            };
+            handle.setPointerCapture(event.pointerId);
+            handle.classList.add("dragging");
+            document.body.classList.add("resizing");
+          });
+          handle.addEventListener("pointermove", (event) => {
+            if (!drag) return;
+            const position =
+              config.axis === "x" ? event.clientX : event.clientY;
+            setSize(drag.size + (position - drag.position) * config.sign);
+          });
+          const finish = () => {
+            drag = null;
+            handle.classList.remove("dragging");
+            document.body.classList.remove("resizing");
+          };
+          handle.addEventListener("pointerup", finish);
+          handle.addEventListener("pointercancel", finish);
+          handle.addEventListener("lostpointercapture", finish);
+          handle.addEventListener("keydown", (event) => {
+            const keys =
+              config.axis === "x"
+                ? ["ArrowLeft", "ArrowRight"]
+                : ["ArrowUp", "ArrowDown"];
+            if (
+              !keys.includes(event.key) &&
+              event.key !== "Home" &&
+              event.key !== "End"
+            )
+              return;
+            event.preventDefault();
+            const delta =
+              (keys.indexOf(event.key) === 0 ? -1 : 1) *
+              (event.shiftKey ? 32 : 8) *
+              config.sign;
+            setSize(
+              event.key === "Home"
+                ? config.min
+                : event.key === "End"
+                  ? config.max()
+                  : config.measure() + delta,
+            );
+          });
+        }
+      }
+      function toggleSlot(id) {
+        const item = toolLayout.find((tool) => tool.id === id);
+        if (!item || !item.visible) return;
+        activeTools[item.position] =
+          activeTools[item.position] === id ? null : id;
+        renderToolSlots();
+      }
+      function switchTab(tab) {
+        activeTab = tab;
+        document
+          .querySelectorAll("[data-tab]")
+          .forEach((el) =>
+            el.classList.toggle("active", el.dataset.tab === tab),
+          );
+        document
+          .getElementById("dbView")
+          .classList.toggle("hidden", tab === "markdown");
+        document
+          .getElementById("markdownView")
+          .classList.toggle("hidden", tab !== "markdown");
+        ["queryToolbar", "sqlArea", "sqlCaption"].forEach((id) =>
+          document
+            .getElementById(id)
+            .classList.toggle("hidden", tab !== "query"),
+        );
+        document
+          .getElementById("ddlButton")
+          .classList.toggle("hidden", tab !== "table");
+        document
+          .querySelector(".result")
+          .classList.toggle("hidden", tab !== "table");
+        document.querySelector(".result").style.height = "100%";
+        document.querySelector(".result").style.flex = "1";
+        document.getElementById("resultTitle").textContent = "customers";
+        document.getElementById("languageStatus").textContent =
+          tab === "markdown" ? "Markdown" : "SQL";
+        document.getElementById("gridHint").textContent =
+          tab === "table"
+            ? "더블클릭으로 편집 · Enter 확정 · Esc 취소"
+            : "customers 탭에서 셀을 더블클릭해 편집";
+        pending();
+        renderGrid();
+      }
+      function renderGrid() {
+        const body = document.getElementById("gridBody");
+        body.replaceChildren();
+        rows.forEach((row, i) => {
+          const tr = document.createElement("tr");
+          tr.classList.toggle("selected", selectedRows.has(i));
+          const index = document.createElement("td");
+          index.textContent = i + 1;
+          tr.append(index);
+          row.forEach((value, j) => {
+            const td = document.createElement("td");
+            td.textContent = value === null ? "NULL" : value;
+            if (value === null) td.classList.add("null");
+            if (changes.has(i + ":" + j)) td.classList.add("edited");
+            td.ondblclick = (e) => {
+              e.stopPropagation();
+              if (activeTab === "table" && j > 0) editCell(td, i, j);
+            };
+            tr.append(td);
+          });
+          tr.onclick = (e) => {
+            if (e.target.tagName === "INPUT") return;
+            if (!e.metaKey && !e.ctrlKey) selectedRows.clear();
+            selectedRows.has(i) ? selectedRows.delete(i) : selectedRows.add(i);
+            updateSelection();
+          };
+          body.append(tr);
+        });
+        updateSelection();
+      }
+      function updateSelection() {
+        document
+          .querySelectorAll("#gridBody tr")
+          .forEach((tr, i) =>
+            tr.classList.toggle("selected", selectedRows.has(i)),
+          );
+        document.getElementById("selectionInfo").textContent = selectedRows.size
+          ? selectedRows.size + "행 선택됨"
+          : "8행을 불러왔습니다";
+      }
+      function editCell(td, i, j) {
+        const input = document.createElement("input");
+        input.value = rows[i][j] ?? "";
+        td.replaceChildren(input);
+        input.focus();
+        input.select();
+        let finished = false;
+        const finish = (commit) => {
+          if (finished) return;
+          finished = true;
+          if (commit && input.value !== String(rows[i][j] ?? "")) {
+            changes.set(i + ":" + j, input.value);
+            rows[i][j] = input.value;
+          }
+          pending();
+          renderGrid();
+        };
+        input.onkeydown = (e) => {
+          if (e.key === "Enter") finish(true);
+          if (e.key === "Escape") finish(false);
+        };
+        input.onblur = () => finish(true);
+      }
+      function pending() {
+        const count = new Set([...changes.keys()].map((k) => k.split(":")[0]))
+          .size;
+        document
+          .getElementById("pendingBar")
+          .classList.toggle("hidden", !count || activeTab !== "table");
+        document.getElementById("dirtyDot").classList.toggle("hidden", !count);
+        document.getElementById("pendingText").textContent =
+          "미반영 수정 " + count + "행";
+      }
+      function revertChanges() {
+        rows = structuredClone(original);
+        changes.clear();
+        pending();
+        renderGrid();
+        toast("로컬 변경을 되돌렸습니다.");
+      }
+      function applyChanges() {
+        rows.forEach((row, i) => (original[i] = [...row]));
+        changes.clear();
+        pending();
+        renderGrid();
+        toast("데모 변경을 반영했습니다. 실제 DB에는 접근하지 않습니다.");
+      }
+      document.getElementById("runButton").onclick = () => {
+        const input = document.getElementById("sqlInput"),
+          selection = input.value.slice(
+            input.selectionStart,
+            input.selectionEnd,
+          );
+        document.getElementById("selectionChoice").disabled = !selection;
+        document.getElementById("selectionSample").textContent =
+          selection || "편집기에서 실행할 텍스트를 선택하세요";
+        document.getElementById("queryDialog").showModal();
+      };
+      function chooseScope(el, label) {
+        scope = label;
+        document
+          .querySelectorAll(".choice")
+          .forEach((x) => x.classList.toggle("selected", x === el));
+      }
+      let queryRunIds = [];
+      function executeSample() {
+        if (running !== null) return;
+        const input = document.getElementById("sqlInput");
+        const source = input.value;
+        const selection = source.slice(
+          input.selectionStart,
+          input.selectionEnd,
+        );
+        // This prototype demonstrates the two sample statements, not SQL parsing.
+        const statements = scope.startsWith("전체")
+          ? source.split(/;\s*(?:\n|$)/).filter((sql) => sql.trim())
+          : [
+              scope === "선택한 SQL"
+                ? selection
+                : source.slice(0, source.indexOf(";") + 1) || source,
+            ];
+        if (!statements.length || !statements[0].trim()) return;
+        closeDialog("queryDialog");
+        queryRunIds = statements.map((sql) => {
+          const sequence = ++runSequence;
+          const count = /SELECT\s+COUNT\s*\(/i.test(sql);
+          const entry = {
+            id: "execution-" + sequence,
+            sequence,
+            kind: "sql",
+            name: "SQL · UX Lab",
+            folder: "SQLite / main",
+            command: sql.trim(),
+            status: "실행 중",
+            output: "",
+            columns: count
+              ? ["total"]
+              : ["id", "name", "email", "plan", "joined_at"],
+            rows: [],
+            selectedRows: new Set(),
+          };
+          entry.sampleRows = count
+            ? [[original.length]]
+            : structuredClone(original);
+          runEntries.push(entry);
+          return entry.id;
+        });
+        selectedRunId = queryRunIds[0];
+        setBottomDock("run");
+        renderRunTabs({ reveal: true });
+        document.getElementById("runButton").disabled = true;
+        document.getElementById("cancelButton").disabled = false;
+        document.getElementById("operationStatus").textContent =
+          "실행 중 · " + scope;
+        running = setTimeout(() => {
+          running = null;
+          for (const id of queryRunIds) {
+            const entry = runEntries.find((e) => e.id === id);
+            entry.status = "완료";
+            entry.rows = entry.sampleRows;
+            delete entry.sampleRows;
+          }
+          document.getElementById("runButton").disabled = false;
+          document.getElementById("cancelButton").disabled = true;
+          document.getElementById("operationStatus").textContent =
+            "완료 · " + scope;
+          renderRunTabs();
+        }, 1000);
+      }
+      document.getElementById("cancelButton").onclick = () => {
+        if (running === null) return;
+        clearTimeout(running);
+        running = null;
+        for (const id of queryRunIds) {
+          const entry = runEntries.find((e) => e.id === id);
+          entry.status = "중지";
+          delete entry.sampleRows;
+        }
+        document.getElementById("runButton").disabled = false;
+        document.getElementById("cancelButton").disabled = true;
+        document.getElementById("operationStatus").textContent =
+          "취소됨 · 다시 실행할 수 있습니다.";
+        renderRunTabs();
+      };
+      document.getElementById("sqlInput").onkeydown = (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+          e.preventDefault();
+          document.getElementById("runButton").click();
+        }
+      };
+      function toggleMarkdownEditing() {
+        markdownEditing = !markdownEditing;
+        document.getElementById("mdInput").readOnly = !markdownEditing;
+        document.getElementById("mdSourceButton").textContent = markdownEditing
+          ? "편집"
+          : "원문";
+        document.getElementById("mdEditButton").textContent = markdownEditing
+          ? "뷰어로 돌아가기"
+          : "편집";
+        markdownMode("source");
+      }
+      function markdownMode(mode) {
+        const preview = mode === "preview";
+        document.getElementById("mdInput").classList.toggle("hidden", preview);
+        document
+          .getElementById("mdPreview")
+          .classList.toggle("hidden", !preview);
+        document
+          .getElementById("mdSourceButton")
+          .setAttribute("aria-pressed", !preview);
+        document
+          .getElementById("mdPreviewButton")
+          .setAttribute("aria-pressed", preview);
+        if (preview) {
+          const article = document.getElementById("mdPreview");
+          article.replaceChildren();
+          for (const line of document
+            .getElementById("mdInput")
+            .value.split("\n")) {
+            let tag = "p",
+              text = line;
+            if (line.startsWith("# ")) {
+              tag = "h1";
+              text = line.slice(2);
+            } else if (line.startsWith("## ")) {
+              tag = "h2";
+              text = line.slice(3);
+            } else if (line.startsWith("- ")) {
+              text = "• " + line.slice(2);
+            } else if (line.startsWith("> ")) {
+              tag = "blockquote";
+              text = line.slice(2);
+            }
+            if (!text.trim()) continue;
+            const node = document.createElement(tag);
+            node.textContent = text;
+            article.append(node);
+          }
+        }
+      }
+      function showDDL() {
+        document.getElementById("ddlDialog").showModal();
+      }
+      let exportDataset;
+      function showExport(runId) {
+        const entry = runEntries.find(
+          (e) => e.id === runId && e.kind === "sql",
+        );
+        exportDataset = entry
+          ? {
+              rows: entry.rows,
+              columns: entry.columns,
+              selection: entry.selectedRows,
+            }
+          : {
+              rows: original,
+              columns: ["id", "name", "email", "plan", "joined_at"],
+              selection: selectedRows,
+            };
+        updateExport();
+        document.getElementById("exportDialog").showModal();
+      }
+      function exportText() {
+        const format = document.getElementById("exportFormat").value,
+          selected =
+            document.getElementById("exportScope").value === "selected",
+          data = exportDataset.rows.filter(
+            (_, i) =>
+              !selected ||
+              !exportDataset.selection.size ||
+              exportDataset.selection.has(i),
+          ),
+          cols = exportDataset.columns;
+        if (format === "json")
+          return JSON.stringify(
+            data.map((r) => Object.fromEntries(cols.map((c, i) => [c, r[i]]))),
+            null,
+            2,
+          );
+        if (format === "sql")
+          return data
+            .map(
+              (r) =>
+                "INSERT INTO customers (" +
+                cols.join(", ") +
+                ") VALUES (" +
+                r
+                  .map((v) =>
+                    v === null
+                      ? "NULL"
+                      : typeof v === "number"
+                        ? v
+                        : "'" + v.replaceAll("'", "''") + "'",
+                  )
+                  .join(", ") +
+                ");",
+            )
+            .join("\n");
+        const sep = format === "tsv" ? "\t" : ",";
+        return [cols, ...data]
+          .map((r) =>
+            r
+              .map((v) =>
+                v === null
+                  ? ""
+                  : String(v).includes(sep) || String(v).includes('"')
+                    ? '"' + String(v).replaceAll('"', '""') + '"'
+                    : v,
+              )
+              .join(sep),
+          )
+          .join("\n");
+      }
+      function updateExport() {
+        document.getElementById("exportPreview").textContent = exportText();
+        const select = document.getElementById("exportScope");
+        select.options[0].textContent = exportDataset.selection.size
+          ? "선택한 " + exportDataset.selection.size + "행"
+          : "선택 없음 · 불러온 " + exportDataset.rows.length + "행";
+      }
+      async function copyText(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          toast("클립보드에 복사했습니다.");
+        } catch {
+          toast(
+            "이 브라우저에서는 복사가 제한됩니다. 미리보기 텍스트를 직접 선택할 수 있습니다.",
+          );
+        }
+      }
+      function copyExport() {
+        copyText(exportText());
+      }
+      function downloadExport() {
+        const format = document.getElementById("exportFormat").value,
+          blob = new Blob([exportText()], { type: "text/plain;charset=utf-8" }),
+          url = URL.createObjectURL(blob),
+          a = document.createElement("a");
+        a.href = url;
+        a.download = "customers." + (format === "sql" ? "sql" : format);
+        a.click();
+        URL.revokeObjectURL(url);
+        toast("샘플 데이터를 파일로 저장했습니다.");
+      }
+      document.getElementById("projectPicker").onclick = () =>
+        document.getElementById("projectsDialog").showModal();
+      document
+        .getElementById("projectOrderDialog")
+        .addEventListener("close", () => {
+          sortProjects(projectMode);
+          document.getElementById("projectsDialog").showModal();
+        });
+      sortProjects(projectMode);
+      renderGrid();
+      initToolSlots();
+      renderRunTabs();
+      initSplitters();
+    </script>
+  </body>
+</html>

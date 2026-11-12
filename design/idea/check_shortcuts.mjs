@@ -92,7 +92,7 @@ assert.deepEqual(opened,['all','files','files','classes','symbols','actions','re
 assert.deepEqual(searches.slice(-5),[['symbols','pkg:Name'],['actions',''],['recent',''],['locations',''],['all','fallback']],'shared opener preserves query colons, search modes and unknown-kind fallback');
 assert.deepEqual(sent,[['keys','test','ctrl+e'],['keys','test','ctrl+-'],['keys','test','ctrl+k','ctrl+s'],['send','test','literal'],['keys','test','cmd+alt+q']]);
 assert.deepEqual(terminalFiles,['test','test','test','test','test'],'terminal CmdShiftO opens terminal paths in both layouts; editor command separately opens project files');
-assert.deepEqual(ran,['app.settings','codenav.definition','codenav.review-next-diff','activity.save','codenav.usages','personal.jump']);assert.deepEqual(settingsOpened,['mode','mode','editor']);
+assert.deepEqual(ran,['app.settings','codenav.definition','codenav.review-next-diff','codenav.save','codenav.usages','personal.jump']);assert.deepEqual(settingsOpened,['mode','mode','editor']);
 assert.deepEqual(setupOpened,['setup','setup'],'direct and reassigned terminal actions share the LSP setup opener');
 assert.equal(diagnosticAttachments.length,1);assert.equal(diagnosticAttachments[0].payload.entries[0].diagnostic.message,'Nested\nType error','Status forwards full diagnostic attachment payload to the persistent task owner');
 console.log('PASS actual Status routing, shifted-letter aliases, terminal reassignment, source/review/activity owners, capability guard and other-layout input preservation');

@@ -1,0 +1,20 @@
+Compiled from "DataSourceStorage.java"
+public final class com.intellij.database.dataSource.DataSourceStorage$App extends com.intellij.database.dataSource.DataSourceStorage {
+  public com.intellij.database.dataSource.DataSourceStorage$App();
+    Code:
+       0: aload_0
+       1: invokestatic  #1                  // Method com/intellij/openapi/application/ApplicationManager.getApplication:()Lcom/intellij/openapi/application/Application;
+       4: invokeinterface #7,  1            // InterfaceMethod com/intellij/openapi/application/Application.getMessageBus:()Lcom/intellij/util/messages/MessageBus;
+       9: invokespecial #13                 // Method com/intellij/database/dataSource/DataSourceStorage."<init>":(Lcom/intellij/util/messages/MessageBus;)V
+      12: aload_0
+      13: invokestatic  #1                  // Method com/intellij/openapi/application/ApplicationManager.getApplication:()Lcom/intellij/openapi/application/Application;
+      16: aconst_null
+      17: invokevirtual #19                 // Method loadFromStorage:(Lcom/intellij/openapi/components/ComponentManager;Lcom/intellij/openapi/project/Project;)V
+      20: return
+
+  protected com.intellij.database.dataSource.DataSourceModelStorage getModelStorage();
+    Code:
+       0: aconst_null
+       1: invokestatic  #25                 // InterfaceMethod com/intellij/database/dataSource/DataSourceModelStorage.getStorage:(Lcom/intellij/openapi/project/Project;)Lcom/intellij/database/dataSource/DataSourceModelStorage;
+       4: areturn
+}

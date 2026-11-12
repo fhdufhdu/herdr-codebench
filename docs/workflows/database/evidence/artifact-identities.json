@@ -1,0 +1,551 @@
+{
+  "kind": "ordinary-python-static-analysis",
+  "execution": "zipfile reads, javap disassembly only; no artifact code execution",
+  "artifacts": [
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/grid-core-plugin/lib/grid-core-plugin.jar",
+      "sha256": "b607de0d2e8d0ea8b78d3f9480bcf44476a2d5565f7c31495f4f48dcc72f43e7",
+      "size": 36908
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/grid-core-plugin/lib/modules/intellij.grid.types.jar",
+      "sha256": "11c16e423d5ab82d4138cb666c6f21af002c671f1c35823cd093f5f4e9b82634",
+      "size": 28124
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/grid-core-plugin/lib/modules/intellij.grid.core.impl.jar",
+      "sha256": "e0b3ae154e25909d44803c561bf9c946e4270f512f3a10275c11bb5866a2c885",
+      "size": 1839355
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/grid-core-plugin/lib/modules/intellij.grid.impl.jar",
+      "sha256": "5eb5eeb70231618ee3369c244346fceb8e9181101655f0752daede47fefd35e1",
+      "size": 4797895
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/grid-core-plugin/lib/modules/intellij.grid.impl.ide.jar",
+      "sha256": "7f81503c964fe47d2954021b51d98d40bf29fe5b2ba54b407c6715f4d628042e",
+      "size": 6550
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/grid-core-plugin/lib/modules/intellij.grid.jar",
+      "sha256": "8c2e8c4194486550f1196c8b34b88c518316437012a56771426054fe313317fd",
+      "size": 7217
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/grid-core-plugin/lib/modules/intellij.grid.csv.core.impl.jar",
+      "sha256": "fecc2e569244518e5eeda0551e33c88ce774def894ab045e8952f4d8842cc108",
+      "size": 228627
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/intellij.platform.commercial.verifier.jar",
+      "sha256": "da71880cf4b3678eeba113b8280dd66cdd025115569d4e8ef1c09d94b02cca6c",
+      "size": 6205
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/tips-database-plugin.jar",
+      "sha256": "7b2b064e6ee56a00d1655a259412a30500bea22102057b4daa9297784f141806",
+      "size": 608294
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/database-plugin.jar",
+      "sha256": "d5178f9a63d4d432b653aa0aba1d99089cbc98cfefc72e21c1f5f4bdb05a88ef",
+      "size": 7167584
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/frontend-split/database-frontend.jar",
+      "sha256": "c83737e53becf58f0eb97aa1292e0196ff47df82701a9b8ce70bc94b3ea7b307",
+      "size": 5003
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.mysqlbase.impl.jar",
+      "sha256": "b4d827bfe968d7c88e326bf2f5068f91af65637c77e0fa8b21b9b8bcbddc9e6e",
+      "size": 681
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.spark.jar",
+      "sha256": "244df0dcce77e45c41239ef9217d31f9f8c14e6a40582888bb836ca62d742b5f",
+      "size": 1199415
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.sql.copyright.jar",
+      "sha256": "830bcd7d2fced5bd72c303e0df7ec49d4eed814198d3cf36afc37f725e041350",
+      "size": 9048
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.postgresbase.ex.jar",
+      "sha256": "8f7f45af1e7d423665fce1b0cfa95bdb1c595a02cd68c866a80eae023b991cde",
+      "size": 50499
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.mysqlbase.jar",
+      "sha256": "e8e205c591f4855cc3a6184dbb31687757883b0e84b7c7f1071180a27d5ec131",
+      "size": 2785415
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.sqlite.ex.jar",
+      "sha256": "db3a26406b6cb8fdf0c42677029c22965326977521c2956668763462d1722382",
+      "size": 78487
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.jdbcConsole.jar",
+      "sha256": "c9837d40cd73aa4711914f2a582f89f3af2f483ee621e82567c5105f48a240d0",
+      "size": 1685900
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.snowflake.ex.jar",
+      "sha256": "f64b29a0ff8178be0ee927eb58b66ba715af7f52943e45d13267137d5e6e76db",
+      "size": 64724
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.redshift.ex.jar",
+      "sha256": "6d9a159478664e6fec8a43ce6a12d7c26711bebc7f32a3123b1b205793b93047",
+      "size": 1043
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.libraries.jts.io.common.jar",
+      "sha256": "ed23cf313434085c37348eb97397e86e78c44fb5203f9bcbf1aedac41a12fec0",
+      "size": 2516948
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.postgres.jar",
+      "sha256": "663be90cc7c992826b2e51afeb24c2eb8ca3ba882d288fe4a30f247fd456ce52",
+      "size": 3231781
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.h2.jar",
+      "sha256": "02955d03a6e594f7559d9bf3dbf2f0c5f735705a10990f2389d03bbc65132bfe",
+      "size": 2302787
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.cassandra.jar",
+      "sha256": "b92957b129001674df572ed5ea6fab95eb84458def9671e3929d2cfb24f79dce",
+      "size": 1854298
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.oracle.ex.coverage.jar",
+      "sha256": "f6149d85a64a4ed1cff67a3ee8ce8c7d164c91dd2ab421eb9833d34b3d7dcc8d",
+      "size": 70026
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.cliCommands.jar",
+      "sha256": "55464d75e0d00ee4d7dac729d39156b804941458debcf76f7178e6b65a0836c6",
+      "size": 644434
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.mssql.impl.jar",
+      "sha256": "47f3c5507c5e210082702e0ab7fd1f73d217041ba2f3252ff50dc4b5ce307aad",
+      "size": 799
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.mongo.ex.jar",
+      "sha256": "deeb7405a1020a42723a247c711efd7b9830370b49a3e58f1de2af2fe3e584ef",
+      "size": 80965
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.completionMlRanking.jar",
+      "sha256": "1a37d88df91ec89cb422b2265692fde82889a39585d52ad988601265a8a19da3",
+      "size": 518404
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.impl.navbar.jar",
+      "sha256": "bf8c7b19f9ee0677fe572add581ef8d7109a2fbbbd7336581d98622131f62a2d",
+      "size": 38491
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.clickhouse.ex.jar",
+      "sha256": "9a3ecda5a3a698d76767135b8bb8330bc170833e0542cfc92c725afe112e802d",
+      "size": 3597
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.mongo.jar",
+      "sha256": "47f8a89069418e560e267f1b23b8f9d14d071fe9f1bb45aad924a099fd35a7eb",
+      "size": 2302672
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.hivebase.jar",
+      "sha256": "5a3ba475140b81dd19003fb00aebe21f6c36b614be5860518ec56d4594056b3f",
+      "size": 852672
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.sql.jar",
+      "sha256": "5e5f1b659b2ad7ad19319cdc7c9fc8f28c9b9a0e0d37fe83698fe179c59d8d43",
+      "size": 614692
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.hsql.jar",
+      "sha256": "4c922451e040f0a651832dc91db78390a56184dce5d0ebae4d1471a23ac97d5f",
+      "size": 1543830
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.vertica.jar",
+      "sha256": "54c3343f32519dfa1fe57e7ae7c832be51450ad3b50dac963d7176171f88029e",
+      "size": 2452461
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.maria.jar",
+      "sha256": "d3547fded8a1f323e8099e78f103d92d028d22cd7387cb17b429261d14b21076",
+      "size": 1187776
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.sybase.jar",
+      "sha256": "4de7b857f1b2244a99e35876821db3ccac745c200cfe8f58b9ba0c96713c1390",
+      "size": 2405536
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.sql.intelliLang.jar",
+      "sha256": "234f0ebc79e89c0937cd951c6e8ce5f5d510dd1fe592eaf23dd755e83db223c4",
+      "size": 124901
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.oracle.ex.jar",
+      "sha256": "d60f3e93949c13f8307344ac8b945982015b03efaff11a6ee921d0a06513c219",
+      "size": 975688
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.postgresgreenplumbase.jar",
+      "sha256": "1feca2a30f1e0931237a26991d1852fba4e4916a5f809a697224315cb906d350",
+      "size": 1935910
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.oracle.jar",
+      "sha256": "2422448fd58e147f9b3cb3e7d6d6d28e2984e9bde3e69b02bb5e81a546a6bf68",
+      "size": 7004963
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.frontend.split.jar",
+      "sha256": "1837125bba3e22ee25bdc0a9a5af76dd526ab33ab34cda01ee78dce3670bbe16",
+      "size": 23544
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.generic.jar",
+      "sha256": "9b07e0f9fc0f8b1d8244421c92d077772af4fb1f0e46eb30c9cbebcddf1e2e64",
+      "size": 1135685
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.greenplum.jar",
+      "sha256": "0a7338fbf7f5d1571e8dd4eb6c4c0b98a6c1e9bfc25d06be2818846e19d1724e",
+      "size": 3679288
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.vertica.ex.jar",
+      "sha256": "95feddbb9bbab9d574ecaa9050345534c0d9c97aab452b447462271e7ac34006",
+      "size": 18805
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.redshift.jar",
+      "sha256": "5b843bec63bef234d336df1010c55d1d2a1a8e09539231e8862f677d82f133a0",
+      "size": 3461565
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.cockroach.jar",
+      "sha256": "66d9d44590fd36d1fa369e9a8abc5dbd4f42ce3e60692e2458c8c7e29444823e",
+      "size": 2271949
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.cockroach.ex.jar",
+      "sha256": "c4968bd363178db45ed70445a5c5dc789f4f88ee2b0554fff236f7f4699ed449",
+      "size": 1086
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.connectivity.jar",
+      "sha256": "92c799e8d7318afc212d151ff44c0ff1d9d4138251388b5b4386ea10f0c37b68",
+      "size": 4143995
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.impl.bookmarks.jar",
+      "sha256": "50ddff432bd32bb1b1389c7e744ff2c91b89bc6ca5d9786250b19bfbb31923fb",
+      "size": 27296
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.dynamo.jar",
+      "sha256": "70581c81415a1542b16a12ea6d9a746a55706de34f7b1e811a531299ba4808b1",
+      "size": 535149
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.redis.backend.jar",
+      "sha256": "1d83795f9d2126f59ce9d4c6e20064a693404ee4c8e05e4bcf8a9972aac36d01",
+      "size": 10985
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.impl.jcef.jar",
+      "sha256": "cc5413683cc4ef3beab0213cf47497bc184b7906a3bc35e2fe7dfc3f1e0dbc5b",
+      "size": 69965
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.couchbase.jar",
+      "sha256": "a2b96453aee91e61205debe65615f16886df624d6efad21066be650ac0ddbb42",
+      "size": 863769
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.ai.jar",
+      "sha256": "c8f6e898f22da8bf3ce440d4b960ac05cd4f3b348024a991fccf8afe4ce95f87",
+      "size": 361129
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.sql92.jar",
+      "sha256": "68bccd4d33c26e38ce9ca49fef50e8c5f97019d3b012b71eaedd0441c8f86c8e",
+      "size": 466233
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.clickhouse.jar",
+      "sha256": "604fd6b00a2dd0fd390f7437cde720a208200bae20ec8aecb8b8ca3bdccd1f6a",
+      "size": 2083815
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.sql.frontend.core.jar",
+      "sha256": "f07dfc9730a13063224a5698077c65ccab335790c5e1375b1912c44cfdb5dac7",
+      "size": 583
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.db2.jar",
+      "sha256": "ec2e727f87f7178b05f5cc424b3af4eea2bcccb4319f5c90470fd880f1cb72f8",
+      "size": 4427716
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.h2.ex.jar",
+      "sha256": "fe8bcf10376ab4e2ac8a602a96fc5046406762c8822c0250cda503b3da18172f",
+      "size": 17215
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.couchbase.ex.jar",
+      "sha256": "4631a582c36e68c13ae34bbdfbdb2a56a43ad367d699bd4f450692716381ec85",
+      "size": 4169
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.postgres.ex.jar",
+      "sha256": "9a34cff650c0354fd097b1067ab44356f59fad3f67cdf646c549263c2434953a",
+      "size": 11506
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.generic.ex.jar",
+      "sha256": "8f179af2d0ad37f0c335dcd39c3f66656d74b48b9c5fce60dd7c213b398213f1",
+      "size": 875
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.base.jar",
+      "sha256": "08aedad0b6f6458dfda88f68b3f0ee5624831a010252d8deef4c49bc28a20898",
+      "size": 3665330
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.postgresgreenplumbase.ex.jar",
+      "sha256": "8d177b28205741cd3fad20ad6ba3f0a3f46feee12db0177fedcf6893bfc1ffec",
+      "size": 75017
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.derby.ex.jar",
+      "sha256": "4cb96ed91b9c933989a51d03ad884351489b855cb10ff20aa874030ee3415402",
+      "size": 13927
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.mssql.jar",
+      "sha256": "3ef8605b54483f380351d3bd2e379e944e77653122834e58202dde3058be7d53",
+      "size": 5767163
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.mcp.jar",
+      "sha256": "4e7ba63848b52e1f9e38882ebbd11eafa66d4ff59c16fc50ea1c846fe5d2d7d6",
+      "size": 383120
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.impl.jar",
+      "sha256": "a33e6f7cc9076d28313cce3a6b09fa36a252ae4507afe35bba05f514cf5218d9",
+      "size": 22175267
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.sql.common.core.jar",
+      "sha256": "fc14c65d51a03b0cc5a34c6c123d0eeca94e30c72c1117197226e117a6b14899",
+      "size": 36988
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.plugin.frameworks.jar",
+      "sha256": "2f04e915f8d6fe4e19f9c9ebf317396f412789fea7510ce65cb167464ec6e719",
+      "size": 15958
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.cloudExplorer.jba.jar",
+      "sha256": "92eb9e7b93e6dbc458daf82de4dbaaaa87ee80b535acfeccff302da21175b66e",
+      "size": 27450
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.sql.impl.jar",
+      "sha256": "1e3bcfc80538e47f707b635292104f5de47c275bd1e6085ed8796afb808abcf4",
+      "size": 3269196
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.snowflake.jar",
+      "sha256": "e21b156b38cad1ea59aeef6487c42bcab81072bde07b22bd49608ceba83d4f15",
+      "size": 4494905
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.mysqlbase.ex.jar",
+      "sha256": "81cf6d87ba268d89e74b215a05c6e232938323feb29c1c85c99846c9ae47919b",
+      "size": 107596
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.derby.jar",
+      "sha256": "2af4da270873fcf8659d33ec8abbf58d4968fda3ee5050fc07eedc7a37207413",
+      "size": 1349943
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.greenplum.ex.jar",
+      "sha256": "b883bfb748a201cd3a183bf0ec393d80150c63028d2c1eaf7fe300f3ddd156c9",
+      "size": 1086
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.bigquery.ex.jar",
+      "sha256": "81010caaa9af37a4324cecf217e90a93242dc57fc35443ea64e1d2a6d41c43c0",
+      "size": 50640
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.hive.jar",
+      "sha256": "c5d9167ee6379eca722a2239671574769c46fdb3b0dbf637cc9329f8393a8cac",
+      "size": 1171872
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.backend.split.jar",
+      "sha256": "eb3608536f35eb8aa228d8c419c0e8794c9fb36ccc6bd299704dc5e9292db3c0",
+      "size": 659
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.ssh.jar",
+      "sha256": "1eb7787d67f34e12ac06b094550dfe5503571ca66962e11d8cf29d518be28b4a",
+      "size": 127864
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.exasol.jar",
+      "sha256": "4b67b88f0c62f22c77dfdd8d922cfc907230bdce51ee216ab5420e1804bdbcc9",
+      "size": 2207794
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.mysql.jar",
+      "sha256": "b6d1c7279cd5c9b6f6846ee6153181fe4932b570affefc16e54415d218cd1c9a",
+      "size": 974392
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.connectivity.ex.jar",
+      "sha256": "e0715884ce2a982d61fa6a2efec2b5e2945dee20a10e3f6a61b43d0f87a47ff0",
+      "size": 138529
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.mongo.js.external.jar",
+      "sha256": "a68ed35e45651e5baf2b22eb9a0a8680cec837d5a186fcbaa690a11d72bd9b11",
+      "size": 132809
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.db2.ex.jar",
+      "sha256": "e9e77076582620da13e64f3044b9f38827d8e2ad5ac0a6a09a93be5c97d85e84",
+      "size": 8364
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.sql.frontend.impl.jar",
+      "sha256": "d0a2952dec5696f3b1600114be495fa4dde4b8a7812ffdf54fd0871b72903f5f",
+      "size": 49655
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.cassandra.ex.jar",
+      "sha256": "411e0f08992a2e276a6ee056c66555dd423d0638f7a5890017390885cf0202da",
+      "size": 43106
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.ssh.ui.jar",
+      "sha256": "367f36416fa85d6674737bd47b1a5d80c916093286d75b301b8aa8c7f039486b",
+      "size": 41513
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.sql.backend.core.jar",
+      "sha256": "e990d39504f41eb8f8b1ba6a527d321fb67b109082c8e0420cf78420f0307d89",
+      "size": 171027
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.sybase.ex.jar",
+      "sha256": "5bad2fff70377a631878950116b4ed8057b8167afe3cf2ccfbdabeb1be609b73",
+      "size": 9444
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.sql.common.impl.jar",
+      "sha256": "7bb98e5bb996c61af6adc9927eaab31e371c7960d32db24c423811a2673d849d",
+      "size": 594987
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.impl.common.jar",
+      "sha256": "3733ad7faf85960ae0932c939dea3aa28f277ba5c458ff5e978ca10b74bbb14b",
+      "size": 1061
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.mongo.sql.jar",
+      "sha256": "395ae84b0026ef550382fe1a880848f685caf2b7b902fb97e045562d8dc9650c",
+      "size": 123682
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.impl.frontend.jar",
+      "sha256": "32859a080786acc00ecfd09405f9e3ed6bc05422977c1259ca60256ac7e77988",
+      "size": 13466
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.bigquery.jar",
+      "sha256": "18109c4db43aaee3485dd16062334131c6e6dad2d92b6291581a64115f689c06",
+      "size": 1580110
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.trialPromotion.idesWithFreeTier.jar",
+      "sha256": "7f9b7a5cde337673096ca663d6faab846f8b800c9e29db87a782dfe6d2c8d040",
+      "size": 12040
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.mssql.ex.jar",
+      "sha256": "01ccb6ab5744cfe4d3935c07854a2a57c4449190ef8948fb232dcb8066b401d3",
+      "size": 496822
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.postgresbase.jar",
+      "sha256": "94b42c6aa682bc455d3b4174a4415c849a3be58b1d7f9f64203a2eef0e73e0d8",
+      "size": 2994032
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.core.impl.jar",
+      "sha256": "d41a1a2ebf29ae6f46c01964217dbd532babb3e36f3bda847159dc44da7c4652",
+      "size": 19151986
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.base.ex.jar",
+      "sha256": "b6be058502513df55241c269609ea30bd10958ac65bcdfaad2499ee283e2c194",
+      "size": 117641
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.pro.jar",
+      "sha256": "db9a76a90b545fe640acb81bf517e93d8043d5ea586ea2f94cc1499989c8a152",
+      "size": 104370
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.jar",
+      "sha256": "b1c56c37515894c154104b9c03aa3d2b798ba6956c9343d42ad3a99b0b40b26b",
+      "size": 1660375
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.sqlite.jar",
+      "sha256": "a64f395e1b23a598b7b01103d420901b484571d4c343a541e61506cef8ecd5b4",
+      "size": 1780665
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.jdbcConsole.shim.jar",
+      "sha256": "2ec8e73166d70d1bc2d9f2f56b7b349f5c81b339ab33e32571a7c182d1ce7adc",
+      "size": 10152
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.util.jar",
+      "sha256": "0b658654987166a4e4e90e2870a6a0c618a254fdf0d1eca958ecaf0ba0896d63",
+      "size": 240972
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.dialects.redis.jar",
+      "sha256": "a9cbe73d131e80b7c9dd92d221b98d850febddf02d8ff14efb55b2f34a5cb102",
+      "size": 1112450
+    },
+    {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.sql.core.impl.jar",
+      "sha256": "48d6ed5b464802c7aca6227519737a33cc50f78f551d4df81ac525537d1de5e9",
+      "size": 7324492
+    }
+  ]
+}

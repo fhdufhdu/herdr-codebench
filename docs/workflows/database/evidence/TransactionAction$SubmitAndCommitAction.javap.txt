@@ -1,0 +1,194 @@
+Compiled from "TransactionAction.java"
+final class com.intellij.database.run.actions.TransactionAction$SubmitAndCommitAction extends com.intellij.database.run.actions.TransactionAction$GridTransactionAction {
+  com.intellij.database.run.actions.TransactionAction$SubmitAndCommitAction();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method com/intellij/database/run/actions/TransactionAction$GridTransactionAction."<init>":()V
+       4: return
+
+  com.intellij.openapi.util.ActionCallback prepareGrid(com.intellij.openapi.actionSystem.AnActionEvent, com.intellij.database.datagrid.DataGrid);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_0
+       5: invokestatic  #93                 // Method $$$reportNull$$$0:(I)V
+       8: aload_2
+       9: ifnonnull     16
+      12: iconst_1
+      13: invokestatic  #93                 // Method $$$reportNull$$$0:(I)V
+      16: aload_1
+      17: invokestatic  #7                  // Method com/intellij/database/run/actions/SubmitMutations.submitChangesIfExists:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)Lcom/intellij/openapi/util/ActionCallback;
+      20: dup
+      21: ifnonnull     28
+      24: iconst_2
+      25: invokestatic  #93                 // Method $$$reportNull$$$0:(I)V
+      28: areturn
+
+  boolean isEnabledWithoutTx(com.intellij.openapi.actionSystem.AnActionEvent, com.intellij.database.datagrid.DataRequest$OwnerEx);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_3
+       5: invokestatic  #93                 // Method $$$reportNull$$$0:(I)V
+       8: aload_2
+       9: ifnonnull     16
+      12: iconst_4
+      13: invokestatic  #93                 // Method $$$reportNull$$$0:(I)V
+      16: aload_2
+      17: invokeinterface #13,  1           // InterfaceMethod com/intellij/database/datagrid/DataRequest$OwnerEx.getCurrentTx:()Lcom/intellij/database/datagrid/DataRequest$TxMarker;
+      22: getstatic     #19                 // Field com/intellij/database/datagrid/DataRequest.START_NEW:Lcom/intellij/database/datagrid/DataRequest$TxMarker;
+      25: if_acmpne     39
+      28: aload_1
+      29: invokestatic  #25                 // Method com/intellij/database/run/actions/SubmitMutations.hasChangesToSubmit:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)Z
+      32: ifeq          39
+      35: iconst_1
+      36: goto          40
+      39: iconst_0
+      40: ireturn
+
+  protected void performTxAction(com.intellij.database.datagrid.DataRequest$OwnerEx);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_5
+       5: invokestatic  #93                 // Method $$$reportNull$$$0:(I)V
+       8: aload_1
+       9: invokestatic  #29                 // Method com/intellij/database/datagrid/DataRequest.newTxCommit:(Lcom/intellij/database/datagrid/DataRequest$OwnerEx;)Lcom/intellij/database/datagrid/GridDataRequest;
+      12: astore_2
+      13: aload_1
+      14: invokeinterface #33,  1           // InterfaceMethod com/intellij/database/datagrid/DataRequest$OwnerEx.getMessageBus:()Lcom/intellij/database/DataBus$Consuming;
+      19: invokeinterface #37,  1           // InterfaceMethod com/intellij/database/DataBus$Consuming.getDataProducer:()Lcom/intellij/database/datagrid/DataProducer;
+      24: aload_2
+      25: invokeinterface #43,  2           // InterfaceMethod com/intellij/database/datagrid/DataProducer.processRequest:(Lcom/intellij/database/datagrid/GridDataRequest;)V
+      30: return
+
+  private static void $$$reportNull$$$0(int);
+    Code:
+       0: iload_0
+       1: tableswitch   { // 0 to 5
+                     0: 40
+                     1: 40
+                     2: 45
+                     3: 40
+                     4: 40
+                     5: 40
+               default: 40
+          }
+      40: ldc           #97                 // String Argument for @NotNull parameter \'%s\' of %s.%s must not be null
+      42: goto          50
+      45: ldc           #99                 // String @NotNull method %s.%s must not return null
+      47: goto          50
+      50: iload_0
+      51: tableswitch   { // 0 to 5
+                     0: 88
+                     1: 88
+                     2: 92
+                     3: 88
+                     4: 88
+                     5: 88
+               default: 88
+          }
+      88: iconst_3
+      89: goto          96
+      92: iconst_2
+      93: goto          96
+      96: anewarray     #101                // class java/lang/Object
+      99: iload_0
+     100: tableswitch   { // 0 to 5
+                     0: 140
+                     1: 148
+                     2: 156
+                     3: 140
+                     4: 164
+                     5: 164
+               default: 140
+          }
+     140: dup
+     141: iconst_0
+     142: ldc           #102                // String e
+     144: aastore
+     145: goto          172
+     148: dup
+     149: iconst_0
+     150: ldc           #103                // String grid
+     152: aastore
+     153: goto          172
+     156: dup
+     157: iconst_0
+     158: ldc           #104                // String com/intellij/database/run/actions/TransactionAction$SubmitAndCommitAction
+     160: aastore
+     161: goto          172
+     164: dup
+     165: iconst_0
+     166: ldc           #105                // String owner
+     168: aastore
+     169: goto          172
+     172: iload_0
+     173: tableswitch   { // 0 to 5
+                     0: 212
+                     1: 212
+                     2: 220
+                     3: 212
+                     4: 212
+                     5: 212
+               default: 212
+          }
+     212: dup
+     213: iconst_1
+     214: ldc           #104                // String com/intellij/database/run/actions/TransactionAction$SubmitAndCommitAction
+     216: aastore
+     217: goto          228
+     220: dup
+     221: iconst_1
+     222: ldc           #106                // String prepareGrid
+     224: aastore
+     225: goto          228
+     228: iload_0
+     229: tableswitch   { // 0 to 5
+                     0: 268
+                     1: 268
+                     2: 276
+                     3: 279
+                     4: 279
+                     5: 287
+               default: 268
+          }
+     268: dup
+     269: iconst_2
+     270: ldc           #106                // String prepareGrid
+     272: aastore
+     273: goto          295
+     276: goto          295
+     279: dup
+     280: iconst_2
+     281: ldc           #107                // String isEnabledWithoutTx
+     283: aastore
+     284: goto          295
+     287: dup
+     288: iconst_2
+     289: ldc           #108                // String performTxAction
+     291: aastore
+     292: goto          295
+     295: invokestatic  #114                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     298: iload_0
+     299: tableswitch   { // 0 to 5
+                     0: 336
+                     1: 336
+                     2: 347
+                     3: 336
+                     4: 336
+                     5: 336
+               default: 336
+          }
+     336: new           #116                // class java/lang/IllegalArgumentException
+     339: dup_x1
+     340: swap
+     341: invokespecial #119                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     344: goto          358
+     347: new           #121                // class java/lang/IllegalStateException
+     350: dup_x1
+     351: swap
+     352: invokespecial #122                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     355: goto          358
+     358: athrow
+}

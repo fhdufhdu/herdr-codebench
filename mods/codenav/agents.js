@@ -1,3 +1,4 @@
+import { uiIcon } from "./ui-icons.js";
 // Agents in grouped or priority views; parents take their most urgent sub-agent's place.
 // A viewed done agent stays in Done until left.
 
@@ -150,9 +151,9 @@ export default class Agents {
           setShared("agents.sort", s.id);
           closeOverlay((props() ?? this.p)?.overlay);
         })
-        .child(svg(`mods/workspace-chrome/${s.icon}.svg`).size(14).flex_none().text_color(t.muted))
+        .child(uiIcon(s.icon, 14).flex_none().text_color(t.muted))
         .child(div().flex_1().child(T(s.label)))
-        .when(s.id === on, (el) => el.child(svg("mods/workspace-chrome/check.svg").size(14).flex_none().text_color(t.foreground)))));
+        .when(s.id === on, (el) => el.child(uiIcon("check", 14).flex_none().text_color(t.foreground)))));
   }
 
   peek(addr) {
@@ -201,8 +202,8 @@ export default class Agents {
   status(t, a, compact = false) {
     const color = t[a.status] ?? t.dim;
     if (a.status === "working") return isIdea()
-      ? uiSpinner(() => svg("mods/codenav/idea-icons/progress.svg"), { size: 14, tip: T("Working…") }).mx(1)
-      : svg("mods/workspace-chrome/spinner.svg").size(12).mx(1).flex_none().text_color(t.working).spin(900);
+      ? uiSpinner(() => uiIcon("progress"), { size: 14, tip: T("Working…") }).mx(1)
+      : uiIcon("spinner", 12).mx(1).flex_none().text_color(t.working).spin(900);
     if (a.status === "blocked" && compact) return div().size(14).flex_none().rounded(4).bg(t.blocked + "26").text_size(uiSize(10.5)).font_bold().text_color(t.blocked).flex().items_center().justify_center().child("!");
     if (a.status === "blocked") return div().flex_none().px(6).h(18).rounded(5).bg(t.blocked + "26").text_size(uiSize(10.5)).font_semibold().text_color(t.blocked).flex().items_center().child("Needs you");
     // Idle: a ring; done: a dot.
@@ -261,7 +262,7 @@ export default class Agents {
           open ? this.folded.add(a.address) : this.folded.delete(a.address);
           cx.notify();
         })
-        .child(svg(`mods/workspace-chrome/chevron-${open ? "down" : "right"}.svg`).size(11).flex_none())
+        .child(uiIcon(open ? "chevron-down" : "chevron-right", 16).flex_none())
         .when(!open, (el) => el.child(String(subs.length)));
     };
 
@@ -317,7 +318,7 @@ export default class Agents {
           this.hovered = null;
           cx.notify();
         })
-        .child(svg(`mods/workspace-chrome/${isPinned ? "pin-off" : "pin"}.svg`).size(13));
+        .child(uiIcon(isPinned ? "pin-off" : "pin", 13));
       // Under a space header the space goes without saying; an automatic tab number says nothing.
       // Without a space header above (priority, pinned) the row names its space.
       const full = byPriority || isPinned;
@@ -390,7 +391,7 @@ export default class Agents {
         .child(div().flex_1())
         .when(!open, (el) => el
           .when(!byPriority && top && top !== "idle", (el) => el.child(this.status(t, { status: top }, true)))
-          .child(svg("mods/workspace-chrome/chevron-right.svg").size(11).flex_none().text_color(t.dim)));
+          .child(uiIcon("chevron-right", 11).flex_none().text_color(t.dim)));
     };
     const rows = collapsed
       ? list.flatMap(withKids)
@@ -420,7 +421,7 @@ export default class Agents {
                 .hover((s) => s.text_color(t.foreground))
                 .on_click(() => openOverlay({ mod: "codenav", kind: "popup", width: 220, height: 94, props: { view: "agents", sortMenu: true } }))
                 .tooltip(`Sort agents: ${sort.label}`)
-                .child(h_flex().gap(6).items_center().child(div().child(T(sort.label))).child(svg(`mods/workspace-chrome/${sort.icon}.svg`).size(14))),
+                .child(h_flex().gap(6).items_center().child(div().child(T(sort.label))).child(uiIcon(sort.icon, 14))),
             ),
         ),
       )

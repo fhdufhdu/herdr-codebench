@@ -88,10 +88,13 @@ export async function lsp(method, body, sleep) {
   catch (error) {
     if (!/fetch|connect|refused|network/i.test(String(error.message ?? error))) throw error;
     verified = null; state = null; prepared = null;
+    // A database write may have reached the server even if its reply was lost.
+    // Replaying it could duplicate changes. Let the caller refresh/reconcile.
+    if (method.startsWith("db_")) throw new Error(`Database request could not be confirmed. Refresh before retrying. ${error.message ?? error}`);
     await ensureEngine(sleep); return post(method, body);
   }
 }
 // Status polling never starts a service.
-export async function peek(method) {
-  try { return await post(method); } catch { return null; }
+export async function peek(method, body) {
+  try { return await post(method, body); } catch { return null; }
 }

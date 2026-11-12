@@ -14,7 +14,10 @@
 import { View, div } from "gpui-kit";
 import { props as herdrProps, shared, setShared, closeOverlay } from "herdr";
 import CodeView, { EditorContextMenu } from "./code.js";
+import EditableCode from "./editable-code.js";
 import { DiagnosticTargets } from "./diagnostics.js";
+import { Database, DatabaseManager } from "./database.js";
+import { DatabaseEditor, DatabaseQueryMenu, DatabaseTransfer, RunResults } from "./database-editor.js";
 import Review from "./review.js";
 import Tabs, { TabMenu, TabList } from "./tabs.js";
 import Status from "./status.js";
@@ -31,11 +34,14 @@ import RecentFiles from "./recent.js";
 import DesignPreview from "./design-preview.js";
 import Notice from "./notice.js";
 import LspSetup from "./lsp-setup.js";
+import { isIdea } from "./idea-design.js";
 
-const VIEWS = { code: CodeView, review: Review, tabs: Tabs, status: Status, tabmenu: TabMenu, termfiles: TermFiles, termmenu: TermMenu, panehead: PaneHead,
+const VIEWS = { code: CodeView, "custom-editor": EditableCode, review: Review, tabs: Tabs, status: Status, tabmenu: TabMenu, termfiles: TermFiles, termmenu: TermMenu, panehead: PaneHead,
   stripe: Stripe, notifications: Notifications, toolmenu: ToolMenu, toolempty: ToolEmpty, toolheader: ToolHeader, islandbottom: IslandBottom, toolbar: Toolbar, structure: Structure, problems: Problems, crumbs: Crumbs,
   projects: Projects, everywhere: Everywhere, runmenu: RunMenu, runconfigs: RunConfigs, httpenv: HttpEnvMenu,
-  "lsp-setup": LspSetup, "diagnostic-targets": DiagnosticTargets, settings: IdeaSettings, agents: Agents, newterminal: NewTerminal, tablist: TabList,
+  "lsp-setup": LspSetup, "diagnostic-targets": DiagnosticTargets, database: Database, "database-manager": DatabaseManager,
+  "run-results": RunResults, "database-editor": DatabaseEditor, "database-query": DatabaseQueryMenu, "database-transfer": DatabaseTransfer,
+  settings: IdeaSettings, agents: Agents, newterminal: NewTerminal, tablist: TabList,
   recent: RecentFiles, designpreview: DesignPreview, notice: Notice, editorcontext: EditorContextMenu };
 
 export default class CodeNav extends View {
@@ -46,12 +52,12 @@ export default class CodeNav extends View {
     if (shared("codenav.shortcutTrace")) setShared("codenav.shortcutTrace", null);
     const p = { ...(initProps ?? {}), ...(herdrProps() ?? {}) };
     this.view = p.view ?? (p.tab === "pane" && p.target ? "termmenu" : "review");
-    const Impl = VIEWS[this.view] ?? null;
+    const Impl = this.view === "code" && isIdea() ? EditableCode : VIEWS[this.view] ?? null;
     this.impl = Impl ? new Impl() : null;
     this.impl?.init(p, cx);
   }
   render(cx) {
     return this.impl ? this.impl.render(cx) : div().p(12).child(`codenav: unknown view "${this.view}"`);
   }
-  async close() { this.impl?.release?.(); }
+  async close() { await this.impl?.release?.(); }
 }

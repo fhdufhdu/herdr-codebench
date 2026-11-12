@@ -245,7 +245,7 @@ export class Everywhere {
     const on = Object.hasOwn(r, "on") ? r.on : this.on ?? null;
     if (r.kind === "file") openPath(r.path, on);
     else if (r.kind === "symbol" || r.kind === "line" || r.kind === "text" || r.kind === "location") openPath(`${r.path}:${(r.line ?? 0) + (r.kind === "line" ? 0 : 1)}:${(r.col ?? 0) + (r.kind === "line" ? 0 : 1)}`, on);
-    else if (r.kind === "action") run(r.name);
+    else if (r.kind === "action") run(getAction(r.name) ? actionPresentation(r.name, this.actionContext()).command : r.name);
   }
 
   move(list, dir) {

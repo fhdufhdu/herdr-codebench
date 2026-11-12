@@ -36,7 +36,10 @@ func TestLSPHelper(t *testing.T) {
 	}
 	result := func(id json.RawMessage, v any) { send(map[string]any{"jsonrpc": "2.0", "id": id, "result": v}) }
 	docs := map[string]any{}
-	opens, changes, cancels := 0, 0, 0
+	opens, changes, cancels, closes, hovers := 0, 0, 0, 0, 0
+	var heldHovers []func()
+	var heldSymbols []func()
+	symbolRequests := 0
 	responses := map[string]any{}
 	var lastChange any
 	r := bufio.NewReader(os.Stdin)
@@ -56,11 +59,23 @@ func TestLSPHelper(t *testing.T) {
 		}
 		switch m.Method {
 		case "initialize":
-			result(m.ID, map[string]any{"capabilities": map[string]any{"positionEncoding": "utf-16", "textDocumentSync": map[string]any{"openClose": true, "change": 2}}})
+			if os.Getenv("HERDR_TEST_INITIALIZE_PAUSE") == "1" {
+				time.Sleep(200 * time.Millisecond)
+			}
+			result(m.ID, map[string]any{"capabilities": map[string]any{"positionEncoding": "utf-16", "textDocumentSync": map[string]any{"openClose": true, "change": 2}, "completionProvider": map[string]any{"resolveProvider": true, "triggerCharacters": []string{"."}}, "documentFormattingProvider": true}})
 			send(map[string]any{"jsonrpc": "2.0", "id": "cfg", "method": "workspace/configuration", "params": map[string]any{"items": []any{map[string]any{"section": "testing.answer"}}}})
 			send(map[string]any{"jsonrpc": "2.0", "id": "folders", "method": "workspace/workspaceFolders", "params": map[string]any{}})
 		case "initialized":
 			send(map[string]any{"jsonrpc": "2.0", "method": "$/progress", "params": map[string]any{"token": "test", "value": map[string]any{"kind": "begin", "title": "Indexing"}}})
+		case "textDocument/completion":
+			result(m.ID, map[string]any{"isIncomplete": false, "items": []any{map[string]any{"label": "completed", "insertText": "completed", "data": map[string]any{"fixture": true}}, map[string]any{"label": "snippet", "insertTextFormat": 2, "insertText": "${1:unsupported}"}}})
+		case "completionItem/resolve":
+			var item map[string]any
+			_ = json.Unmarshal(m.Params, &item)
+			item["additionalTextEdits"] = []any{map[string]any{"range": map[string]any{"start": map[string]int{"line": 0, "character": 0}, "end": map[string]int{"line": 0, "character": 0}}, "newText": "// resolved import\n"}}
+			result(m.ID, item)
+		case "textDocument/formatting":
+			result(m.ID, []any{map[string]any{"range": map[string]any{"start": map[string]int{"line": 0, "character": 0}, "end": map[string]int{"line": 0, "character": 0}}, "newText": "// formatted\n"}})
 		case "textDocument/didOpen":
 			var p map[string]any
 			json.Unmarshal(m.Params, &p)
@@ -71,10 +86,40 @@ func TestLSPHelper(t *testing.T) {
 		case "textDocument/didChange":
 			json.Unmarshal(m.Params, &lastChange)
 			changes++
+			p := lastChange.(map[string]any)
+			d := p["textDocument"].(map[string]any)
+			d["text"] = p["contentChanges"].([]any)[0].(map[string]any)["text"]
+			docs[d["uri"].(string)] = d
+		case "textDocument/didClose":
+			var p struct {
+				TextDocument struct {
+					URI string `json:"uri"`
+				} `json:"textDocument"`
+			}
+			json.Unmarshal(m.Params, &p)
+			delete(docs, p.TextDocument.URI)
+			closes++
+		case "fixture/publish":
+			var p any
+			json.Unmarshal(m.Params, &p)
+			send(map[string]any{"jsonrpc": "2.0", "method": "textDocument/publishDiagnostics", "params": p})
+			result(m.ID, true)
+		case "fixture/releaseHover":
+			for _, reply := range heldHovers {
+				reply()
+			}
+			heldHovers = nil
+			result(m.ID, true)
+		case "fixture/releaseSymbols":
+			for _, reply := range heldSymbols {
+				reply()
+			}
+			heldSymbols = nil
+			result(m.ID, true)
 		case "$/cancelRequest":
 			cancels++
 		case "fixture/inspect":
-			result(m.ID, map[string]any{"opens": opens, "changes": changes, "cancels": cancels, "docs": docs, "change": lastChange, "responses": responses, "env": os.Getenv("HERDR_TEST_CONFIG"), "java": os.Getenv("JAVA_TOOL_OPTIONS"), "javaHome": os.Getenv("JAVA_HOME")})
+			result(m.ID, map[string]any{"opens": opens, "changes": changes, "cancels": cancels, "closes": closes, "hovers": hovers, "symbol_requests": symbolRequests, "docs": docs, "change": lastChange, "responses": responses, "env": os.Getenv("HERDR_TEST_CONFIG"), "java": os.Getenv("JAVA_TOOL_OPTIONS"), "javaHome": os.Getenv("JAVA_HOME")})
 		case "fixture/echo":
 			id := append(json.RawMessage(nil), m.ID...)
 			p := append(json.RawMessage(nil), m.Params...)
@@ -83,8 +128,73 @@ func TestLSPHelper(t *testing.T) {
 		case "fixture/crash":
 			os.Exit(4)
 		case "textDocument/hover":
-			result(m.ID, map[string]any{"contents": map[string]any{"kind": "markdown", "value": "**Fixture**"}})
-		case "textDocument/definition", "textDocument/references", "workspace/symbol", "textDocument/documentSymbol":
+			hovers++
+			var p struct {
+				TextDocument struct {
+					URI string `json:"uri"`
+				} `json:"textDocument"`
+			}
+			json.Unmarshal(m.Params, &p)
+			text := ""
+			if d, ok := docs[p.TextDocument.URI].(map[string]any); ok {
+				text, _ = d["text"].(string)
+			}
+			id := append(json.RawMessage(nil), m.ID...)
+			reply := func() {
+				result(id, map[string]any{"contents": map[string]any{"kind": "markdown", "value": "**Fixture**\n" + text}})
+			}
+			if strings.Contains(text, "hold-hover") {
+				heldHovers = append(heldHovers, reply)
+			} else {
+				reply()
+			}
+		case "textDocument/definition", "textDocument/references":
+			var p struct {
+				TextDocument struct {
+					URI string `json:"uri"`
+				} `json:"textDocument"`
+				Position struct {
+					Line      int `json:"line"`
+					Character int `json:"character"`
+				} `json:"position"`
+			}
+			json.Unmarshal(m.Params, &p)
+			text := ""
+			if d, ok := docs[p.TextDocument.URI].(map[string]any); ok {
+				text, _ = d["text"].(string)
+			}
+			if strings.Contains(text, "fixture-super") && strings.Contains(text, "Parent") && p.Position.Character == utf16Len(text[:strings.Index(text, "Parent")]) {
+				source, _ := fromURI(p.TextDocument.URI)
+				target := filepath.Join(filepath.Dir(source), "Parent.go")
+				if strings.Contains(text, "fixture-super-cross-root") {
+					target = filepath.Join(filepath.Dir(source), "other", "Parent.go")
+				}
+				result(m.ID, []any{superTestLocation(target, 0, 6)})
+			} else if strings.Contains(text, "fixture-preview") {
+				result(m.ID, []any{map[string]any{"uri": p.TextDocument.URI, "range": map[string]any{"start": map[string]int{"line": 0, "character": 0}, "end": map[string]int{"line": 0, "character": 7}}}})
+			} else {
+				result(m.ID, []any{})
+			}
+		case "textDocument/documentSymbol":
+			var p struct {
+				TextDocument struct {
+					URI string `json:"uri"`
+				} `json:"textDocument"`
+			}
+			json.Unmarshal(m.Params, &p)
+			text := ""
+			if d, ok := docs[p.TextDocument.URI].(map[string]any); ok {
+				text, _ = d["text"].(string)
+			}
+			symbolRequests++
+			id := append(json.RawMessage(nil), m.ID...)
+			reply := func() { result(id, []any{}) }
+			if strings.Contains(text, "hold-super") {
+				heldSymbols = append(heldSymbols, reply)
+			} else {
+				reply()
+			}
+		case "workspace/symbol":
 			result(m.ID, []any{})
 		case "java/classFileContents":
 			result(m.ID, "package lib;\npublic class Library {}\n")

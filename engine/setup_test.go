@@ -59,7 +59,7 @@ func TestSetupKnownLanguages(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer e.Close()
-	for _, lang := range []string{"go", "rust", "swift", "typescript", "python", "java", "kotlin"} {
+	for _, lang := range []string{"go", "rust", "swift", "typescript", "python", "java", "kotlin", "json", "yaml", "html", "css", "shellscript", "cpp", "markdown", "toml", "xml"} {
 		status, err := e.setupStatus(Request{Lang: lang})
 		if err != nil || status.Language != lang || status.Command == "" || status.Running {
 			t.Fatal(lang, status, err)

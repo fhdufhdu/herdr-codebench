@@ -1,3 +1,4 @@
+import { uiIcon } from "./ui-icons.js";
 // The header of the workbench's terminal panel, like VS Code's: the space's
 // tabs as terminal tabs, then new / split / maximize / hide.
 import { div, svg, image } from "gpui-kit";
@@ -23,7 +24,7 @@ export default class PanelBar {
       .on_click(() => run("tab.select", { id: c.id }))
       .child(program?.icon ? (program.tint ? svg(program.icon).size(13).text_color(t.muted) : image(program.icon).size(13)) : icon("terminal", 13))
       .child(div().max_w(160).truncate().child(c.zoomed ? `${name} (zoomed)` : name))
-      .when(c.status === "working", (el) => el.child(svg("mods/workspace-chrome/spinner.svg").size(11).flex_none().text_color(t.working).spin(900)))
+      .when(c.status === "working", (el) => el.child(uiIcon("spinner", 11).flex_none().text_color(t.working).spin(900)))
       .when(c.status === "blocked" || c.status === "done", (el) => el.child(div().size(6).rounded(3).bg(t[c.status])))
       .when(c.active, (el) => el.child(iconButton(`pclose-${c.id}`, "x", "Close tab", () => run("tab.close", { id: c.id }), { size: 16, icon: 11 })));
   }

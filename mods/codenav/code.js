@@ -14,7 +14,7 @@
 import { div } from "gpui-kit";
 import { T } from "./i18n.js";
 import { IDEA, isIdea, uiSize, ideaUI, uiColors, MenuController, uiMenu, uiPopupSize,
-  uiDiagnosticColors, uiDiagnosticUnderline, uiDiagnosticTooltip } from "./idea-design.js";
+  uiDiagnosticColors, uiDiagnosticUnderline, uiDiagnosticTooltip, uiModeSwitch } from "./idea-design.js";
 import { editorGeometry, editorGutter, editorLine, editorViewport, editorSurface } from "./editor-surface.js";
 import { v_flex, h_flex, v_virtual_list, Scrollbar, TextView, InputState, Input } from "gpui-base";
 import { readTextFile, watchFolder, theme, run, exec, nextCommand, layout, setShared, shared, openOverlay, closeOverlay, props, keys, spaces } from "herdr";
@@ -57,8 +57,15 @@ export default class CodeView {
     this.sleep = (ms) => cx.sleep(ms);
     this.comment = new CommentBox();
     // pane.go gives this view the keyboard; keys.json's mod:codenav keys arrive as commands.
-    cx.spawn(async (cx) => { for (;;) { this.command(await nextCommand(), cx); cx.notify(); } });
+    this.listenCommands(cx);
   }
+  listenCommands(cx) { cx.spawn(async (cx) => { for (;;) { this.command(await nextCommand(), cx); cx.notify(); } }); }
+
+  readDocument(spec) { return readTextFile(spec.path, { on: spec.on }); }
+  didLoadDocument(_spec, _cx, _keepView) {}
+  languageRequest(method, args) { return lsp(method, args, this.sleep); }
+  inlineCaret(_line) { return null; }
+  get lineLimit() { return MAX_LINE; }
 
   // Back / forward belong to the space whose editor this is.
   history() {
@@ -73,6 +80,10 @@ export default class CodeView {
 
   sync(cx) {
     const spec = editorSpec(), space = editorKey();
+    if (spec?.kind === "database") {
+      if (this.shown) { this.seq = (this.seq ?? 0) + 1; this.watched = null; this.loadedKey = null; }
+      this.shown = null; this.lines = []; this.loading = false; return;
+    }
     const k = JSON.stringify([documentIdentity(spec, space), spec?.at ?? null]);
     if (k === this.loadedKey) return;
     const same = sameDocument(spec, space, this.shown, this.documentSpace);
@@ -111,7 +122,7 @@ export default class CodeView {
     cx.notify();
     cx.spawn(async (cx) => {
       try {
-        const text = await readTextFile(spec.path, { on: spec.on }).catch(() => null);
+        const text = await this.readDocument(spec).catch(() => null);
         if (!alive()) return;
         if (text === null) { this.error = T("This file can't be read as text (missing, or over 1 MB)."); return; }
         if (text.includes("\0")) { this.error = T("A binary file."); return; }
@@ -120,6 +131,7 @@ export default class CodeView {
         this.navigation = navigationMarkers(this.lines, spec.path);
         this.width = Math.max(...this.lines.slice(0, 20000).map((l) => displayWidth(l.length > MAX_LINE ? l.slice(0, MAX_LINE) : l)), 40);
         if (!keepView) { this.comment.close(); this.selection = null; this.scroll.setTop(0); this.reveal(spec.line, spec.col); }
+        this.didLoadDocument(spec, cx, keepView);
         this.loading = false; cx.notify();
         this.watch(spec, cx);
         // The repository the file is in: its review comments are kept there.
@@ -132,25 +144,25 @@ export default class CodeView {
         await this.loadChanges(spec, alive);
         cx.notify();
         // Colors first (fast), then the language server.
-        const toks = await lsp("tokens", spec.on ? { path: spec.path, text } : { path: spec.path }, this.sleep).catch(() => null);
+        const toks = await this.languageRequest("tokens", spec.on ? { path: spec.path, text } : { path: spec.path }).catch(() => null);
         if (!alive()) return;
         this.toks = toks; cx.notify();
         if (spec.on) { this.info = { lang: null, remote: true }; return; }
         if (/\.(java|kt|kts)$/.test(spec.path)) {
-          const spring = await lsp("spring_markers", { path: spec.path, root: this.repo ?? spec.root, text }, this.sleep).catch(() => []);
+          const spring = await this.languageRequest("spring_markers", { path: spec.path, root: this.repo ?? spec.root, text }).catch(() => []);
           if (!alive()) return;
           this.navigation = [...this.navigation.filter(marker => marker.kind === "super"), ...spring]; cx.notify();
         }
-        const info = await lsp("info", { path: spec.path }, this.sleep).catch((e) => ({ error: String(e.message ?? e) }));
+        const info = await this.languageRequest("info", { path: spec.path }).catch((e) => ({ error: String(e.message ?? e) }));
         if (!alive()) return;
         this.info = info;
         if (!this.info?.lang || !this.info.installed) return;
         cx.notify();
         const retry = this.retry; this.retry = false;
-        const symbols = await lsp("symbols", { path: spec.path, retry }, this.sleep).catch((e) => { if (alive()) this.lspError = String(e.message ?? e); return null; });
+        const symbols = await this.languageRequest("symbols", { path: spec.path, retry }).catch((e) => { if (alive()) this.lspError = String(e.message ?? e); return null; });
         if (!alive()) return;
         if (symbols) { this.symbols = symbols; this.lspError = null; }
-        const updatedInfo = await lsp("info", { path: spec.path }, this.sleep).catch(() => this.info);
+        const updatedInfo = await this.languageRequest("info", { path: spec.path }).catch(() => this.info);
         if (!alive()) return;
         this.info = updatedInfo;
         cx.notify();
@@ -168,7 +180,7 @@ export default class CodeView {
   async loadDiagnostics(cx) {
     const s = this.shown, request = this.requestContext();
     if (!s || s.on || !this.info?.installed) return;
-    const r = await lsp("diagnostics", { path: s.path }, this.sleep).catch(() => null);
+    const r = await this.languageRequest("diagnostics", { path: s.path }).catch(() => null);
     if (r && this.currentRequest(request)) { this.diags = r.items; this.busy = r.busy; cx.notify(); }
   }
 
@@ -399,7 +411,7 @@ export default class CodeView {
     if (!this.lspReady() || !this.sel.word) return;
     const sel = this.sel, args = this.posArgs(), request = this.requestContext(), generation = this.hoverGeneration = (this.hoverGeneration ?? 0) + 1;
     cx.spawn(async (cx) => {
-      const r = await lsp("hover", args, this.sleep).catch((e) => ({ error: String(e.message ?? e) }));
+      const r = await this.languageRequest("hover", args).catch((e) => ({ error: String(e.message ?? e) }));
       if (this.currentRequest(request) && this.sel === sel && generation === this.hoverGeneration) { this.hover = r ?? {}; cx.notify(); }
     });
   }
@@ -415,7 +427,7 @@ export default class CodeView {
     this.note = T("Looking for the definition…"); cx.notify();
     cx.spawn(async (cx) => {
       try {
-        const r = await lsp("definition", args, this.sleep);
+        const r = await this.languageRequest("definition", args);
         if (!this.currentRequest(request) || this.sel !== sel || generation !== this.definitionGeneration) return;
         this.note = null;
         if (!r.length) this.showNote(T("No {kind} found for {word}", { kind: T(kind), word: sel.word ?? "" }));
@@ -432,7 +444,7 @@ export default class CodeView {
     this.note = T("Looking for navigation targets…"); cx.notify();
     cx.spawn(async cx => {
       try {
-        const items = await lsp("related", { path, root: this.repo ?? this.shown.root, ...marker }, ms => cx.sleep(ms));
+        const items = await this.languageRequest("related", { path, root: this.repo ?? this.shown.root, ...marker });
         if (!this.currentRequest(request) || generation !== this.relatedGeneration) return;
         this.note = null;
         if (!items.length) this.showNote(T("No navigation target found."));
@@ -450,7 +462,7 @@ export default class CodeView {
     cx.notify();
     cx.spawn(async (cx) => {
       try {
-        const items = await lsp("references", args, this.sleep);
+        const items = await this.languageRequest("references", args);
         if (!this.currentRequest(request) || generation !== this.referenceGeneration) return;
         this.refs = { title: T("{n} references to {word}", { n: items.length, word: sel.word }), items };
       } catch (e) { if (!this.currentRequest(request) || generation !== this.referenceGeneration) return; this.refs = { title: T("References"), items: [], error: String(e.message ?? e) }; }
@@ -467,7 +479,7 @@ export default class CodeView {
     this.refs = { title, items: null }; cx.notify();
     cx.spawn(async cx => {
       try {
-        const items = await lsp("spring_project", args, ms => cx.sleep(ms));
+        const items = await this.languageRequest("spring_project", args);
         if (this.currentRequest(request) && generation === this.springGeneration) this.refs = { title, items };
       } catch (error) {
         if (this.currentRequest(request) && generation === this.springGeneration) this.refs = { title, items: [], error: String(error.message ?? error) };
@@ -503,7 +515,7 @@ export default class CodeView {
       const action = getAction(data.action);
       if (!action) return;
       if (action.owner === "code") this.command(action.command.replace(/^codenav\./, ""), cx);
-      else run(action.command);
+      else run(actionPresentation(action, { layout: shared("layout"), document: editorSpec(), area: shared("codenav.area") }).command);
     }
     else if (c === "retry-lsp" && this.shown && !this.shown.on) { this.lspError = null; this.retry = true; this.load(this.shown, cx, true); }
     else if (c === "focus") this.focus.focus();
@@ -678,12 +690,14 @@ export default class CodeView {
   // One line: token colors, the selected name's other uses, find hits and diagnostics.
   row(i, t, colors) {
     let text = this.lines[i] ?? "";
-    if (text.length > MAX_LINE) text = text.slice(0, MAX_LINE);
+    if (text.length > this.lineLimit) text = text.slice(0, this.lineLimit);
     const diags = this.diags.filter((d) => d.line <= i && i <= d.end_line);
     // Point diagnostics still need an inline target after the gutter dot goes.
     if (isIdea() && !text && diags.some(d => d.line === i && d.end_line === i)) text = " ";
     const toks = this.toks?.[i];
     const cuts = new Set([0, text.length]);
+    const caret = this.inlineCaret(i);
+    if (caret) cuts.add(Math.min(caret.offset, text.length));
     const spans = [];
     if (toks) { let o = 0; for (const [n, cat] of toks) { spans.push([o, o + n, cat]); o += n; cuts.add(Math.min(o, text.length)); } }
     const marks = [];
@@ -715,6 +729,7 @@ export default class CodeView {
     for (let k = 0; k < points.length - 1; k++) {
       const a = points[k], b = points[k + 1];
       if (a === b) continue;
+      if (caret?.offset === a) children.push(caret.element);
       const startColumn = col, piece = expandTabs(text.slice(a, b), col);
       col += displayWidth(text.slice(a, b));
       const cat = spans.find((s) => s[0] <= a && a < s[1])?.[2];
@@ -739,6 +754,7 @@ export default class CodeView {
       }
       children.push(el);
     }
+    if (caret && caret.offset >= text.length) children.push(caret.element);
     const worst = diags.length ? Math.min(...diags.map((d) => d.severity ?? 1)) : 0;
     const current = this.sel?.line === i;
     const c = this.comment.draft, picked = c && c.path === this.rel() && i + 1 >= c.start && i + 1 <= c.end;
@@ -816,6 +832,8 @@ export default class CodeView {
 
   markdownButton(t) {
     if (!this.isMarkdown()) return null;
+    if (isIdea()) return uiModeSwitch("cn-md", [{ id: "source", label: T("Source") }, { id: "preview", label: T("Preview") }],
+      this.richView() ? "preview" : "source", (mode, _event, cx) => { if ((mode === "preview") !== this.richView()) this.toggleRich(); cx.notify(); });
     return iconButton("cn-md", "eye", T("Rich view (Ctrl+Shift+V)"), (_event, cx) => {
       this.toggleRich(); cx.notify();
     }, { ...(isIdea() ? { size: 20, icon: 12 } : {}), color: this.richView() ? t.accent : undefined });

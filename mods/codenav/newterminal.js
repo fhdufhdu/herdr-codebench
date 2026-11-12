@@ -1,3 +1,4 @@
+import { uiIcon } from "./ui-icons.js";
 // Adapted from Herdr shipped mods/new-menu/main.js; commands and machine lookup preserved.
 import { div, svg, image } from "gpui-kit";
 
@@ -56,16 +57,16 @@ export default class NewTerminal {
     const worktree = (action) => openOverlay({ mod: "worktree", kind: "dialog", width: action === "new" ? 460 : 560, height: action === "new" ? 280 : 480,
       props: { space: space?.id, folder: panes().find(p => p.focused)?.cwd, action } });
     const rows = [
-      { id: "terminal", icon: () => svg("icons/shell.svg").size(16), label: T("Terminal"), shortcut: shortcut("tab.new"), action: terminal.action },
+      { id: "terminal", icon: () => uiIcon("terminal", 16), label: T("Terminal"), shortcut: shortcut("tab.new"), action: terminal.action },
       { separator: true }, { id: "agent-caption", label: T("Start an agent"), disabled: true },
       ...choices.map((a, i) => ({ id: `agent-${a.key}`, label: a.name,
         icon: () => a.tint ? svg(a.icon).size(IDEA.iconSize).text_color(t.foreground) : image(a.icon).size(IDEA.iconSize),
         shortcut: a.installed ? (i < 9 ? String(i + 1) : "") : T("not installed"), disabled: !a.installed, action: () => startAgent(a) })),
       ...(this.loading || this.failed || !this.agents.length ? [{ id: "agent-status", label: T(this.failed ? "Could not load agents" : this.loading ? "Checking installed agents…" : "No agents found"), disabled: true }] : []),
       { separator: true },
-      { id: "space", label: T("New space"), icon: () => div().w(16).child("+"), shortcut: shortcut("space.new"), action: newSpace.action },
-      { id: "worktree", label: T("New worktree…"), icon: () => svg("mods/workspace-chrome/branch.svg").size(16), disabled: !space, action: () => worktree("new") },
-      { id: "worktree-open", label: T("Open worktree…"), icon: () => svg("mods/workspace-chrome/branch.svg").size(16), disabled: !space, action: () => worktree("open") },
+      { id: "space", label: T("New space"), icon: () => uiIcon("newSpace", 16), shortcut: shortcut("space.new"), action: newSpace.action },
+      { id: "worktree", label: T("New worktree…"), icon: () => uiIcon("branch", 16), disabled: !space, action: () => worktree("new") },
+      { id: "worktree-open", label: T("Open worktree…"), icon: () => uiIcon("branch", 16), disabled: !space, action: () => worktree("open") },
     ];
     return uiMenu("new-menu", rows, this.menu, cx, { width: 300, maxHeight: 400, onClose: () => closeOverlay((props() ?? this.p)?.overlay) });
   }

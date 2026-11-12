@@ -1,0 +1,70 @@
+{
+  "evidence_id": "ev_435f451b425521a0ef27cd03248157f95eec44428737c0044ee40a839236089d",
+  "subject": {
+    "name": "Herdr",
+    "digest": {
+      "sha256": "d2a672a8414b80cdc30dc2d6927d5ba0793e49ba79fc4b98e1cbeb5fd6be1dcf"
+    },
+    "local_path": "/Applications/Herdr.app/Contents/MacOS/Herdr",
+    "format": "mach-o",
+    "architecture": "arm64"
+  },
+  "provider": {
+    "id": "rust-auditable",
+    "name": "REA Rust dependency reader",
+    "version": "1"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.analysis",
+  "operation": "inspect_rust_binary",
+  "parameters": {
+    "path": "/Applications/Herdr.app/Contents/MacOS/Herdr"
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "artifact": {
+      "path": "/Applications/Herdr.app/Contents/MacOS/Herdr",
+      "sha256": "d2a672a8414b80cdc30dc2d6927d5ba0793e49ba79fc4b98e1cbeb5fd6be1dcf",
+      "bytes": 59770016
+    },
+    "format": "macho",
+    "architecture": "arm64",
+    "bits": 64,
+    "byte_order": "little",
+    "auditable_metadata": null,
+    "rustc_commit": {
+      "evidence_kind": "inferred",
+      "hashes": [
+        {
+          "hash": "59807616e1fa2540724bfbac14d7976d7e4a3860",
+          "file_offset": 42699921
+        }
+      ]
+    },
+    "limitations": [
+      "Embedded dependency metadata is file content. It does not authenticate package names, versions, sources, or the compiler that produced the binary.",
+      "Only the .dep-v0 dependency section and read-only compiler path strings are inspected. Functions, types, and runtime behavior are not recovered.",
+      "Resource guards bound the selected file to 256 MiB, a dependency section to 1 MiB, inflated JSON to the smaller of 8 MiB and 64 times the section size, and the complete report to 8 MiB. Package and dependency counts are admitted against that output budget before schema cloning, graph objects, or reverse-edge allocation.",
+      "No .dep-v0 section was found. Absence of .dep-v0 does not mean the binary has no dependencies.",
+      "The rustc commit hash is inferred from a /rustc/<40-hex>/ path in read-only data. It does not by itself prove which compiler produced the binary."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "shipped-artifact",
+  "environment": null,
+  "limitations": [
+    "Embedded dependency metadata is file content. It does not authenticate package names, versions, sources, or the compiler that produced the binary.",
+    "Only the .dep-v0 dependency section and read-only compiler path strings are inspected. Functions, types, and runtime behavior are not recovered.",
+    "Resource guards bound the selected file to 256 MiB, a dependency section to 1 MiB, inflated JSON to the smaller of 8 MiB and 64 times the section size, and the complete report to 8 MiB. Package and dependency counts are admitted against that output budget before schema cloning, graph objects, or reverse-edge allocation.",
+    "No .dep-v0 section was found. Absence of .dep-v0 does not mean the binary has no dependencies.",
+    "The rustc commit hash is inferred from a /rustc/<40-hex>/ path in read-only data. It does not by itself prove which compiler produced the binary."
+  ],
+  "relationship_coverage": null,
+  "locations": [
+    {
+      "kind": "artifact-path",
+      "path": "/Applications/Herdr.app/Contents/MacOS/Herdr"
+    }
+  ],
+  "evidence_links": []
+}

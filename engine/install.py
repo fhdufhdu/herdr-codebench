@@ -53,7 +53,7 @@ def main():
     target = directory / entry["file"]
     target.parent.mkdir(parents=True, exist_ok=True)
     backup = args.app_home / "data/native-ide-backups" / ("go-engine-" + datetime.now().strftime("%Y%m%d-%H%M%S"))
-    for path in (target, directory / "manifest.json"):
+    for path in (target, directory / "manifest.json", directory / "GO-LICENSE.txt", directory / "THIRD-PARTY-NOTICES.txt"):
         if path.exists():
             saved = backup / path.relative_to(directory)
             saved.parent.mkdir(parents=True, exist_ok=True)
@@ -70,6 +70,9 @@ def main():
         if os.path.exists(temporary):
             os.unlink(temporary)
     (directory / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    for name in ("GO-LICENSE.txt", "THIRD-PARTY-NOTICES.txt"):
+        if (ROOT / name).exists():
+            shutil.copy2(ROOT / name, directory / name)
     print(f"Installed {manifest['version']} for {goos}/{goarch}: {target}")
 
 

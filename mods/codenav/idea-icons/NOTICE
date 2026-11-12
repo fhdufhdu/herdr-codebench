@@ -8,3 +8,5 @@ progress.svg is the unmodified process/step_1.svg from installed IntelliJ
 intellij.platform.ide.jar (Copyright 2000-2021 JetBrains, Apache-2.0).
 Herdr uses native continuous rotation with the same 1000 ms cycle as IDEA's
 8 x 125 ms AsyncProcessIcon, rather than a JavaScript frame timer.
+
+Database tool icon: icons/toolWindowDatabase_dark.svg from installed IntelliJ DatabaseTools intellij.database.jar; original SVG copyright/license notice retained. Selected stroke adaptation follows existing tool icons.

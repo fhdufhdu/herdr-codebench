@@ -6,11 +6,13 @@
 // folder}], selected }. runmenu is the widget's popup, runconfigs the editor.
 import { div } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input } from "gpui-base";
-import { theme, shared, setShared, spaces, panes, run, props, closeOverlay, openOverlay, hc, exec } from "herdr";
+import { theme, shared, setShared, spaces, panes, terminals, run, props, closeOverlay, openOverlay, hc, exec } from "herdr";
 import { T } from "./i18n.js";
-import { IDEA, isIdea, uiSize, popupSurface, MenuController, uiMenu, uiDialog, uiInputBox, uiButton, uiIconButton, uiListRow, uiToolbar, uiCaption, uiSeparator, uiNotify } from "./idea-design.js";
-import { tilde, icon, codeFont, uiFontFamily } from "./common.js";
+import { IDEA, isIdea, uiSize, popupSurface, MenuController, uiMenu, uiDialog, uiInputBox, uiButton, uiManagedList, uiCaption, uiSeparator, uiNotify } from "./idea-design.js";
+import { tilde, icon, codeFont, uiFontFamily, editorKey } from "./common.js";
 import { toolImage } from "./ideaicons.js";
+import { beginExecution, updateExecution, executionStore, executionBusy, interruptExecution, releaseExecution, inspectExecutionTerminal } from "./execution-results.js";
+import { launchRunProcess } from "./run-process.js";
 
 const KEY = "codenav.run";
 const project = () => { const s = spaces().find((x) => x.active); return s ? `${s.machine ?? ""}:${s.folder}` : null; };
@@ -41,7 +43,16 @@ export const configTab = c => {
 };
 const tabTerminal = (tab) => tab && panes().find((p) => p.tab === tab.id && p.terminal);
 // Something other than the shell runs in the configuration's tab.
-export const isRunning = (c) => { const p = tabTerminal(configTab(c)); return Boolean(p && p.program && !p.program.shell); };
+export const isRunning = (c) => {
+  const p = tabTerminal(configTab(c)), session = (shared("codenav.runSessions") || {})[sessionScope()]?.[configKey(c)];
+  if (isIdea() && session?.processOwned) {
+    const entries = executionStore().entries;
+    if (entries.some(entry => entry.configuration === configKey(c) && executionBusy(entry))) return true;
+    if (session.nativeState === "finished" || entries.find(entry => entry.id === session.executionId)?.nativeState === "finished") return false;
+    return (terminals() || []).some(terminal => terminal.address === session.terminal && terminal.state === "live");
+  }
+  return Boolean(p && p.program && !p.program.shell) || isIdea() && (Boolean(p && session?.untracked && p.terminal === session.terminal) || executionStore().entries.some(entry => entry.configuration === configKey(c) && executionBusy(entry)));
+};
 export const openRunConfigs = () => openOverlay({ mod: "codenav", props: { view: "runconfigs" }, kind: "dialog", ...(isIdea() ? { frame: "none" } : {}), width: 880, height: 580 });
 
 // "A=1; B=two words" before the command, through env, so a compound command gets them too.
@@ -75,45 +86,97 @@ export async function restartPending(after) {
   if (!samePlace()) { uiNotify({ group: "codenav.run", title: T("Run cancelled"), body: T("Switch back to this project to run."), level: "warning" }); return; }
   await stopConfig(c);
   if (!samePlace()) return;
+  if (isRunning(c)) return;
   return start(c, after);
 }
 const starting = new Set();
+async function startIdea(c) {
+  const scope = editorKey(), space = spaces().find(item => item.active), snapshot = { ...c };
+  const entryId = beginExecution({ kind: "shell", processOwned: true, launching: true, name: snapshot.name, command: snapshot.command,
+    folder: snapshot.folder || space?.folder || "", machine: space?.machine || null, configuration: configKey(snapshot) }, scope, { claim: true });
+  try {
+    const initial = executionStore(scope).entries.find(entry => entry.id === entryId);
+    const terminal = await launchRunProcess(initial, withEnv(snapshot));
+    const key = `${space?.machine || ""}:${space?.folder}@${space?.id}`, sessions = shared("codenav.runSessions") || {};
+    setShared("codenav.runSessions", { ...sessions, [key]: { ...(sessions[key] || {}), [configKey(snapshot)]: { configuration: configKey(snapshot), executionId: entryId, terminal, processOwned: true, startedAt: initial.startedAt } } });
+    updateExecution(entryId, { terminal, launching: false, state: "running" }, scope);
+    const pending = executionStore(scope).entries.find(entry => entry.id === entryId);
+    if (pending.stopRequested) await interruptExecution(pending, scope);
+    for (;;) {
+      const entry = executionStore(scope).entries.find(item => item.id === entryId);
+      if (!executionBusy(entry)) break;
+      updateExecution(entryId, await inspectExecutionTerminal(entry), scope);
+      if (!executionBusy(executionStore(scope).entries.find(item => item.id === entryId))) break;
+      await pause(0.3);
+    }
+  } catch (error) {
+    updateExecution(entryId, { state: "error", launching: false, error: String(error.message ?? error) }, scope);
+    uiNotify({ group: "codenav.run", title: T("Run failed"), body: String(error.message ?? error), level: "error" });
+  } finally { releaseExecution(entryId, scope); }
+}
 async function start(c, after) {
+  if (isIdea()) return startIdea(c);
   const key = sessionScope(), executionId = `${Date.now()}.${Math.random().toString(36).slice(2, 8)}`, launchKey = `${key}:${configKey(c)}`;
   if (starting.has(launchKey)) return;
   starting.add(launchKey);
   try {
-  let tab = configTab(c);
-  if (!tab) {
-    const previous = new Set((spaces().find(s => s.active)?.tabs ?? []).map(item => item.id));
-    run("tab.new", { name: tabName(c), folder: c.folder || spaces().find((s) => s.active)?.folder });
-    for (let i = 0; i < 30; i++) {
-      if (sessionScope() !== key) return;
-      const created = (spaces().find(s => s.active)?.tabs ?? []).filter(item => !previous.has(item.id) && item.name === tabName(c));
-      if (created.length > 1) throw new Error(T("Could not identify the new run terminal."));
-      tab = created[0];
-      if (tabTerminal(tab)) break;
-      await pause(0.15);
-    }
-  } else run("tab.select", { id: tab.id });
-  if (sessionScope() !== key) return;
-  const term = tabTerminal(tab)?.terminal;
-  if (!term) throw new Error(T("Could not open the run terminal."));
-  const sessions = shared("codenav.runSessions") ?? {};
-  setShared("codenav.runSessions", { ...sessions, [key]: { ...(sessions[key] ?? {}), [configKey(c)]: { ...(sessions[key]?.[configKey(c)] ?? {}), configuration: configKey(c), executionId, tab: tab.id, terminal: term, startedAt: Date.now() } } });
-  after?.();
-  const result = await hc(["send", term, withEnv(c)]);
-  if (result?.code) throw new Error(result.stderr || T("Could not start the run configuration."));
+    let tab = configTab(c);
+    if (!tab) {
+      const previous = new Set((spaces().find(s => s.active)?.tabs ?? []).map(item => item.id));
+      run("tab.new", { name: tabName(c), folder: c.folder || spaces().find(s => s.active)?.folder });
+      for (let i = 0; i < 30; i++) {
+        if (sessionScope() !== key) return;
+        const created = (spaces().find(s => s.active)?.tabs ?? []).filter(item => !previous.has(item.id) && item.name === tabName(c));
+        if (created.length > 1) throw new Error(T("Could not identify the new run terminal."));
+        tab = created[0];
+        if (tabTerminal(tab)) break;
+        await pause(0.15);
+      }
+    } else run("tab.select", { id: tab.id });
+    if (sessionScope() !== key) return;
+    const term = tabTerminal(tab)?.terminal;
+    if (!term) throw new Error(T("Could not open the run terminal."));
+    const sessions = shared("codenav.runSessions") ?? {};
+    setShared("codenav.runSessions", { ...sessions, [key]: { ...(sessions[key] ?? {}), [configKey(c)]: { ...(sessions[key]?.[configKey(c)] ?? {}), configuration: configKey(c), executionId, tab: tab.id, terminal: term, startedAt: Date.now() } } });
+    after?.();
+    const result = await hc(["send", term, withEnv(c)]);
+    if (result?.code) throw new Error(result.stderr || T("Could not start the run configuration."));
   } catch (error) { uiNotify({ group: "codenav.run", title: T("Run failed"), body: String(error.message ?? error), level: "error" }); }
   finally { starting.delete(launchKey); }
 }
 // Stops what runs in the configuration's tab (Ctrl+C, twice if it lingers); the tab stays.
 export async function stopConfig(c) {
+  const session = (shared("codenav.runSessions") || {})[sessionScope()]?.[configKey(c)];
+  const owned = isIdea() && (executionStore().entries.find(entry => entry.configuration === configKey(c) && entry.processOwned && executionBusy(entry)) ||
+    (session?.processOwned && isRunning(c) ? { ...session, id: session.executionId } : null));
+  if (owned) {
+    try {
+      const scope = editorKey(), key = sessionScope();
+      const status = await interruptExecution(owned, scope);
+      if (status?.nativeState === "finished") {
+        const sessions = shared("codenav.runSessions") || {};
+        setShared("codenav.runSessions", { ...sessions, [key]: { ...sessions[key], [configKey(c)]: { ...sessions[key]?.[configKey(c)], nativeState: "finished" } } });
+      }
+      for (let i = 0; i < 30 && executionStore(scope).entries.some(entry => entry.id === owned.id && executionBusy(entry)); i++) await pause(0.1);
+    }
+    catch (error) { uiNotify({ group: "codenav.run", title: T("Stop failed"), body: String(error.message ?? error), level: "warning" }); }
+    return;
+  }
   const term = tabTerminal(configTab(c))?.terminal;
   if (!term) return;
+  if (isIdea()) {
+    const scope = editorKey(), session = (shared("codenav.runSessions") || {})[sessionScope()]?.[configKey(c)];
+    const entry = executionStore(scope).entries.find(entry => entry.terminal === term && (executionBusy(entry) || entry.state === "untracked")) || (session?.untracked ? { terminal: term, configuration: configKey(c), state: "untracked" } : null);
+    if (entry) {
+      try { await interruptExecution(entry, scope); }
+      catch (error) { uiNotify({ group: "codenav.run", title: T("Stop failed"), body: String(error.message ?? error), level: "warning" }); return; }
+      for (let i = 0; i < 15 && executionStore(scope).entries.some(item => item.id === entry.id && executionBusy(item)); i++) await pause(0.1);
+      return;
+    }
+  }
   await hc(["interrupt", term]).catch(() => {});
-  for (let i = 0; i < 10 && isRunning(c); i++) await pause(0.2);
-  if (isRunning(c)) { await hc(["keys", term, "ctrl+c"]).catch(() => {}); await pause(0.5); }
+  for (let i = 0; i < 10 && tabTerminal(configTab(c))?.program && !tabTerminal(configTab(c)).program.shell; i++) await pause(0.2);
+  if (tabTerminal(configTab(c))?.program && !tabTerminal(configTab(c)).program.shell) { await hc(["keys", term, "ctrl+c"]).catch(() => {}); await pause(0.5); }
 }
 
 // The widget's popup: pick a configuration, or edit them.
@@ -122,7 +185,7 @@ export class RunMenu {
     this.menu = new MenuController(cx, runStore().selected ?? 0);
     this.menu.focus.focus();
   }
-  release() { this.menu.release(); }
+  release() { this.menu.release(); this.menu.focus.release(); }
   render(cx) {
     const st = runStore(), done = () => closeOverlay(props()?.overlay);
     const rows = st.configs.map((c, i) => ({ id: `rm-c${i}`, label: c.name, icon: () => toolImage("run", 14), shortcut: c.command,
@@ -147,6 +210,9 @@ export class RunConfigs {
     this.configs = st.configs.map((c) => c.id ? { ...c } : { ...c, id: newId(), legacyTabName: tabName(c) });
     this.saved = JSON.stringify(this.configs);
     this.at = Math.min(st.selected ?? 0, Math.max(this.configs.length - 1, 0));
+    this.list = new MenuController(cx, this.at);
+    this.search = InputState.new({ placeholder: T("Search") });
+    this.search.on("change", (_event, eventCx) => eventCx.notify());
     this.inputs = {
       name: InputState.new({ placeholder: T("Name") }),
       command: InputState.new({ placeholder: "./gradlew bootRun" }),
@@ -159,6 +225,10 @@ export class RunConfigs {
       if (this.configs.length) this.inputs.name.focus(); else this.focus.focus();
       for (const f of FIELDS) this.inputs[f].on("submit", () => { this.apply(); closeOverlay(props()?.overlay); });
     }
+  }
+  release() {
+    this.focus.release(); this.list.release(); this.list.focus.release(); this.search.release();
+    for (const input of Object.values(this.inputs)) input.release();
   }
   load() {
     const c = this.configs[this.at] ?? {};
@@ -176,30 +246,38 @@ export class RunConfigs {
     this.saved = JSON.stringify(this.configs);
   }
 
-  renderIdea() {
+  renderIdea(cx) {
     const t = theme(), c = this.configs[this.at], space = this.projectSpace;
     const dirty = JSON.stringify(this.configs) !== this.saved, sameProject = project() === this.projectKey;
     const done = () => closeOverlay(props()?.overlay);
-    const control = (id, name, tip, action, enabled = true) => uiIconButton(id, toolImage(name, 16), (_event, cx) => { action(); cx.notify(); }, { tip, disabled: !enabled });
     const field = (label, element, hint) => v_flex().flex_none().gap(4)
       .child(h_flex().flex_none().min_w(0).gap(10).items_center()
         .child(div().w(100).flex_none().child(label))
         .child(div().flex_1().min_w(0).child(element)))
       .when(Boolean(hint), el => el.child(div().pl(110).text_size(uiSize(11)).text_color(t.dim).child(hint)));
     const input = (name, mono = false) => uiInputBox(Input.new(this.inputs[name]), { mono }).w_full();
+    const query = this.search.value().trim().toLocaleLowerCase();
+    const select = id => { this.at = this.configs.findIndex(config => config.id === id); this.load(); };
+    const move = step => {
+      const to = this.at + step;
+      if (query || to < 0 || to >= this.configs.length) return;
+      [this.configs[this.at], this.configs[to]] = [this.configs[to], this.configs[this.at]];
+      this.at = to; this.list.at = to; this.list.ensureVisible();
+    };
+    const action = (id, label, graphic, callback, disabled = false) => ({ id, label: T(label), icon: () => icon(graphic, 16), action: (_event, eventCx) => { callback(); eventCx.notify(); }, disabled });
     const left = v_flex().w(250).flex_none().h_full().min_h(0).border_r(1).border_color(t.border)
-      .child(uiToolbar("rc-toolbar", [
-        control("rc-add", "add", T("Add New Configuration"), () => this.add(false)),
-        control("rc-remove", "remove", T("Remove Configuration"), () => { this.configs.splice(this.at, 1); this.at = Math.max(0, this.at - 1); this.load(); }, Boolean(c)),
-        control("rc-copy", "copy", T("Copy Configuration"), () => this.add(true), Boolean(c)),
-      ]))
-      .child(uiSeparator())
-      .child(v_flex().id("rc-tree").flex_1().min_h(0).overflow_y_scrollbar().py(4)
-        .child(uiListRow("rc-command-kind", [icon(this.configs.length ? "chevron-down" : "chevron-right", 12), toolImage("terminal", 16), div().font_semibold().child(T("Shell Command"))]))
-        .children(this.configs.map((config, i) => uiListRow(`rc-${i}`, [toolImage("runAction", 15), div().flex_1().min_w(0).truncate().child(config.name?.trim() || T("Unnamed"))], {
-          selected: i === this.at, indent: 22, onClick: (_event, cx) => { this.at = i; this.load(); cx.notify(); },
-        }).mx(4))))
-      .child(uiCaption(T("Saved per project")));
+      .child(uiManagedList("rc-list", this.configs.filter(config => `${config.name}\n${config.command}`.toLocaleLowerCase().includes(query)).map(config => ({ id: config.id, label: config.name?.trim() || T("Unnamed"), detail: config.command, icon: () => toolImage("runAction", 15) })), this.list, cx, {
+        selectedId: c?.id, onSelect: select, onActivate: () => this.inputs.name.focus(), onClose: done,
+        search: uiInputBox(Input.new(this.search)), caption: T("Saved per project"),
+        actions: [
+          action("add", "Add New Configuration", "add", () => { this.search.set_value(""); this.add(false); }),
+          action("remove", "Remove Configuration", "remove", () => { this.configs.splice(this.at, 1); this.at = Math.max(0, this.at - 1); this.load(); }, !c),
+          action("copy", "Copy Configuration", "copy", () => { this.search.set_value(""); this.add(true); }, !c),
+          action("edit", "Edit", "edit", () => this.inputs.name.focus(), !c),
+          action("move-up", "Move Up", "up", () => move(-1), !!query || !c || this.at === 0),
+          action("move-down", "Move Down", "down", () => move(1), !!query || !c || this.at === this.configs.length - 1),
+        ],
+      }));
     const right = !c ? v_flex().flex_1().min_w(0).min_h(0).items_center().justify_center().gap(12)
       .child(uiCaption(T("No run configurations yet.")))
       .child(uiButton("rc-first", T("Add New Configuration"), (_event, cx) => { this.add(false); cx.notify(); }))
@@ -215,7 +293,7 @@ export class RunConfigs {
       uiButton("rc-run", h_flex().gap(6).items_center().child(toolImage("runAction", 15)).child(T("Run")), () => {
         if (project() !== this.projectKey) return;
         this.apply(); done(); runConfig(this.configs[this.at]);
-      }, { disabled: !c?.command || !sameProject }),
+      }, { disabled: !c?.command || !sameProject, accessibilityLabel: T("Run") }),
       uiButton("rc-cancel", T("Cancel"), done),
       uiButton("rc-apply", T("Apply"), (_event, cx) => { this.apply(); cx.notify(); }, { disabled: !dirty }),
       uiButton("rc-ok", T("OK"), () => { this.apply(); done(); }, { primary: true }),
@@ -224,8 +302,8 @@ export class RunConfigs {
       .h(580).track_focus(this.focus).on_key_down((event, cx) => { if ((event.key ?? event.keystroke) === "escape") { done(); cx.stop_propagation(); } });
   }
 
-  render() {
-    if (isIdea()) return this.renderIdea();
+  render(cx) {
+    if (isIdea()) return this.renderIdea(cx);
     const t = theme(), { overlay } = props() ?? {}, c = this.configs[this.at], dirty = JSON.stringify(this.configs) !== this.saved;
     const space = spaces().find((s) => s.active), mono = codeFont().family;
     const tool = (id, name, tip, action, enabled = true) => div().id(id).size(26).flex_none().flex().items_center().justify_center().rounded(5)

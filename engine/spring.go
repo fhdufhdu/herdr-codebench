@@ -43,7 +43,10 @@ type spClass struct {
 	parents         []string
 	at              spToken
 	bean            bool
+	interfaceType   bool
 	anns            []spAnn
+	methods         []spMethod
+	file            *spFile
 }
 type spBean struct {
 	names                []string
@@ -591,6 +594,7 @@ func spParse(path, source string) *spFile {
 }
 func spParseRange(f *spFile, start, end int, owner *spClass) {
 	t := f.tokens
+	kotlin := strings.HasSuffix(f.path, ".kt") || strings.HasSuffix(f.path, ".kts")
 	var pending []spAnn
 	var methods []spMethod
 	for i := start; i < end; {
@@ -606,7 +610,7 @@ func spParseRange(f *spFile, start, end int, owner *spClass) {
 				continue
 			}
 			name := t[i+1]
-			c := &spClass{name: name.text, qualified: spResolve(f, name.text), at: name, anns: pending}
+			c := &spClass{name: name.text, qualified: spResolve(f, name.text), at: name, anns: pending, interfaceType: t[i].text == "interface", file: f}
 			if owner != nil {
 				c.qualified = owner.qualified + "." + name.text
 			}
@@ -642,7 +646,7 @@ func spParseRange(f *spFile, start, end int, owner *spClass) {
 					}
 				}
 			}
-			depth = 0
+			depth, angle = 0, 0
 			parentStart := -1
 			for k := i + 2; k < headerEnd; k++ {
 				s := t[k].text
@@ -652,7 +656,13 @@ func spParseRange(f *spFile, start, end int, owner *spClass) {
 				if s == ")" {
 					depth--
 				}
-				if depth == 0 && (s == ":" || s == "extends" || s == "implements") {
+				if s == "<" {
+					angle++
+				}
+				if s == ">" {
+					angle--
+				}
+				if depth == 0 && angle == 0 && (s == ":" || s == "extends" || s == "implements") {
 					parentStart = k + 1
 					break
 				}
@@ -689,7 +699,7 @@ func spParseRange(f *spFile, start, end int, owner *spClass) {
 				}
 				f.beans = append(f.beans, &spBean{names: names, typ: c.qualified, qualifier: spQualifier(f, c.anns), primary: spHas(f, c.anns, "Primary"), conditional: spConditional(f, c.anns), loc: spLocation(f, c.at, names[0], "Spring bean · static source candidate"), file: f})
 			}
-			if strings.HasSuffix(f.path, ".kt") || strings.HasSuffix(f.path, ".kts") {
+			if kotlin {
 				for k := i + 2; k < headerEnd; k++ {
 					if t[k].text == "(" {
 						close := spMatch(t, k, "(", ")")
@@ -744,7 +754,7 @@ func spParseRange(f *spFile, start, end int, owner *spClass) {
 			if len(prefix) > 0 && prefix[0].text == "fun" {
 				prefix = prefix[1:]
 			}
-			m := spMethod{name: name.text, at: name, anns: pending, params: t[paren+1 : close], constructor: name.text == owner.name}
+			m := spMethod{name: name.text, at: name, anns: pending, params: t[paren+1 : close], constructor: name.text == owner.name || kotlin && name.text == "constructor"}
 			pending = nil
 			k := close + 1
 			ret := k
@@ -820,6 +830,9 @@ func spParseRange(f *spFile, start, end int, owner *spClass) {
 		}
 	}
 	for _, m := range methods {
+		if !m.constructor {
+			owner.methods = append(owner.methods, m)
+		}
 		implicit := m.constructor && owner.bean && constructors == 1
 		if implicit || spHas(f, m.anns, "Autowired", "Inject") {
 			for _, p := range spParts(m.params) {
@@ -1106,7 +1119,7 @@ func spLoad(ctx context.Context, req Request) (*spIndex, error) {
 	if ok && cached.signature == sig && time.Since(cached.at) < 5*time.Second {
 		idx = cached.index
 	} else {
-		idx = &spIndex{classes: map[string]*spClass{}}
+		idx = &spIndex{}
 		for _, path := range paths {
 			source, er := spRead(path)
 			if er != nil {
@@ -1138,7 +1151,7 @@ func spLoad(ctx context.Context, req Request) (*spIndex, error) {
 		if len(*req.Text) > spMaxFileBytes {
 			return nil, fmt.Errorf("Spring unsaved source exceeds file limit")
 		}
-		copyIdx := &spIndex{classes: map[string]*spClass{}, properties: idx.properties}
+		copyIdx := &spIndex{properties: idx.properties}
 		abs := spCanonical(req.Path)
 		found := false
 		for _, f := range idx.files {
@@ -1158,12 +1171,82 @@ func spLoad(ctx context.Context, req Request) (*spIndex, error) {
 	return idx, nil
 }
 func spAssemble(idx *spIndex) {
+	idx.beans = nil
+	idx.classes = map[string]*spClass{}
 	for _, f := range idx.files {
-		idx.beans = append(idx.beans, f.beans...)
 		for _, c := range f.classes {
 			idx.classes[c.qualified] = c
 		}
 	}
+	for _, f := range idx.files {
+		for _, b := range f.beans {
+			c := idx.classes[b.typ]
+			if c != nil && c.interfaceType && c.file == f && c.at.line == b.loc.Line && c.at.col == b.loc.Col {
+				if spDataAnnotation(f, c.anns, "NoRepositoryBean") {
+					continue
+				}
+				if spRepository(idx, c, map[string]bool{}) {
+					// Files can be shared with a cached index; never mutate their beans.
+					copyBean := *b
+					copyBean.loc.Detail = spRepositoryDetail
+					b = &copyBean
+				}
+			}
+			idx.beans = append(idx.beans, b)
+		}
+		for _, c := range f.classes {
+			if c.bean || !c.interfaceType || spDataAnnotation(f, c.anns, "NoRepositoryBean") || !spRepository(idx, c, map[string]bool{}) {
+				continue
+			}
+			name := spDecap(c.name)
+			idx.beans = append(idx.beans, &spBean{names: []string{name}, typ: c.qualified, qualifier: spQualifier(f, c.anns), primary: spHas(f, c.anns, "Primary"), conditional: spConditional(f, c.anns), loc: spLocation(f, c.at, name, spRepositoryDetail), file: f})
+		}
+	}
+}
+
+const spRepositoryDetail = "Spring Data repository · dynamic proxy source candidate"
+
+// Unlike legacy stereotype recognition, inferred repositories require a known
+// qualified Spring Data name, so unrelated JpaRepository interfaces do not match.
+func spDataAnnotation(f *spFile, anns []spAnn, name string) bool {
+	for _, a := range anns {
+		if spResolve(f, a.name) == "org.springframework.data.repository."+name {
+			return true
+		}
+	}
+	return false
+}
+
+func spRepository(idx *spIndex, c *spClass, seen map[string]bool) bool {
+	if !c.interfaceType || seen[c.qualified] {
+		return false
+	}
+	seen[c.qualified] = true
+	if spDataAnnotation(c.file, c.anns, "RepositoryDefinition") {
+		return true
+	}
+	for _, parent := range c.parents {
+		switch parent {
+		case "org.springframework.data.jpa.repository.JpaRepository",
+			"org.springframework.data.repository.Repository",
+			"org.springframework.data.repository.CrudRepository",
+			"org.springframework.data.repository.ListCrudRepository",
+			"org.springframework.data.repository.PagingAndSortingRepository",
+			"org.springframework.data.repository.ListPagingAndSortingRepository",
+			"org.springframework.data.repository.reactive.ReactiveCrudRepository",
+			"org.springframework.data.repository.reactive.ReactiveSortingRepository",
+			"org.springframework.data.repository.reactive.RxJava3CrudRepository",
+			"org.springframework.data.repository.reactive.RxJava3SortingRepository",
+			"org.springframework.data.repository.kotlin.CoroutineCrudRepository",
+			"org.springframework.data.repository.kotlin.CoroutineSortingRepository":
+			return true
+		}
+		// NoRepositoryBean excludes the base itself, not concrete child interfaces.
+		if base := idx.classes[parent]; base != nil && spRepository(idx, base, seen) {
+			return true
+		}
+	}
+	return false
 }
 func spAssignable(idx *spIndex, bean, target string, seen map[string]bool) bool {
 	if bean == target {
@@ -1262,9 +1345,15 @@ func springMarkers(req Request) ([]SpringMarker, error) {
 		}
 	}
 	f := spParse(req.Path, source)
+	idx := &spIndex{files: []*spFile{f}}
+	spAssemble(idx)
 	out := []SpringMarker{}
-	for _, b := range f.beans {
-		out = append(out, SpringMarker{Kind: "spring-bean", Line: b.loc.Line, Col: b.loc.Col, Name: b.loc.Name, Type: b.typ, Title: "Spring bean: " + b.loc.Name})
+	for _, b := range idx.beans {
+		title := "Spring bean: " + b.loc.Name
+		if b.loc.Detail == spRepositoryDetail {
+			title = "Spring Data repository: " + b.loc.Name + " · dynamic proxy source candidate"
+		}
+		out = append(out, SpringMarker{Kind: "spring-bean", Line: b.loc.Line, Col: b.loc.Col, Name: b.loc.Name, Type: b.typ, Title: title})
 	}
 	for _, i := range f.injections {
 		kind, title := "spring", "Spring injection: "+i.typ
@@ -1316,8 +1405,8 @@ func springRelated(ctx context.Context, _ *Engine, req Request) ([]Location, err
 	}
 	if req.Kind == "spring-bean" {
 		var selected []*spBean
-		for _, b := range file.beans {
-			if b.loc.Line == req.Line && (req.Name == "" || spContains(b.names, req.Name)) {
+		for _, b := range idx.beans {
+			if b.file == file && b.loc.Line == req.Line && (req.Name == "" || spContains(b.names, req.Name)) {
 				selected = append(selected, b)
 			}
 		}

@@ -313,3 +313,123 @@ func TestSpringGeneratedBinMirrorsExcluded(t *testing.T) {
 		t.Fatalf("generated config mirrors leaked into key list: %+v %v", keys, err)
 	}
 }
+
+func TestSpringDataRepositoryCandidates(t *testing.T) {
+	root := spFixture(t, map[string]string{
+		"app/LyricRepository.kt": "package app\nimport org.springframework.data.jpa.repository.JpaRepository\ninterface LyricRepository : JpaRepository<Lyric, Long> {\n fun findByContentHash(contentHash: String): Lyric?\n}",
+		"base/Base.java":         "package base;\nimport org.springframework.data.repository.Repository;\nimport org.springframework.data.repository.NoRepositoryBean;\n@NoRepositoryBean public interface Base<T extends Entity, ID> extends Repository<T, ID> {}",
+		"base/Middle.kt":         "package base\nimport org.springframework.data.repository.NoRepositoryBean\n@NoRepositoryBean interface Middle<T : Entity, ID> : Base<T, ID>",
+		"app/Child.kt":           "package app\nimport base.Middle\ninterface Child : Middle<Lyric, Long>",
+		"app/Defined.java":       "package app;\nimport org.springframework.data.repository.RepositoryDefinition;\n@RepositoryDefinition(domainClass=Lyric.class, idClass=Long.class) interface Defined {}",
+		"app/Alias.kt":           "package app\nimport org.springframework.data.jpa.repository.JpaRepository as JpaBase\ninterface Alias : JpaBase<Lyric, Long>",
+		"app/Qualified.java":     "package app;\ninterface Qualified extends org.springframework.data.repository.ListCrudRepository<Lyric, Long> {}",
+		"app/Use.kt":             "package app\n@Service class Use(val lyricRepository: LyricRepository, val child: Child, val defined: Defined, val alias: Alias, val qualified: Qualified, val all: List<Child>)",
+	})
+	for _, tc := range []struct{ name, file string }{{"lyricRepository", "LyricRepository.kt"}, {"child", "Child.kt"}, {"defined", "Defined.java"}, {"alias", "Alias.kt"}, {"qualified", "Qualified.java"}} {
+		got := spRelatedTest(t, spRequest(root, "app/Use.kt", tc.name, ""))
+		if len(got) != 1 || filepath.Base(got[0].Path) != tc.file || got[0].Detail != spRepositoryDetail {
+			t.Fatalf("%s repository candidate: %+v", tc.name, got)
+		}
+	}
+	got := spRelatedTest(t, spRequest(root, "app/Use.kt", "all", ""))
+	if len(got) != 1 || filepath.Base(got[0].Path) != "Child.kt" {
+		t.Fatalf("NoRepositoryBean excludes base and intermediate, retaining child: %+v", got)
+	}
+	markers, err := springMarkers(Request{Path: filepath.Join(root, "app/LyricRepository.kt")})
+	if err != nil || len(markers) != 1 || markers[0].Kind != "spring-bean" || !strings.Contains(markers[0].Title, "dynamic proxy") {
+		t.Fatalf("repository marker: %+v %v", markers, err)
+	}
+	r := spRequest(root, "app/LyricRepository.kt", markers[0].Name, "")
+	r.Kind, r.Line = "spring-bean", markers[0].Line
+	if uses := spRelatedTest(t, r); len(uses) != 1 || uses[0].Name != "lyricRepository" {
+		t.Fatalf("repository reverse injection uses: %+v", uses)
+	}
+	beans, err := springProject(Request{Root: root, Kind: "beans"})
+	if err != nil || len(beans.([]Location)) != 6 {
+		t.Fatalf("repository project beans: %+v %v", beans, err)
+	}
+}
+
+func TestSpringDataUnrelatedInterfacesAndCyclesExcluded(t *testing.T) {
+	root := spFixture(t, map[string]string{
+		"app/Fake.kt":              "package app\ninterface JpaRepository<T, ID>\ninterface Fake : JpaRepository<Lyric, Long>\ninterface NamedRepository\ninterface CycleA : CycleB\ninterface CycleB : CycleA",
+		"other/JpaRepository.java": "package other;\npublic interface JpaRepository<T, ID> {}",
+		"app/Imported.java":        "package app;\nimport other.JpaRepository;\ninterface Imported extends JpaRepository<Lyric, Long> {}",
+		"app/Annotation.kt":        "package app\nimport other.RepositoryDefinition\n@RepositoryDefinition interface Annotation",
+		"app/Unqualified.kt":       "package app\n@RepositoryDefinition interface Unqualified",
+		"app/Implementation.java":  "package app;\nimport org.springframework.data.jpa.repository.JpaRepository;\nclass Implementation implements JpaRepository<Lyric, Long> {}",
+		"app/Excluded.java":        "package app;\nimport org.springframework.data.repository.NoRepositoryBean;\nimport org.springframework.data.jpa.repository.JpaRepository;\n@Repository @NoRepositoryBean interface Excluded extends JpaRepository<Lyric, Long> {}",
+		"app/Use.java":             "package app;\nclass Use {\n @Autowired Fake fake;\n @Autowired Imported imported;\n @Autowired Annotation annotation;\n @Autowired Unqualified unqualified;\n @Autowired CycleA cycle;\n @Autowired Implementation implementation;\n @Autowired Excluded excluded;\n}",
+	})
+	beans, err := springProject(Request{Root: root, Kind: "beans"})
+	if err != nil || len(beans.([]Location)) != 0 {
+		t.Fatalf("unrelated interfaces/classes or excluded bases became beans: %+v %v", beans, err)
+	}
+	for _, name := range []string{"fake", "imported", "annotation", "unqualified", "cycle", "implementation", "excluded"} {
+		if got := spRelatedTest(t, spRequest(root, "app/Use.java", name, "")); len(got) != 0 {
+			t.Fatalf("%s false repository candidate: %+v", name, got)
+		}
+	}
+}
+
+func TestSpringDataQualifiersPrimaryAndUnsavedIsolation(t *testing.T) {
+	root := spFixture(t, map[string]string{
+		"app/Base.kt":   "package app\nimport org.springframework.data.repository.Repository\nimport org.springframework.data.repository.NoRepositoryBean\n@NoRepositoryBean interface Base<T, ID> : Repository<T, ID>",
+		"app/Domain.kt": "package app\nimport org.springframework.data.repository.NoRepositoryBean\n@NoRepositoryBean interface Domain : Base<Lyric, Long>",
+		"app/First.kt":  "package app\n@Repository(\"firstBean\") @Qualifier(\"fast\") interface First : Domain",
+		"app/Second.kt": "package app\n@Primary interface Second : Domain",
+		"app/Use.kt":    "package app\n@Service class Use(val plain: Domain, @Qualifier(\"fast\") val chosen: Domain, val all: List<Domain>, @Qualifier(\"absent\") val missing: Domain)",
+	})
+	for _, tc := range []struct{ name, file string }{{"plain", "Second.kt"}, {"chosen", "First.kt"}} {
+		got := spRelatedTest(t, spRequest(root, "app/Use.kt", tc.name, ""))
+		if len(got) != 1 || filepath.Base(got[0].Path) != tc.file || !strings.Contains(got[0].Detail, "dynamic proxy source candidate") {
+			t.Fatalf("repository %s selection: %+v", tc.name, got)
+		}
+	}
+	if got := spRelatedTest(t, spRequest(root, "app/Use.kt", "all", "")); len(got) != 2 {
+		t.Fatalf("repository collection ambiguity: %+v", got)
+	}
+	if got := spRelatedTest(t, spRequest(root, "app/Use.kt", "missing", "")); len(got) != 0 {
+		t.Fatalf("repository unmatched qualifier: %+v", got)
+	}
+	second := spRequest(root, "app/Second.kt", "", "")
+	text := "package app\nimport org.springframework.data.repository.NoRepositoryBean\n@NoRepositoryBean @Primary interface Second : Domain"
+	second.Text = &text
+	idx, err := spLoad(context.Background(), second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var injection *spInjection
+	for _, f := range idx.files {
+		for _, i := range f.injections {
+			if i.name == "plain" {
+				injection = i
+			}
+		}
+	}
+	if injection == nil {
+		t.Fatal("fixture injection not parsed")
+	}
+	if got := spCandidates(idx, injection); len(got) != 1 || filepath.Base(got[0].loc.Path) != "First.kt" || got[0].names[0] != "firstBean" {
+		t.Fatalf("unsaved NoRepositoryBean must exclude second: %+v", got)
+	}
+	if got := spRelatedTest(t, spRequest(root, "app/Use.kt", "plain", "")); len(got) != 1 || filepath.Base(got[0].Path) != "Second.kt" {
+		t.Fatalf("unsaved repository classification contaminated cached files: %+v", got)
+	}
+}
+
+func TestSpringSourceClassMetadata(t *testing.T) {
+	f := spParse("Types.java", "interface Api<T extends Entity> extends Parent<T> {\n T find(String id);\n}\nclass Impl implements Api<Entity> {\n Impl() {}\n public Entity find(String id) { return null; }\n class Nested {}\n}")
+	if len(f.classes) != 3 {
+		t.Fatalf("class metadata count: %+v", f.classes)
+	}
+	api, impl := f.classes[0], f.classes[1]
+	if !api.interfaceType || impl.interfaceType || api.file != f || impl.file != f || len(api.parents) != 1 || api.parents[0] != "Parent" {
+		t.Fatalf("interface/header metadata: api=%+v impl=%+v", api, impl)
+	}
+	for _, c := range []*spClass{api, impl} {
+		if len(c.methods) != 1 || c.methods[0].name != "find" || spType(c.methods[0].params) != "Stringid" {
+			t.Fatalf("methods exclude constructors and retain parameters: %+v", c.methods)
+		}
+	}
+}

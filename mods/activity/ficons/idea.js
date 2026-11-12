@@ -2,6 +2,7 @@
 // for files, folders and symbols, as the idea layout shows them. The same file is
 // mods/activity/ficons/idea.js (a mod can't import another's code): keep both alike.
 import { image } from "gpui-kit";
+import { uiIcon, uiIconPath } from "../ui-icons.js";
 
 const DIR = "mods/codenav/idea-icons";
 const EXT = {
@@ -50,15 +51,8 @@ export const ideaName = (name) => /^[A-Z][A-Za-z0-9_]*\.(kt|java)$/.test(name) &
 export const IDEA_STATUS = { M: "#70AEFF", A: "#73BD79", U: "#E88F89", I: "#D69A6B", "!": "#DE6A66", D: "#6F737A" };
 export const ideaImage = (path, dir = false, size = 16) => image(ideaIcon(path, dir)).size(size).flex_none();
 
-// Symbols, by the language server's kind; Kotlin files get Kotlin's own.
-const KIND = { class: "class", interface: "interface", enum: "enum", struct: "class", object: "class", method: "method", function: "function",
-  constructor: "method", field: "field", property: "property", variable: "variable", constant: "constant", "enum member": "constant",
-  module: "package", namespace: "package", package: "package", "type parameter": "type", typeParameter: "type" };
-const KOTLIN = { class: "classKotlin", interface: "interfaceKotlin", enum: "enumKotlin", object: "objectKotlin", function: "functionKotlin",
-  method: "functionKotlin", property: "fieldValueKotlin", field: "fieldValueKotlin", variable: "fieldVariableKotlin" };
-export function symbolIcon(kind, path = "") {
-  const kt = /\.kts?$/.test(path) && KOTLIN[kind];
-  return `${DIR}/${kt || KIND[kind] || "unknown"}.svg`;
-}
-export const symbolImage = (kind, path, size = 16) => image(symbolIcon(kind, path)).size(size).flex_none();
-export const toolImage = (name, size = 18, selected = false) => image(`${DIR}/${name}${selected ? "Selected" : ""}.svg`).size(size).flex_none();
+// Symbol kinds and legacy tool names share the canonical stroke family.
+export const symbolIcon = (kind, _path = "") => uiIconPath(kind ?? "symbol");
+export const symbolImage = (kind, _path, size = 16) => uiIcon(kind ?? "symbol", size);
+// Selection color comes from the owning stripe/button, including its disabled state.
+export const toolImage = (name, size = 16, _selected = false) => uiIcon(name, size);

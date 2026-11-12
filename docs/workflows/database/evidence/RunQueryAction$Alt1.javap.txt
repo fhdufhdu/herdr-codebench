@@ -1,0 +1,9 @@
+Compiled from "RunQueryAction.java"
+public class com.intellij.database.actions.RunQueryAction$Alt1 extends com.intellij.database.actions.RunQueryAction {
+  public com.intellij.database.actions.RunQueryAction$Alt1();
+    Code:
+       0: aload_0
+       1: iconst_1
+       2: invokespecial #1                  // Method com/intellij/database/actions/RunQueryAction."<init>":(I)V
+       5: return
+}

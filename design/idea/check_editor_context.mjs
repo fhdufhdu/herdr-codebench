@@ -36,6 +36,8 @@ const values = {
   diagnosticCardOptions: entries => ({ entries, actions: ["copy", "attach"] }),
   iconButton: (id, graphic, tip, action) => element().id(id).graphic(graphic).tip(tip).on_click(action), sectionHeader: element,
   uiIconButton: (id, graphic, action, options = {}) => element().id(id).child(graphic).options(options).on_click(action),
+  uiModeSwitch: (id, items, current, onChange) => element().id(id).children(items.map(item => element().id(`${id}-${item.id}`).selected(item.id === current).child(item.label)
+    .on_click((event, cx) => { if (item.id !== current) onChange(item.id, event, cx); }))),
   uiCheckbox: (id, label, action, options = {}) => element().id(id).child(label).options(options).on_click(action),
   uiEditorFooter: children => element().id("editor-footer").children(Array.isArray(children) ? children : [children]),
   TextView: { markdown: element }, uiNotify: value => notifications.push(value),
@@ -235,10 +237,21 @@ Object.assign(mdSource, { shown: { ...spec("/repo/README.md"), rel: "README.md" 
 const markdownRoot = mdSource.render(cx), sourceHeader = mdSource.header({});
 assert(!allElements(markdownRoot).some(node => node.attributes.id?.[0] === "editor-footer"), "Markdown has no bottom preview bar");
 const editIndex = sourceHeader.nodes.findIndex(node => node.attributes?.id?.[0] === "idea-edit");
-assert.equal(sourceHeader.nodes[editIndex - 1].attributes.id[0], "cn-md", "Markdown eye sits immediately left of Edit");
+assert.equal(sourceHeader.nodes[editIndex - 1].attributes.id[0], "cn-md", "Markdown modes sit immediately left of the separate Edit action");
 assert.equal(allElements(markdownRoot).filter(node => node.attributes.id?.[0] === "cn-md").length, 1);
-sourceHeader.nodes[editIndex - 1].attributes.on_click[0]({}, cx);
-assert.equal(mdSource.richView(), true, "source eye keeps the existing rich-view operation");
+const sourceModes = sourceHeader.nodes[editIndex - 1];
+assert.deepEqual(sourceModes.nodes.map(node => node.nodes[0]), ["Source", "Preview"]);
+assert.equal(sourceModes.nodes[0].attributes.selected[0], true);
+sourceModes.nodes[0].attributes.on_click[0]({}, cx);
+assert.equal(mdSource.richView(), false, "choosing the current source mode is a no-op");
+sourceModes.nodes[1].attributes.on_click[0]({}, cx);
+sourceModes.nodes[1].attributes.on_click[0]({}, cx);
+assert.equal(mdSource.richView(), true, "choosing Preview explicitly is idempotent");
+mdSource.command("rich-view", cx);
+assert.equal(mdSource.richView(), false, "the existing source preview command still toggles modes");
+idea = false;
+assert.equal(mdSource.markdownButton({}).attributes.graphic[0], "eye", "codebench keeps the existing preview icon");
+idea = true;
 mdSource.shown = spec("/repo/App.kt"); assert.equal(mdSource.markdownButton({}), null, "non-Markdown source has no preview eye");
 current = { ...spec("/repo/App.kt"), edit: true };
 const tabsRoot = new Tabs().render(cx);
@@ -428,18 +441,32 @@ function native() {
   const editor = { value: () => text, release() { this.released = true; } };
   Object.assign(view, { slot: true, shownKey: slot, shown: current, code: editor, original: "original", dirty: true,
     workspaceBuffers: new Map(), key: JSON.stringify({ slot, spec: current }), seq: 1, readonly: false });
+  view.watch = () => {};
   view.setText = value => { text = value; }; view.publishState(); return view;
 }
 const mdNative = native(), nativeBuffer = mdNative.code;
 Object.assign(mdNative, { shown: { ...spec("/repo/README.md"), rel: "README.md" }, mdMode: "edit", sync() {} });
-for (const next of ["split", "preview", "edit"]) {
-  const nativeRoot = mdNative.render(cx), preview = allElements(nativeRoot.nodes[0]).find(node => node.attributes.id?.[0] === "ed-preview");
-  assert(preview, "native Markdown mode control is in the upper header");
+for (const next of ["preview", "edit"]) {
+  const nativeRoot = mdNative.render(cx), modes = allElements(nativeRoot.nodes[0]).find(node => node.attributes.id?.[0] === "ed-mode");
+  assert(modes, "native Markdown text modes are in the upper header");
   assert(!allElements(nativeRoot).some(node => node.attributes.id?.[0] === "editor-footer"));
-  assert.equal(allElements(nativeRoot).filter(node => node.attributes.id?.[0] === "ed-preview").length, 1, "native Markdown has exactly one upper preview control");
-  preview.attributes.on_click[0]({}, cx);
+  assert.equal(allElements(nativeRoot).filter(node => node.attributes.id?.[0] === "ed-mode").length, 1, "native Markdown has exactly one mode group");
+  assert.deepEqual(modes.nodes.map(node => node.nodes[0]), ["Edit", "Preview"]);
+  const selectedMode = modes.nodes.find(node => node.attributes.selected[0]);
+  const before = mdNative.mdMode;
+  selectedMode.attributes.on_click[0]({}, cx); assert.equal(mdNative.mdMode, before, "current native mode is a no-op");
+  modes.nodes.find(node => node.attributes.id[0] === `ed-mode-${next}`).attributes.on_click[0]({}, cx);
   assert.equal(mdNative.mdMode, next); assert.equal(mdNative.code, nativeBuffer); assert.equal(mdNative.code.value(), "changed"); assert.equal(mdNative.dirty, true);
 }
+idea = false;
+mdNative.mdMode = "split";
+assert.equal(mdNative.markdownButton({}).attributes.graphic[0], "eye", "codebench native preview keeps its icon");
+for (const next of ["preview", "edit", "split"]) {
+  mdNative.toggleMarkdown();
+  assert.equal(mdNative.mdMode, next, "codebench retains the split preview cycle");
+  assert.equal(mdNative.code, nativeBuffer);
+}
+idea = true;
 mdNative.shown = spec("/repo/App.kt");
 assert.equal(mdNative.markdownButton({}), null, "ordinary native editor has no preview eye");
 view = native();
@@ -459,6 +486,15 @@ assert.equal(state["activity.editorState"][slot].dirty, false);
 assert.equal(state["activity.closeRequest"][slot].status, "approved");
 assert.match(opened.at(-1)[0], /^codenav\.close-approved:/);
 
+view = native();
+request = { key: slot, token: "cancel-close", ids: ["f::/repo/App.kt"], path: current.path, on: null, status: "pending" };
+state["activity.closeRequest"] = { [slot]: request };
+saveWrite = () => new Promise(done => { resolve = done; });
+view.save(cx, request); view.cancelPending(cx);
+resolve(); await Promise.all(jobs);
+assert.equal(state["activity.closeRequest"][slot], undefined);
+assert.equal(opened.length, 0, "a completed save cannot approve a cancelled close token");
+
 view = native(); const buffer = view.code;
 current = { ...current, at: 99, line: 20 }; state["activity.editor"][slot] = current; view.sync(cx);
 assert.equal(view.code, buffer); assert.equal(view.hasPending, false, "same document re-selection preserves buffer and undo");
@@ -467,6 +503,70 @@ slot = "@area:b"; current = spec("/repo/B.kt"); state["activity.editor"][slot] =
 assert.equal(view.workspaceBuffers.get("@area:a").code, buffer); assert.equal(buffer.released, undefined);
 slot = "@area:a"; current = spec(); state["activity.editor"][slot] = current; view.sync(cx);
 assert.equal(view.code, buffer); assert.equal(view.dirty, true, "returning to a workspace restores its in-memory dirty editor");
+
+// A write owns its native buffer until completion, even after undo clears dirty.
+view = native();
+const savingBuffer = view.code;
+saveWrite = () => new Promise(done => { resolve = done; });
+view.save(cx);
+view.setText("original"); view.dirty = false;
+current = spec("/repo/Next.md"); state["activity.editor"][slot] = current;
+let loads = 0;
+view.load = () => { loads++; view.code.release(); view.code = null; };
+view.sync(cx);
+assert.equal(view.code, savingBuffer); assert.equal(loads, 0, "pending save prevents release after undo");
+view.cancelPending(cx);
+assert.equal(view.hasPending, false);
+resolve(); await Promise.all(jobs);
+assert.equal(view.code, savingBuffer); assert.equal(view.original, "changed"); assert.equal(view.dirty, true);
+
+// Background save completion and failure belong to the parked workspace.
+for (const fail of [false, true]) {
+  view = native(); const source = view.code;
+  let finish;
+  saveWrite = () => new Promise((done, reject) => { finish = () => fail ? reject(Error("offline")) : done(); });
+  view.save(cx);
+  const finishA = finish;
+  const pendingWrite = jobs[0];
+  slot = "@area:b"; current = spec("/repo/B.md"); state["activity.editor"][slot] = current;
+  view.load = () => { view.code = { value: () => "B", release() {} }; view.original = "B original"; view.note = null; };
+  view.sync(cx);
+  assert.equal(source.released, undefined);
+  assert.equal(view.saving, false, "workspace B has its own save state");
+  assert.equal(view.mdMode, "edit", "new IDEA Markdown document starts in edit mode");
+  view.dirty = true;
+  view.save(cx);
+  const finishB = finish;
+  assert.equal(view.saving, true);
+  const parked = view.workspaceBuffers.get("@area:a");
+  assert.equal(parked.saving, true);
+  finishA(); await pendingWrite;
+  assert.equal(view.saving, true, "A completion cannot clear B saving state");
+  assert.equal(view.original, "B original"); assert.equal(view.note, null);
+  assert.equal(parked.saving, false); assert.equal(parked.dirty, fail);
+  assert.equal(source.released, undefined);
+  if (fail) assert.match(parked.note, /offline/);
+  else assert.equal(parked.original, "changed");
+  finishB(); await jobs[1];
+  slot = "@area:a"; current = spec(); state["activity.editor"][slot] = current;
+  view.sync(cx);
+  assert.equal(view.code, source);
+  assert.equal(view.saving, false); assert.equal(view.dirty, fail);
+  if (fail) assert.match(view.note, /offline/);
+}
+view = native();
+const pendingBuffer = view.code;
+saveWrite = () => new Promise(done => { resolve = done; });
+view.save(cx);
+slot = "@area:b"; current = spec("/repo/B.md"); state["activity.editor"][slot] = current;
+view.load = () => { view.code?.release(); view.code = { value: () => "B", release() {} }; };
+view.sync(cx);
+slot = "@area:a"; current = spec("/repo/Next.md"); state["activity.editor"][slot] = current;
+view.sync(cx);
+assert.equal(view.code, pendingBuffer); assert.equal(view.hasPending, true);
+resolve(); await Promise.all(jobs);
+assert.equal(view.shown.path, "/repo/Next.md", "a pending target resumes after restoring a saving buffer");
+assert.equal(pendingBuffer.released, true);
 console.log("PASS editor workspace/machine snapshots, late navigation cancellation, independent publishing, dirty save/close handshake, concurrent edits and buffer retention");
 console.log("PASS IDEA Outline/action-strip guards, codebench preservation, explicit documentation and navigation failure feedback");
 console.log("PASS viewport gutter guide height, horizontal clipping, source attachment, pointer pass-through and unchanged text origin");

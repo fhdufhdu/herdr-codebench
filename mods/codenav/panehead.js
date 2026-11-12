@@ -1,3 +1,4 @@
+import { uiIcon } from "./ui-icons.js";
 // A terminal pane's header (the layout's pane "header", revealed on hover):
 // the program, its folder and status, and split / zoom / close for this pane.
 // Herdr shows the header only while the pointer is on the pane, so the buttons
@@ -16,7 +17,7 @@ export default class PaneHead {
       .hover((s) => s.bg(t.hover).text_color(t.foreground))
       .tooltip(tip)
       .on_mouse_down("left", (_e, cx) => { cx.stop_propagation(); run(command, args); })
-      .child(svg(`mods/pane/${iconName}.svg`).size(14));
+      .child(uiIcon(iconName, 16));
   }
 
   render() {
@@ -31,7 +32,7 @@ export default class PaneHead {
       .when(Boolean(pic), (el) => el.child(pic))
       .child(div().flex_none().truncate().max_w(260).font_medium().text_color(t.foreground).child(name))
       .child(div().flex_1().min_w(0).truncate().text_color(t.dim).child(tilde(p.cwd ?? "")))
-      .when(st === "working", (el) => el.child(svg("mods/workspace-chrome/spinner.svg").size(12).flex_none().text_color(t.working).spin(900)))
+      .when(st === "working", (el) => el.child(uiIcon("spinner", 12).flex_none().text_color(t.working).spin(900)))
       .when(st === "blocked", (el) => el.child(div().flex_none().px(6).h(18).flex().items_center().rounded(5).bg(t.blocked + "26").text_size(10.5).font_semibold().text_color(t.blocked).child(T("Needs you"))))
       .when(st === "done", (el) => el.child(div().size(7).flex_none().rounded(4).bg(t.done)))
       .child(this.button(t, `cn-ph-r-${pane}`, "split-right", T("Split right"), "pane.split", { direction: "right", pane }))

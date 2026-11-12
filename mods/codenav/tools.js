@@ -6,24 +6,26 @@
 // The code view publishes what these show: shared "codenav.caret",
 // "codenav.symbols" and "codenav.problems".
 import { div, svg, image } from "gpui-kit";
-import { v_flex, h_flex } from "gpui-base";
+import { v_flex, h_flex, Select, Popup, Input, InputState } from "gpui-base";
 import { run, theme, layout, shared, setShared, spaces, panes, window, props, openOverlay, closeOverlay, keys, focused, nextCommand } from "herdr";
 import { uiNotify as notify } from "./idea-design.js";
 import { T } from "./i18n.js";
-import { find, icon, iconButton, openPath, editorSpec, editorKey, basename, tilde, editorSnapshot as forShown } from "./common.js";
+import { find, icon, iconButton, openPath, editorSpec, editorKey, basename, tilde, setLayout, editorSnapshot as forShown } from "./common.js";
 
 
+import { executionStore, executionBusy } from "./execution-results.js";
 import { runStore, isRunning, runConfig, stopConfig, openRunConfigs } from "./run.js";
 import { ideaImage, symbolImage, toolImage } from "./ideaicons.js";
 import { IDEA, isIdea, uiSize, ideaUI, uiIconButton, uiStripeButton, uiToolHeader, uiIslandBottom, MenuController, uiMenu, uiColors, uiNoticeCard, uiTreeRow, uiListRow, uiSeparator, uiSpinner,
-  uiDiagnosticLabel, uiDiagnosticTooltip, uiDiagnosticColors, uiSelectableText } from "./idea-design.js";
+  uiDiagnosticLabel, uiDiagnosticTooltip, uiDiagnosticColors, uiSelectableText, uiButton, uiToolbar, uiPopupSize, popupSurface, uiManagedList, uiInputBox, uiCaption } from "./idea-design.js";
 import { diagnosticKey } from "./diagnostic-model.js";
+import { uiIcon } from "./ui-icons.js";
 import { copyDiagnostics } from "./diagnostic-actions.js";
 import { diagnosticCardOptions, canAttachDiagnostics, requestDiagnosticAttachment } from "./diagnostics.js";
 import { ensureIdeaIslands } from "./islands.js";
-import { openIdeaSettings } from "./settings.js";
 import { ACTION_GROUPS, getAction, actionPresentation, effectiveShortcuts, formatShortcut } from "./actions.js";
 import { groupItems } from "./toolbar-model.js";
+import { projectMove, projectSortMode, sortedProjects, PROJECT_SORTS, PROJECT_SORT_KEY, PROJECT_RECENT_KEY } from "./project-order.js";
 
 import { TOOLS, SIDES, sideOf, toolsOn, toolOpen, hiddenTools, hideSlot, setToolHidden, toggleTool, moveTool, savedSides } from "./tool-windows.js";
 
@@ -62,8 +64,7 @@ export class Stripe {
     const edges = ensureIdeaIslands(chrome);
     if ((!missing.length && !edges) || this.adding) return;
     this.adding = true;
-    cx.timer.after(0, () => {
-      this.adding = false;
+    cx.timer.after(0, eventCx => eventCx.spawn(async taskCx => {
       const tree = JSON.parse(JSON.stringify(layout()));
       for (const n of missing) {
         const stack = find(tree, SIDES[sides[n] ?? "bottom"].stack);
@@ -71,8 +72,10 @@ export class Stripe {
           stack.children = [...stack.children, { id: TOOLS[n].child, type: "block", content: TOOLS[n].content ?? { mod: "codenav", props: { view: n } } }];
       }
       ensureIdeaIslands(tree);
-      run("layout.set", { layout: tree });
-    });
+      try { await setLayout(tree); }
+      catch (error) { notify({ title: T("Could not update the layout"), body: String(error), level: "error" }); }
+      finally { this.adding = false; taskCx.notify(); }
+    }));
   }
   render(cx) {
     if (this.edge === "left") { this.syncBars(cx); this.addMissing(cx); }
@@ -152,7 +155,7 @@ function ideaButton(id, name, tip, action) {
 // IntelliJ's run widget: the configuration (▾ picks or edits), run (rerun while it runs), stop, more.
 function runWidget(t) {
   const st = runStore(), c = st.configs[st.selected] ?? st.configs[0], running = isRunning(c);
-  const showTerminal = () => toggleTool("terminal", true);
+  const showTerminal = () => toggleTool(isIdea() ? "run-results" : "terminal", true);
   const menu = () => openOverlay({ mod: "codenav", props: { view: "runmenu" }, kind: "popup", width: 320, height: Math.min(360, 60 + st.configs.length * 32) });
   if (!c) return widget("tb-run-add", t, [toolImage("runAction", 16), toolbarLabel(T("Add Configuration…"), t.muted)], () => openRunConfigs());
   return h_flex().h(IDEA.toolbarButtonSize).flex_none().gap(2).items_center()
@@ -169,7 +172,7 @@ function actionContext() {
 }
 function dispatchAction(action, tool) {
   if (action.id === "codenav.hide-active" && tool) { if (toolOpen(tool)) toggleTool(tool); return; }
-  run(action.command);
+  run(actionPresentation(action, actionContext()).command);
 }
 function actionButton(item, prefix, context = actionContext()) {
   const action = getAction(item.action), presentation = actionPresentation(action, context);
@@ -179,8 +182,13 @@ function actionButton(item, prefix, context = actionContext()) {
     if (actionPresentation(action, actionContext()).enabled) dispatchAction(action);
   }, { tip: `${T(presentation.label)}${shortcut ? ` (${shortcut})` : ""}${presentation.reason ? ` · ${presentation.reason}` : ""}`, active: presentation.selected, disabled: !presentation.enabled });
 }
+function projectPopupSize(count) {
+  const toolbarHeight = Math.max(IDEA.toolbarHeight, uiSize() + 12);
+  return uiPopupSize(count + 1, { width: isIdea() ? 400 : 480, extraHeight: 23 + toolbarHeight * (isIdea() ? 1 : 2) });
+}
 function widgetAction(name) {
-  if (name === "project") return () => openOverlay({ mod: "codenav", props: { view: "projects" }, kind: "popup", frame: "none", width: 480, height: Math.min(400, 43 + spaces().length * IDEA.rowHeight) });
+  if (name === "project") return () => openOverlay({ mod: "codenav", props: { view: "projects" }, kind: "popup", frame: "none",
+    ...projectPopupSize(spaces().length) });
   if (name === "run") return () => openOverlay({ mod: "codenav", props: { view: "runmenu" }, kind: "popup", frame: "none", width: 320, height: 360 });
   return null;
 }
@@ -230,7 +238,6 @@ export class Toolbar {
       .children(sections[side].map(item => this.item(item, t, space, context)).filter(Boolean));
     return ideaUI(h_flex()).size_full().pl(mac ? 80 : 10).pr(8).gap(4).items_center().bg(t.canvas).text_size(uiSize())
       .on_size_change((size, cx) => { if (this.width !== size.width) { this.width = size.width; cx.notify(); } })
-      .on_mouse_down("right", (_event, cx) => { cx.stop_propagation(); openIdeaSettings("toolbars"); })
       .child(group("left")).child(group("center")).child(group("right"))
       .when(Boolean(overflow.length), el => el.child(uiIconButton("tb-overflow", toolImage("moreVertical", 16), () => openOverlay({ mod: "codenav", props: { view: "toolmenu", group: "MainToolbar.overflow", items: overflow, context: actionContext() }, kind: "popup", frame: "none", width: 280, height: Math.min(400, overflow.length * IDEA.rowHeight + 14) }), { tip: T("More") })));
   }
@@ -249,8 +256,8 @@ export class ToolHeader {
       .child(lead?.icon ? (lead.tint ? svg(lead.icon).size(12).text_color(t.muted) : image(lead.icon).size(12)) : icon("terminal", 12))
       .child(div().max_w(150).truncate().child(name))
       .when(c.status === "working", (el) => el.child(shared("layout") === "idea"
-        ? uiSpinner(() => svg("mods/codenav/idea-icons/progress.svg"), { size: 12, tip: T("Working…") })
-        : svg("mods/workspace-chrome/spinner.svg").size(11).flex_none().text_color(t.working).spin(900)))
+        ? uiSpinner(() => uiIcon("progress"), { size: 12, tip: T("Working…") })
+        : uiIcon("progress", 11).text_color(t.working).spin(900)))
       .when(c.status === "blocked" || c.status === "done", (el) => el.child(div().size(6).rounded(3).bg(t[c.status])))
       .when(c.active, (el) => el.child(iconButton(`th-x-${c.id}`, "x", T("Close tab"), () => run("tab.close", { id: c.id }), { size: 16, icon: 10 })));
   }
@@ -270,7 +277,12 @@ export class ToolHeader {
         );
     const actions = TOOLS[active]?.headerGroup
       ? groupItems(TOOLS[active].headerGroup, shared("codenav.customization"), ACTION_GROUPS).map(item => item.kind === "separator" ? div().w(1).h(16).mx(3).bg(uiColors().separator) : item.kind === "action" ? actionButton(item, `th-${active}`) : null).filter(Boolean)
-      : (TOOLS[active]?.headerActions ?? []).map(a => iconButton(`th-${active}-${a.id}`, a.icon, T(a.label), () => run(a.command)));
+       : (TOOLS[active]?.headerActions ?? []).map(a => {
+        const state = a.id === "run-results-stop" ? executionStore() : null;
+        const selected = state?.entries.find(entry => entry.id === state.selected);
+        const disabled = a.id === "run-results-stop" && (!executionBusy(selected) || selected.stopRequested);
+        return iconButton(`th-${active}-${a.id}`, a.icon, T(a.label), () => run(a.command), { disabled });
+      });
     actions.push(uiIconButton(`th-menu-${this.side}`, toolImage("moreVertical", 16), () => openOverlay({ mod: "codenav", props: { view: "toolmenu", name: active }, kind: "popup", frame: "none", width: 240, height: 260 })));
     actions.push(iconButton(`th-hide-${this.side}`, "minus", T("Hide (Shift+Esc)"), () => hideSlot(side)));
     return uiToolHeader(`tool-header-${this.side}`, "", { content, actions }).size_full().min_w(0).rounded_t(IDEA.islandRadius);
@@ -409,16 +421,162 @@ export class Crumbs {
 
 // -- popups ------------------------------------------------------------------------------------
 export class Projects {
-  init(_p, cx) { this.menu = new MenuController(cx, Math.max(0, spaces().findIndex((s) => s.active))); this.menu.focus.focus(); }
-  release() { this.menu.release(); }
+  init(p, cx) {
+    this.list = this.projects();
+    this.menu = new MenuController(cx, Math.max(0, this.list.findIndex((s) => s.active)));
+    this.sortMenu = new MenuController(cx);
+    this.sortFocus = cx.focus_handle();
+    this.sortOpen = false;
+    this.orderMenu = new MenuController(cx);
+    this.orderQuery = InputState.new({ placeholder: T("Search projects") });
+    this.orderQuery.on("change", (_event, eventCx) => eventCx.notify());
+    this.menu.focus.focus();
+    if (p?.manageOrder) {
+      this.orderDraft = spaces().map(space => ({ ...space }));
+      this.orderSelected = p.selectedId ?? this.orderDraft[0]?.id;
+      this.orderMenu.at = this.orderDraft.findIndex(space => space.id === this.orderSelected);
+      this.orderMenu.ensureVisible(); this.orderMenu.focus.focus();
+    }
+  }
+  release() {
+    this.menu.release(); this.menu.focus.release();
+    this.sortMenu.release(); this.sortMenu.focus.release(); this.sortFocus.release();
+    this.orderMenu.release(); this.orderMenu.focus.release(); this.orderQuery.release();
+  }
+  projects() { return sortedProjects(spaces(), projectSortMode(shared(PROJECT_SORT_KEY)), shared(PROJECT_RECENT_KEY)); }
+  sort(mode, cx) {
+    if (mode === "manual" && isIdea()) {
+      const selectedId = this.list[this.menu.at]?.id;
+      const overlay = props()?.overlay; if (overlay) closeOverlay(overlay);
+      openOverlay({ mod: "codenav", props: { view: "projects", manageOrder: true, selectedId },
+        kind: "dialog", modal: true, frame: "none", width: 480, height: 440 });
+      return;
+    }
+    const id = this.list[this.menu.at]?.id;
+    setShared(PROJECT_SORT_KEY, mode);
+    this.list = this.projects();
+    this.menu.at = Math.max(0, this.list.findIndex(space => space.id === id));
+    this.menu.ensureVisible(); this.menu.focus.focus(); cx.notify();
+  }
+  sortControl(mode, cx) {
+    const changeOpen = (open, eventCx) => {
+      this.sortOpen = open;
+      if (open) {
+        this.sortMenu.at = PROJECT_SORTS.findIndex(sort => sort.id === mode);
+        this.sortMenu.ensureVisible(); this.sortMenu.focus.focus();
+      } else this.sortFocus.focus();
+      eventCx.notify();
+    };
+    const rows = PROJECT_SORTS.map(sort => ({ id: sort.id, label: T(sort.label),
+      icon: () => icon(sort.id === mode ? "check" : "sort", 14),
+      action: (_event, eventCx) => this.sort(sort.id, eventCx) }));
+    const trigger = uiButton("project-sort-select", rows.find(row => row.id === mode).label, (_event, eventCx) => {
+      eventCx.stop_propagation(); changeOpen(!this.sortOpen, eventCx);
+    }, { small: true }).h(Math.max(24, uiSize(12) + 8)).px(6).gap(4).max_w(150)
+      .when(isIdea(), el => el.text_size(uiSize(12)).text_color(uiColors().secondary))
+      .bg("#00000000").border_color("#00000000").child(icon("chevron-down", 12)).tooltip(T("Sort Order"));
+    return Select.new("project-sort-control").accessibility_label(T("Sort Order"))
+      .open(this.sortOpen).track_focus(this.sortFocus).content_focus_handle(this.sortMenu.focus)
+      .on_open_change(changeOpen)
+      .child(Popup.new("project-sort-popup", trigger).anchor("bottom_right")
+        .when(this.sortOpen, el => el.content(uiMenu("project-sort-options", rows, this.sortMenu, cx, {
+          width: 180, maxHeight: 180, onClose: (_event, eventCx) => changeOpen(false, eventCx),
+        }))));
+  }
+  move(direction, cx) {
+    if (projectSortMode(shared(PROJECT_SORT_KEY)) !== "manual") return;
+    const id = this.list[this.menu.at]?.id;
+    // Re-read at the action boundary: another client may have moved/closed a space.
+    const command = projectMove(spaces(), id, direction);
+    if (!command) return;
+    run("space.move", command);
+    this.menu.at = spaces().findIndex(space => space.id === id);
+    this.list = spaces();
+    this.menu.ensureVisible();
+    this.menu.focus.focus();
+    cx.notify();
+  }
+  moveDraft(direction, cx) {
+    if (this.orderQuery.value().trim()) return;
+    const command = projectMove(this.orderDraft, this.orderSelected, direction);
+    if (!command) return;
+    const from = this.orderDraft.findIndex(space => space.id === this.orderSelected);
+    const [space] = this.orderDraft.splice(from, 1); this.orderDraft.splice(command.index - 1, 0, space);
+    this.orderMenu.at = command.index - 1; this.orderMenu.ensureVisible(); this.orderMenu.focus.focus(); cx.notify();
+  }
+  finishOrder(apply, cx) {
+    if (apply) {
+      // Reconcile live ids and machine groups before dispatching core-owned moves.
+      const current = spaces().slice(), rank = new Map(this.orderDraft.map((space, index) => [space.id, index]));
+      const groups = new Map();
+      for (const space of current) {
+        const machine = space.machine ?? null;
+        if (!groups.has(machine)) groups.set(machine, []);
+        groups.get(machine).push(space);
+      }
+      const desired = [...groups.values()].flatMap(group => group.sort((a, b) => (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity)));
+      for (let index = 0; index < desired.length; index++) {
+        const from = current.findIndex(space => space.id === desired[index].id);
+        if (from === index) continue;
+        run("space.move", { id: desired[index].id, index: index + 1 });
+        const [space] = current.splice(from, 1); current.splice(index, 0, space);
+      }
+      setShared(PROJECT_SORT_KEY, "manual");
+    }
+    this.orderDraft = null;
+    if (props()?.manageOrder && props()?.overlay) closeOverlay(props().overlay);
+    else { this.menu.focus.focus(); cx.notify(); }
+  }
+  renderOrder(cx) {
+    const query = this.orderQuery.value().trim().toLocaleLowerCase();
+    const rows = this.orderDraft.filter(space => `${space.name} ${space.folder ?? ""} ${space.machine ?? ""}`.toLocaleLowerCase().includes(query))
+      .map(space => ({ id: space.id, label: space.name, detail: space.machine ? `${space.machine}:${space.folder ?? ""}` : tilde(space.folder ?? ""), icon: () => avatar(space.name, 18) }));
+    return popupSurface(v_flex()).id("project-order-manager").w(480).h(440).flex_none().p(6)
+      .child(uiCaption(T("Custom Order")))
+      .child(uiManagedList("project-order", rows, this.orderMenu, cx, {
+        selectedId: this.orderSelected, onSelect: (id, _event, eventCx) => { this.orderSelected = id; eventCx.notify(); },
+        onClose: (_event, eventCx) => this.finishOrder(false, eventCx),
+        search: uiInputBox(Input.new(this.orderQuery)),
+        caption: T(query ? "Clear search to change order." : "Order is kept within each machine."),
+        actions: [-1, 1].map(direction => ({ id: direction < 0 ? "move-up" : "move-down", label: T(direction < 0 ? "Move Project Up" : "Move Project Down"),
+          icon: () => uiIcon(direction < 0 ? "arrow-up" : "arrow-down", 16), shortcut: direction < 0 ? "Alt+↑" : "Alt+↓",
+          disabled: Boolean(query) || !projectMove(this.orderDraft, this.orderSelected, direction), action: (_event, eventCx) => this.moveDraft(direction, eventCx) })),
+      }).flex_1())
+      .child(h_flex().flex_none().justify_end().gap(6).pt(6)
+        .child(uiButton("project-order-cancel", T("Cancel"), (_event, eventCx) => this.finishOrder(false, eventCx)))
+        .child(uiButton("project-order-apply", T("Apply"), (_event, eventCx) => this.finishOrder(true, eventCx), { primary: true })));
+  }
   render(cx) {
-    const t = theme(), { overlay } = props() ?? {}, list = spaces();
+    if (this.orderDraft) return this.renderOrder(cx);
+    const t = theme(), { overlay } = props() ?? {}, mode = projectSortMode(shared(PROJECT_SORT_KEY)), list = this.projects();
+    const selectedId = this.list[this.menu.at]?.id;
+    if (selectedId) this.menu.at = list.findIndex(space => space.id === selectedId);
+    this.list = list;
     const done = () => closeOverlay(overlay);
     // The persistent status view owns the asynchronous picker after this menu closes.
     const openFolder = () => run("codenav.open-folder");
-    const rows = list.map(s => ({ id: `pj-${s.id}`, label: s.name, icon: () => avatar(s.name, 18),
-      shortcut: s.machine ? `${s.machine}:${s.folder ?? ""}` : tilde(s.folder ?? ""), action: () => run("space.select", { id: s.id }) }));
+    const rows = list.map(s => ({ id: `pj-${s.id}`, label: s.name, current: Boolean(s.active), icon: () => avatar(s.name, 18),
+      shortcut: s.machine ? `${s.machine}:${s.folder ?? ""}` : tilde(s.folder ?? ""),
+      tip: `${s.name}\n${s.machine ? `${s.machine}:` : ""}${s.folder ?? ""}`, action: () => run("space.select", { id: s.id }) }));
     rows.push({ separator: true }, { id: "pj-open", label: T("Open Folder…"), icon: () => icon("folder", 14).text_color(t.muted), action: openFolder });
-    return uiMenu("project-menu", rows, this.menu, cx, { width: 480, maxHeight: 400, onClose: done });
+    const toolbarHeight = Math.max(IDEA.toolbarHeight, uiSize() + 12);
+    const idea = isIdea(), size = projectPopupSize(list.length), inset = idea ? 2 : 0;
+    const menu = uiMenu("project-menu", rows, this.menu, cx, { width: size.width - inset,
+      maxHeight: size.height - toolbarHeight * (idea ? 1 : 2) - inset, embedded: idea, onClose: done });
+    const id = list[this.menu.at]?.id;
+    return popupSurface(v_flex()).id("project-selector").w(size.width).max_h(400).flex_none().when(idea, el => el.h(size.height))
+      .on_key_down((event, eventCx) => {
+        const key = event.keystroke ?? event.key;
+        if (isIdea() || (key !== "alt-up" && key !== "alt-down")) return;
+        eventCx.stop_propagation();
+        this.move(key === "alt-up" ? -1 : 1, eventCx);
+      })
+      .child(uiToolbar("project-sort", [div().font_semibold().child(T("Project")), div().flex_1(), this.sortControl(mode, cx)])
+        .when(idea, el => el.px(8).border_b(1).border_color(uiColors().separator)))
+      .child(menu)
+      .when(!isIdea(), el => el.child(uiToolbar("project-order", [[-1, "Alt+↑"], [1, "Alt+↓"]].map(([direction, shortcut]) =>
+        uiButton(`project-move-${direction < 0 ? "up" : "down"}`, T(direction < 0 ? "Move Project Up" : "Move Project Down"),
+          (_event, eventCx) => this.move(direction, eventCx), { small: true, disabled: mode !== "manual" || !projectMove(list, id, direction) })
+          .tooltip(mode === "manual" ? shortcut : T("Choose Custom Order to move projects."))))));
   }
 }

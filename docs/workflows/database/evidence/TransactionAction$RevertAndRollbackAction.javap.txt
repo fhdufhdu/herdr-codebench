@@ -1,0 +1,216 @@
+Compiled from "TransactionAction.java"
+final class com.intellij.database.run.actions.TransactionAction$RevertAndRollbackAction extends com.intellij.database.run.actions.TransactionAction$GridTransactionAction {
+  com.intellij.database.run.actions.TransactionAction$RevertAndRollbackAction();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method com/intellij/database/run/actions/TransactionAction$GridTransactionAction."<init>":()V
+       4: return
+
+  com.intellij.openapi.util.ActionCallback prepareGrid(com.intellij.openapi.actionSystem.AnActionEvent, com.intellij.database.datagrid.DataGrid);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_0
+       5: invokestatic  #124                // Method $$$reportNull$$$0:(I)V
+       8: aload_2
+       9: ifnonnull     16
+      12: iconst_1
+      13: invokestatic  #124                // Method $$$reportNull$$$0:(I)V
+      16: aload_2
+      17: invokeinterface #7,  1            // InterfaceMethod com/intellij/database/datagrid/DataGrid.getDataSupport:()Lcom/intellij/database/run/ui/GridDataSupport;
+      22: astore_3
+      23: aload_3
+      24: invokeinterface #13,  1           // InterfaceMethod com/intellij/database/run/ui/GridDataSupport.hasPendingChanges:()Z
+      29: ifne          44
+      32: getstatic     #19                 // Field com/intellij/openapi/util/ActionCallback.DONE:Lcom/intellij/openapi/util/ActionCallback;
+      35: dup
+      36: ifnonnull     43
+      39: iconst_2
+      40: invokestatic  #124                // Method $$$reportNull$$$0:(I)V
+      43: areturn
+      44: aload_2
+      45: getstatic     #25                 // Field com/intellij/database/run/ui/DataAccessType.DATABASE_DATA:Lcom/intellij/database/run/ui/DataAccessType;
+      48: invokeinterface #31,  2           // InterfaceMethod com/intellij/database/datagrid/DataGrid.getDataModel:(Lcom/intellij/database/run/ui/DataAccessType;)Lcom/intellij/database/datagrid/GridModel;
+      53: astore        4
+      55: aload         4
+      57: invokeinterface #35,  1           // InterfaceMethod com/intellij/database/datagrid/GridModel.getRowIndices:()Lcom/intellij/database/datagrid/ModelIndexSet;
+      62: astore        5
+      64: aload         4
+      66: invokeinterface #41,  1           // InterfaceMethod com/intellij/database/datagrid/GridModel.getColumnIndices:()Lcom/intellij/database/datagrid/ModelIndexSet;
+      71: astore        6
+      73: aload_3
+      74: aload         5
+      76: aload         6
+      78: invokeinterface #44,  3           // InterfaceMethod com/intellij/database/run/ui/GridDataSupport.revert:(Lcom/intellij/database/datagrid/ModelIndexSet;Lcom/intellij/database/datagrid/ModelIndexSet;)V
+      83: getstatic     #19                 // Field com/intellij/openapi/util/ActionCallback.DONE:Lcom/intellij/openapi/util/ActionCallback;
+      86: dup
+      87: ifnonnull     94
+      90: iconst_3
+      91: invokestatic  #124                // Method $$$reportNull$$$0:(I)V
+      94: areturn
+
+  boolean isEnabledWithoutTx(com.intellij.openapi.actionSystem.AnActionEvent, com.intellij.database.datagrid.DataRequest$OwnerEx);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_4
+       5: invokestatic  #124                // Method $$$reportNull$$$0:(I)V
+       8: aload_2
+       9: ifnonnull     16
+      12: iconst_5
+      13: invokestatic  #124                // Method $$$reportNull$$$0:(I)V
+      16: iconst_0
+      17: ireturn
+
+  protected void performTxAction(com.intellij.database.datagrid.DataRequest$OwnerEx);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        6
+       6: invokestatic  #124                // Method $$$reportNull$$$0:(I)V
+       9: aload_1
+      10: invokestatic  #48                 // Method com/intellij/database/datagrid/DataRequest.newTxRollback:(Lcom/intellij/database/datagrid/DataRequest$OwnerEx;)Lcom/intellij/database/datagrid/GridDataRequest;
+      13: astore_2
+      14: aload_1
+      15: invokeinterface #54,  1           // InterfaceMethod com/intellij/database/datagrid/DataRequest$OwnerEx.getMessageBus:()Lcom/intellij/database/DataBus$Consuming;
+      20: invokeinterface #60,  1           // InterfaceMethod com/intellij/database/DataBus$Consuming.getDataProducer:()Lcom/intellij/database/datagrid/DataProducer;
+      25: aload_2
+      26: invokeinterface #66,  2           // InterfaceMethod com/intellij/database/datagrid/DataProducer.processRequest:(Lcom/intellij/database/datagrid/GridDataRequest;)V
+      31: return
+
+  private static void $$$reportNull$$$0(int);
+    Code:
+       0: iload_0
+       1: tableswitch   { // 0 to 6
+                     0: 44
+                     1: 44
+                     2: 49
+                     3: 49
+                     4: 44
+                     5: 44
+                     6: 44
+               default: 44
+          }
+      44: ldc           #130                // String Argument for @NotNull parameter \'%s\' of %s.%s must not be null
+      46: goto          54
+      49: ldc           #132                // String @NotNull method %s.%s must not return null
+      51: goto          54
+      54: iload_0
+      55: tableswitch   { // 0 to 6
+                     0: 96
+                     1: 96
+                     2: 100
+                     3: 100
+                     4: 96
+                     5: 96
+                     6: 96
+               default: 96
+          }
+      96: iconst_3
+      97: goto          104
+     100: iconst_2
+     101: goto          104
+     104: anewarray     #134                // class java/lang/Object
+     107: iload_0
+     108: tableswitch   { // 0 to 6
+                     0: 152
+                     1: 160
+                     2: 168
+                     3: 168
+                     4: 152
+                     5: 176
+                     6: 176
+               default: 152
+          }
+     152: dup
+     153: iconst_0
+     154: ldc           #135                // String e
+     156: aastore
+     157: goto          184
+     160: dup
+     161: iconst_0
+     162: ldc           #136                // String grid
+     164: aastore
+     165: goto          184
+     168: dup
+     169: iconst_0
+     170: ldc           #137                // String com/intellij/database/run/actions/TransactionAction$RevertAndRollbackAction
+     172: aastore
+     173: goto          184
+     176: dup
+     177: iconst_0
+     178: ldc           #138                // String owner
+     180: aastore
+     181: goto          184
+     184: iload_0
+     185: tableswitch   { // 0 to 6
+                     0: 228
+                     1: 228
+                     2: 236
+                     3: 236
+                     4: 228
+                     5: 228
+                     6: 228
+               default: 228
+          }
+     228: dup
+     229: iconst_1
+     230: ldc           #137                // String com/intellij/database/run/actions/TransactionAction$RevertAndRollbackAction
+     232: aastore
+     233: goto          244
+     236: dup
+     237: iconst_1
+     238: ldc           #139                // String prepareGrid
+     240: aastore
+     241: goto          244
+     244: iload_0
+     245: tableswitch   { // 0 to 6
+                     0: 288
+                     1: 288
+                     2: 296
+                     3: 296
+                     4: 299
+                     5: 299
+                     6: 307
+               default: 288
+          }
+     288: dup
+     289: iconst_2
+     290: ldc           #139                // String prepareGrid
+     292: aastore
+     293: goto          315
+     296: goto          315
+     299: dup
+     300: iconst_2
+     301: ldc           #140                // String isEnabledWithoutTx
+     303: aastore
+     304: goto          315
+     307: dup
+     308: iconst_2
+     309: ldc           #141                // String performTxAction
+     311: aastore
+     312: goto          315
+     315: invokestatic  #147                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     318: iload_0
+     319: tableswitch   { // 0 to 6
+                     0: 360
+                     1: 360
+                     2: 371
+                     3: 371
+                     4: 360
+                     5: 360
+                     6: 360
+               default: 360
+          }
+     360: new           #149                // class java/lang/IllegalArgumentException
+     363: dup_x1
+     364: swap
+     365: invokespecial #152                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     368: goto          382
+     371: new           #154                // class java/lang/IllegalStateException
+     374: dup_x1
+     375: swap
+     376: invokespecial #155                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     379: goto          382
+     382: athrow
+}

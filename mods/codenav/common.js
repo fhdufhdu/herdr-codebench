@@ -7,19 +7,29 @@ import { spaces, panes, focused, run, shared, setShared, layout, theme, home, ex
 import { isIdea, IDEA, uiSize, ideaUI, uiButton, uiIconButton, uiToolHeader, uiEmptyEditor, uiEditorSyntax } from "./idea-design.js";
 import { find } from "./layout-tree.js";
 import { fileTabId } from "./editor-history.js";
-import { effectiveShortcuts, formatShortcut } from "./actions.js";
+import { effectiveShortcuts, formatShortcut, isSourceDocument } from "./actions.js";
+import { uiIcon } from "./ui-icons.js";
 export { find };
 
 const MOD = "codenav";
-export const icon = (name, size = 16) => svg(`mods/${MOD}/icons/${name}.svg`).size(size).flex_none();
+export const icon = (name, size = 16) => name === "vscode"
+  ? svg(`mods/${MOD}/icons/vscode.svg`).size(size).flex_none()
+  : uiIcon(name, size);
 
 // The codebench layout: an editor area (a column) holding the tab strip and a
 // stack of the activity editor, our code view and our review view.
 export const AREA = "editor-area";
 export const STACK = "editor-stack";
-export const CHILD = { text: "editor-text", code: "editor-code", review: "editor-review" };
+export const CHILD = { text: "editor-text", code: "editor-code", review: "editor-review", database: "editor-database" };
 
 export const hasArea = () => Boolean(find(layout(), STACK));
+
+// Native host arguments have a 16-level nesting limit. A real Islands tree
+// exceeds it; the CLI accepts the same command as a serialized argument.
+export async function setLayout(tree) {
+  const result = await exec("herdr-app", ["do", "layout.set", JSON.stringify({ layout: tree })]);
+  if (result.code !== 0) throw new Error(result.stderr || result.stdout || "Could not update the layout");
+}
 
 // The editor area and the terminal panel sit in "work-body": a column puts
 // them one above the other, a row side by side.
@@ -70,15 +80,15 @@ export function setEditorSpec(key, spec) {
 }
 
 // Files the activity editor shows better: pictures, PDFs, media, archives.
-const VIEWER = /\.(png|jpe?g|gif|webp|bmp|svg|tiff?|avif|ico|pdf|mp3|mp4|m4a|wav|flac|ogg|mov|mkv|webm|avi|zip|gz|tgz|bz2|xz|7z|rar|tar|jar|war|class|so|dylib|dll|exe|bin|o|a|woff2?|ttf|otf|eot|sqlite|db)$/i;
-const isCode = (spec) => spec?.kind === "file" && !spec.edit && !VIEWER.test(spec.path ?? "");
+const isCode = (spec) => isSourceDocument(spec) && (!spec.edit || isIdea() && !spec.on);
 
 // Which child of the editor stack should show now.
 export function wantedChild() {
   const spec = editorSpec();
   const native = (shared("activity.editorState") ?? {})[editorKey()];
   const pendingClose = (shared("activity.closeRequest") ?? {})[editorKey()];
-  if (isIdea() && (spec || pendingClose?.status === "pending") && (native?.dirty || native?.saving) && (shared("codenav.area") !== "review" || pendingClose?.status === "pending")) return CHILD.text;
+  if (isIdea() && (spec || pendingClose?.status === "pending") && (native?.dirty || native?.saving) && (shared("codenav.area") !== "review" || pendingClose?.status === "pending")) return native.owner === "codenav" ? CHILD.code : CHILD.text;
+  if (spec?.kind === "database") return CHILD.database;
   if (shared("codenav.area") === "review") {
     const review = shared("codenav.review.current"), { cwd, on, space } = location();
     const at = review?.rkey?.indexOf(":") ?? -1, root = review?.rkey?.slice(at + 1);

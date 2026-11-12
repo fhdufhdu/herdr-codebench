@@ -8,7 +8,7 @@
 import { div } from "gpui-kit";
 import { T, lang, setLang } from "./i18n.js";
 import { h_flex } from "gpui-base";
-import { theme, nextCommand, focused, run, shared, setShared, agents, openOverlay, hc, layout, keys, pickFolder } from "herdr";
+import { theme, nextCommand, focused, run, shared, setShared, agents, openOverlay, hc, layout, keys, pickFolder, spaces } from "herdr";
 import { uiNotify as notify } from "./idea-design.js";
 import { showTerminalFiles } from "./termfiles.js";
 import { closeTab, tabBack, tabForward, stepTab, routeEditor, resumeClose } from "./tabs.js";
@@ -20,9 +20,12 @@ import { followSpace } from "./memory.js";
 import { peek } from "./lsp.js";
 import { openLspSetup } from "./lsp-setup.js";
 import { handleDiagnosticAttachment } from "./diagnostics.js";
+import { openDatabaseDocument } from "./database-editor.js";
+import { openDatabaseManager } from "./database.js";
 import { isIdea, uiSize, ideaUI } from "./idea-design.js";
 import { openIdeaSettings } from "./settings.js";
 import { recordLocation } from "./locations.js";
+import { rememberProject, PROJECT_RECENT_KEY } from "./project-order.js";
 import { actionForTerminalKey, bindingForTerminalKey, actionPresentation, normalizeChord } from "./actions.js";
 
 // Keys bound in keys.json's terminal section (programs in Kitty keyboard mode
@@ -60,7 +63,8 @@ async function termKey(key) {
     // Source/review/edit commands go to their real shown owner. They are not
     // terminal text, and an unavailable editor action must not type a shortcut.
     const reviewUsages = action.id === "codenav.usages" && reviewActive && separator === 0;
-    if (reviewUsages || !["code", "review", "activity"].includes(action.owner) || actionPresentation(action, context).enabled) run(action.command);
+    const presentation = actionPresentation(action, context);
+    if (reviewUsages || !["code", "review", "activity"].includes(action.owner) || presentation.enabled) run(presentation.command);
   }
   else if (binding && binding.action !== "terminal" && !binding.action.startsWith("send:")) run(binding.action);
   // Forward keys that only idea claims, preserving terminal input in the other
@@ -97,6 +101,16 @@ function recordAgents(self, cx) {
   if (add.length) cx.timer.after(0, () => add.forEach(note => notify({ ...note, group: "herdr.agents" })));
 }
 
+function recordProjectUse(self, cx) {
+  const id = spaces().find(space => space.active)?.id ?? null;
+  if (id === self.projectSpace) return;
+  self.projectSpace = id;
+  if (!id) return;
+  cx.timer.after(0, () => {
+    setShared(PROJECT_RECENT_KEY, rememberProject(spaces(), shared(PROJECT_RECENT_KEY), id));
+  });
+}
+
 export default class Status {
   init(_p, cx) {
     this.servers = [];
@@ -111,6 +125,8 @@ export default class Status {
           catch (error) { notify({ title: T("Could not attach diagnostics"), body: String(error.message ?? error), level: "error" }); }
         }
         else if (c.startsWith("open:")) openPath(c.slice(5));
+        else if (c.startsWith("database-open:")) { try { await openDatabaseDocument(JSON.parse(c.slice(14))); } catch (error) { notify({ title: T("Database operation failed"), body: String(error), level: "error" }); } }
+        else if (c === "database-settings") openDatabaseManager();
         else if (c === "open-folder") this.openFolder(cx);
         else if (c.startsWith("open-files:")) { try { const data = JSON.parse(c.slice(11)); openFiles(data.paths ?? [], data.on ?? null); } catch (error) { notify({ title: T("Could not open files"), body: String(error), level: "error" }); } }
         else if (c === "close-tab") closeTab();
@@ -129,7 +145,7 @@ export default class Status {
         else if (c === "hide-active") hideActiveTool();
         else if (c === "tool-last") { const last = shared("codenav.lastTool"); if (last) toggleTool(last, true); }
         else if (c === "tab-next" || c === "tab-prev") focused()?.terminal ? run(c === "tab-next" ? "tab.next" : "tab.prev") : stepTab(c === "tab-next" ? 1 : -1);
-        else if (c === "run" || c === "rerun") { const st = runStore(); runConfig(st.configs[st.selected] ?? st.configs[0], () => toggleTool("terminal", true)); }
+        else if (c === "run" || c === "rerun") { const st = runStore(); runConfig(st.configs[st.selected] ?? st.configs[0], () => toggleTool(isIdea() ? "run-results" : "terminal", true)); }
         else if (c === "stop") { const st = runStore(); stopConfig(st.configs[st.selected] ?? st.configs[0]); }
         else if (c === "run-choose") openOverlay({ mod: "codenav", props: { view: "runmenu" }, kind: "popup", width: 320, height: 240 });
         else if (c === "run-configs") openRunConfigs();
@@ -137,7 +153,7 @@ export default class Status {
         else if (c.startsWith("settings:")) openIdeaSettings(c.slice(9));
         else if (c === "new-terminal-menu") openOverlay({ mod: "codenav", props: { view: "newterminal" }, kind: "popup", frame: "none", width: 300, height: 400 });
         else if (c === "show-terminal") toggleTool("terminal", true);
-        else if (c === "run-restart") restartPending(() => toggleTool("terminal", true));
+        else if (c === "run-restart") restartPending(() => toggleTool(isIdea() ? "run-results" : "terminal", true));
         else if (c.startsWith("key:")) await termKey(c.slice(4));
         else if (c.startsWith("move-")) { const [name, side] = c.slice(5).split(":"); if (TOOLS[name]) moveTool(name, side); }
         else if (c === "tool-settings") openIdeaSettings("windows");
@@ -190,6 +206,7 @@ export default class Status {
       });
     }
     recordAgents(this, cx);
+    recordProjectUse(this, cx);
     followSpace(this, cx);
     routeEditor(this, cx);
     if (isIdea()) recordLocation(this, cx);

@@ -1,7 +1,8 @@
+import { uiIcon } from "./ui-icons.js";
 // Files named in a terminal, opened in the code view: the terminal's right-click
 // menu ("Open in code view" for the selected path, plus Herdr's own pane items)
 // and a picker of the paths in its screen and recent output (Cmd+Shift+O).
-import { div, svg } from "gpui-kit";
+import { div } from "gpui-kit";
 import { v_flex, h_flex, InputState, Input, v_virtual_list, VirtualListScrollHandle, Scrollbar } from "gpui-base";
 import { run, props, closeOverlay, openOverlay, theme, terminals, panes, exec, hc, keys, shared } from "herdr";
 import { uiNotify as notify } from "./idea-design.js";
@@ -11,80 +12,7 @@ import { openPath, tilde, basename, uiFontFamily } from "./common.js";
 import { ideaImage, toolImage } from "./ideaicons.js";
 import { actionShortcut } from "./actions.js";
 
-// "src/a.kt:42:5", "src/a.kt(42,5)", "src/a.kt#L42", "file:///x/a.kt", "~/a.kt", "./a.kt".
-const PATH = /(?:file:\/\/)?(?:~|\.{1,2})?\/?(?:[\w.@+-]+\/)*[\w.@+-]+\.[A-Za-z][\w]{0,9}(?:(?::\d+(?::\d+)?)|(?:\(\d+(?:,\d+)?\))|(?:#L\d+))?/g;
-
-function parsePath(raw) {
-  let s = raw.trim().replace(/^[`'"(<\[]+|[`'">\],.;:]+$/g, "").replace(/^file:\/\//, "");
-  // A closing parenthesis stays only as "(line,col)".
-  if (s.endsWith(")") && !/\(\d+(?:,\d+)?\)$/.test(s)) s = s.slice(0, -1);
-  try { s = decodeURIComponent(s); } catch {}
-  const m = /^(.*?)(?::(\d+)(?::(\d+))?|\((\d+)(?:,(\d+))?\)|#L(\d+))?$/.exec(s);
-  if (!m?.[1]) return null;
-  return { path: m[1], line: +(m[2] ?? m[4] ?? m[6] ?? 0) || null, col: +(m[3] ?? m[5] ?? 0) || null };
-}
-
-// Every path-looking word in some text, last ones first, without repeats.
-function pathsIn(text) {
-  const seen = new Set(), out = [];
-  // Web addresses aren't files.
-  const found = [...text.replace(/\b[a-z][\w+.-]*:\/\/(?!\/)\S+/gi, " ").matchAll(PATH)].map((m) => m[0]).reverse();
-  for (const raw of found) {
-    const p = parsePath(raw);
-    if (!p || /^\d+(\.\d+)+$/.test(p.path)) continue;
-    const key = `${p.path}:${p.line ?? ""}`;
-    if (seen.has(key)) continue;
-    seen.add(key); out.push(p);
-  }
-  return out;
-}
-
-// Where a terminal is: its live folder, its machine, its repository and that machine's home.
-async function placeOf(terminal) {
-  const pane = panes().find((p) => p.terminal === terminal);
-  const on = terminal?.includes("/") ? terminal.split("/")[0] : null;
-  const cwd = pane?.cwd ?? terminals().find((t) => t.address === terminal)?.cwd ?? null;
-  const top = cwd ? await exec("git", ["rev-parse", "--show-toplevel"], { cwd, on }).catch(() => null) : null;
-  const home = await exec("sh", ["-c", 'printf %s "$HOME"'], { on }).catch(() => null);
-  return { cwd, on, repo: top?.code === 0 ? top.stdout.trim() : null, home: home?.stdout ?? "" };
-}
-
-// The candidates that are files there, as absolute paths (one round trip).
-const EXISTING = 'for p in "$@"; do [ -f "$p" ] && printf "%s\\n" "$p"; done; true';
-async function resolve(list, place) {
-  const home = place.home;
-  const tries = list.map((p) => {
-    if (p.path.startsWith("/")) return [p.path];
-    if (p.path.startsWith("~/")) return [`${home}${p.path.slice(1)}`];
-    const rel = p.path.replace(/^\.\//, "");
-    return [place.cwd && `${place.cwd}/${rel}`, place.repo && `${place.repo}/${rel}`].filter(Boolean);
-  });
-  const flat = [...new Set(tries.flat())].slice(0, 600);
-  if (!flat.length) return [];
-  const r = await exec("sh", ["-c", EXISTING, "sh", ...flat], { on: place.on }).catch(() => null);
-  const ok = new Set((r?.stdout ?? "").split("\n").filter(Boolean));
-  // Shortened paths ("controller/FooTest.kt", as agents print them): the
-  // repository's one file ending that way.
-  let tracked = null;
-  if (place.repo && list.some((p, i) => !tries[i].some((x) => ok.has(x)) && !p.path.startsWith("/") && !p.path.startsWith("~"))) {
-    const g = await exec("git", ["--no-optional-locks", "ls-files", "-z", "--cached", "--others", "--exclude-standard"], { cwd: place.repo, on: place.on }).catch(() => null);
-    tracked = g?.code === 0 ? g.stdout.split("\0").filter(Boolean) : null;
-  }
-  const bySuffix = (p) => {
-    if (!tracked || p.path.startsWith("/") || p.path.startsWith("~")) return null;
-    const rel = p.path.replace(/^\.\//, ""), hits = tracked.filter((f) => f === rel || f.endsWith("/" + rel));
-    return hits.length === 1 ? `${place.repo}/${hits[0]}` : null;
-  };
-  const out = [], seen = new Set();
-  list.forEach((p, i) => {
-    const abs = tries[i].find((x) => ok.has(x)) ?? bySuffix(p);
-    if (!abs) return;
-    const key = `${abs}:${p.line ?? ""}`;
-    if (seen.has(key)) return;
-    seen.add(key); out.push({ ...p, abs });
-  });
-  return out;
-}
+import { parsePath, pathsIn, placeOf, resolve } from "./terminal-paths.js";
 
 const openAt = (f, on) => openPath(`${f.abs}${f.line ? `:${f.line}${f.col ? `:${f.col}` : ""}` : ""}`, on);
 
@@ -128,9 +56,9 @@ export class TermMenu {
       [T("Open selected path in code view"), "file-text", (sleep) => openSelection(tg, sleep)],
       [T("Files in this terminal…"), "search", () => showTerminalFiles(tg.terminal), actionShortcut("terminal-files", keys(), { layout: shared("layout"), terminal: true })],
       null,
-      [T("Split right"), "panel-right", () => run("pane.split", { direction: "right", pane: tg.pane })],
-      [T("Split down"), "panel-right", () => run("pane.split", { direction: "down", pane: tg.pane })],
-      [T("Zoom"), "square", () => run("pane.zoom", { pane: tg.pane })],
+      [T("Split right"), "split-right", () => run("pane.split", { direction: "right", pane: tg.pane })],
+      [T("Split down"), "split-down", () => run("pane.split", { direction: "down", pane: tg.pane })],
+      [T("Zoom"), "maximize", () => run("pane.zoom", { pane: tg.pane })],
       ...(term ? [toProgram
         ? [T("Use Herdr right-click menu"), "terminal", () => run("terminal.right_click", { terminal: term.address, to: "menu" })]
         : [T("Send right-clicks to pane"), "terminal", () => run("terminal.right_click", { terminal: term.address, to: "program" })]] : []),
@@ -154,7 +82,7 @@ export class TermMenu {
   release() { this.menu.release(); }
   render(cx) {
     const rows = this.items().map((it, i) => !it ? { separator: true } : { id: `cn-tm-${i}`, label: it[0],
-      icon: () => svg(`mods/workspace-chrome/${it[1]}.svg`).size(14), shortcut: it[3], disabled: Boolean(this.busy), action: (_event, eventCx) => this.choose(it, eventCx) });
+      icon: () => uiIcon(it[1], 14), shortcut: it[3], disabled: Boolean(this.busy), action: (_event, eventCx) => this.choose(it, eventCx) });
     return uiMenu("cn-termmenu", rows, this.menu, cx, { width: 320, maxHeight: 400, closeOnActivate: false, onClose: () => closeOverlay(props()?.overlay) });
   }
 }

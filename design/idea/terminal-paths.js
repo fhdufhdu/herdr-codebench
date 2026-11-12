@@ -1,0 +1,79 @@
+import { panes, terminals, exec } from "herdr";
+
+// "src/a.kt:42:5", "src/a.kt(42,5)", "src/a.kt#L42", "file:///x/a.kt", "~/a.kt", "./a.kt".
+const PATH = /(?:file:\/\/)?(?:~|\.{1,2})?\/?(?:[\w.@+-]+\/)*[\w.@+-]+\.[A-Za-z][\w]{0,9}(?:(?::\d+(?::\d+)?)|(?:\(\d+(?:,\d+)?\))|(?:#L\d+))?/g;
+
+export function parsePath(raw) {
+  let s = raw.trim().replace(/^[`'"(<\[]+|[`'">\],.;:]+$/g, "").replace(/^file:\/\//, "");
+  // A closing parenthesis stays only as "(line,col)".
+  if (s.endsWith(")") && !/\(\d+(?:,\d+)?\)$/.test(s)) s = s.slice(0, -1);
+  try { s = decodeURIComponent(s); } catch {}
+  const m = /^(.*?)(?::(\d+)(?::(\d+))?|\((\d+)(?:,(\d+))?\)|#L(\d+))?$/.exec(s);
+  if (!m?.[1]) return null;
+  return { path: m[1], line: +(m[2] ?? m[4] ?? m[6] ?? 0) || null, col: +(m[3] ?? m[5] ?? 0) || null };
+}
+
+// Every path-looking word in some text, last ones first, without repeats.
+export function pathsIn(text) {
+  const seen = new Set(), out = [];
+  // Web addresses aren't files.
+  const found = [...text.replace(/\b[a-z][\w+.-]*:\/\/(?!\/)\S+/gi, " ").matchAll(PATH)].map((m) => m[0]).reverse();
+  for (const raw of found) {
+    const p = parsePath(raw);
+    if (!p || /^\d+(\.\d+)+$/.test(p.path)) continue;
+    const key = `${p.path}:${p.line ?? ""}`;
+    if (seen.has(key)) continue;
+    seen.add(key); out.push(p);
+  }
+  return out;
+}
+
+// Where a terminal is: its live folder, its machine, its repository and that machine's home.
+export async function placeOf(terminal, { repo, needHome = true } = {}) {
+  const pane = panes().find((p) => p.terminal === terminal);
+  const on = terminal?.includes("/") ? terminal.split("/")[0] : null;
+  const cwd = pane?.cwd ?? terminals().find((t) => t.address === terminal)?.cwd ?? null;
+  const [top, home] = await Promise.all([
+    repo === undefined && cwd ? exec("git", ["rev-parse", "--show-toplevel"], { cwd, on }).catch(() => null) : null,
+    needHome ? exec("sh", ["-c", 'printf %s "$HOME"'], { on }).catch(() => null) : null,
+  ]);
+  return { cwd, on, repo: repo ?? (top?.code === 0 ? top.stdout.trim() : null), home: home?.stdout ?? "" };
+}
+
+// The candidates that are files there, as absolute paths (one round trip).
+const EXISTING = 'for p in "$@"; do [ -f "$p" ] && printf "%s\\n" "$p"; done; true';
+export async function resolve(list, place) {
+  const home = place.home;
+  const tries = list.map((p) => {
+    if (p.path.startsWith("/")) return [p.path];
+    if (p.path.startsWith("~/")) return [`${home}${p.path.slice(1)}`];
+    const rel = p.path.replace(/^\.\//, "");
+    return [place.cwd && `${place.cwd}/${rel}`, place.repo && `${place.repo}/${rel}`].filter(Boolean);
+  });
+  const flat = [...new Set(tries.flat())].slice(0, 600);
+  if (!flat.length) return [];
+  const r = await exec("sh", ["-c", EXISTING, "sh", ...flat], { on: place.on }).catch(() => null);
+  const ok = new Set((r?.stdout ?? "").split("\n").filter(Boolean));
+  // Shortened paths ("controller/FooTest.kt", as agents print them): the
+  // repository's one file ending that way.
+  let tracked = null;
+  if (place.repo && list.some((p, i) => !tries[i].some((x) => ok.has(x)) && !p.path.startsWith("/") && !p.path.startsWith("~"))) {
+    const g = await exec("git", ["--no-optional-locks", "ls-files", "-z", "--cached", "--others", "--exclude-standard"], { cwd: place.repo, on: place.on }).catch(() => null);
+    tracked = g?.code === 0 ? g.stdout.split("\0").filter(Boolean) : null;
+  }
+  const bySuffix = (p) => {
+    if (!tracked || p.path.startsWith("/") || p.path.startsWith("~")) return null;
+    const rel = p.path.replace(/^\.\//, ""), hits = tracked.filter((f) => f === rel || f.endsWith("/" + rel));
+    return hits.length === 1 ? `${place.repo}/${hits[0]}` : null;
+  };
+  const out = [], seen = new Set();
+  list.forEach((p, i) => {
+    const abs = tries[i].find((x) => ok.has(x)) ?? bySuffix(p);
+    if (!abs) return;
+    const key = `${abs}:${p.line ?? ""}`;
+    if (seen.has(key)) return;
+    seen.add(key); out.push({ ...p, abs });
+  });
+  return out;
+}
+

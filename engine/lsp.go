@@ -23,26 +23,36 @@ import (
 )
 
 const maxFrame = 32 << 20
+const languageServerLimit = 3
+
+// Capacity is scheduling, not a failed language server.
+var errServerCapacity = errors.New("language server capacity is in use; close an unused source context and try again")
 
 type Position struct {
 	Line int `json:"line"`
 	Col  int `json:"col"`
 }
 type Request struct {
-	Lang      string    `json:"lang"`
-	Path      string    `json:"path"`
-	Kind      string    `json:"kind"`
-	Name      string    `json:"name"`
-	Type      string    `json:"type"`
-	Qualifier string    `json:"qualifier"`
-	Key       string    `json:"key"`
-	Query     string    `json:"query"`
-	Root      string    `json:"root"`
-	Line      int       `json:"line"`
-	Col       int       `json:"col"`
-	Owner     *Position `json:"owner,omitempty"`
-	Text      *string   `json:"text,omitempty"`
-	Retry     bool      `json:"retry"`
+	Database       json.RawMessage `json:"database,omitempty"`
+	Lang           string          `json:"lang"`
+	Path           string          `json:"path"`
+	Kind           string          `json:"kind"`
+	Name           string          `json:"name"`
+	Type           string          `json:"type"`
+	Qualifier      string          `json:"qualifier"`
+	Key            string          `json:"key"`
+	Query          string          `json:"query"`
+	Root           string          `json:"root"`
+	Line           int             `json:"line"`
+	Col            int             `json:"col"`
+	Owner          *Position       `json:"owner,omitempty"`
+	Text           *string         `json:"text,omitempty"`
+	Retry          bool            `json:"retry"`
+	DocumentOwner  string          `json:"document_owner,omitempty"`
+	Revision       *int64          `json:"revision,omitempty"`
+	CompletionItem json.RawMessage `json:"completion_item,omitempty"`
+	TabSize        int             `json:"tab_size,omitempty"`
+	InsertSpaces   *bool           `json:"insert_spaces,omitempty"`
 }
 type Location struct {
 	Path     string `json:"path"`
@@ -64,14 +74,25 @@ type ServerConfig struct {
 	Env        map[string]string `json:"env"`
 }
 type Engine struct {
-	mu          sync.Mutex
-	config      map[string]ServerConfig
-	servers     map[string]*LSPServer
-	failed      map[string]string
-	cache       string
-	started     time.Time
-	lastRequest time.Time
-	closed      bool
+	database *databaseManager
+	mu       sync.Mutex
+	// Pool mutation order: poolMu -> documentMu -> mu -> LSPServer.mu.
+	// Shutdown and RPC waits never hold documentMu or mu.
+	poolMu          sync.Mutex
+	config          map[string]ServerConfig
+	servers         map[string]*LSPServer
+	failed          map[string]string
+	cache           string
+	started         time.Time
+	lastRequest     time.Time
+	closed          bool
+	documentMu      sync.Mutex
+	documents       map[string]bufferedDocument
+	closedDocuments map[string]map[string]bool
+	projectMu       sync.Mutex
+	projects        map[string]*projectAnalysis
+	projectSlots    chan struct{}
+	libraryMu       sync.Mutex
 }
 
 func NewEngine(configPath, cache string) (*Engine, error) {
@@ -119,7 +140,11 @@ func NewEngine(configPath, cache string) (*Engine, error) {
 		}
 	}
 	now := time.Now()
-	return &Engine{config: cfg, servers: map[string]*LSPServer{}, failed: map[string]string{}, cache: cache, started: now, lastRequest: now}, nil
+	database, err := newDatabaseManager(cache)
+	if err != nil {
+		return nil, err
+	}
+	return &Engine{database: database, config: cfg, servers: map[string]*LSPServer{}, failed: map[string]string{}, cache: cache, started: now, lastRequest: now}, nil
 }
 func (e *Engine) language(path string) (string, ServerConfig) {
 	ext := strings.TrimPrefix(strings.ToLower(filepath.Ext(path)), ".")
@@ -286,39 +311,100 @@ func (e *Engine) Server(ctx context.Context, path string, retry bool) (*LSPServe
 		return nil, errors.New("no language server for this file type")
 	}
 	root := findRoot(path, cfg)
+	return e.serverFor(ctx, lang, root, retry)
+}
+
+// serverFor reuses the pool for an explicitly associated project server.
+func (e *Engine) serverFor(ctx context.Context, lang, root string, retry bool) (*LSPServer, error) {
+	s, err := e.pooledServer(ctx, lang, root, retry)
+	if err != nil {
+		return nil, err
+	}
+	select {
+	case <-s.ready:
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case <-s.done:
+	}
+	s.mu.Lock()
+	retiring, stopped := s.retiring, s.state == "stopped"
+	s.mu.Unlock()
+	if retiring {
+		return nil, errServerCapacity
+	}
+	if stopped {
+		return nil, errors.New(s.errorText())
+	}
+	return s, nil
+}
+
+func (e *Engine) pooledServer(ctx context.Context, lang, root string, retry bool) (*LSPServer, error) {
+	e.poolMu.Lock()
+	defer e.poolMu.Unlock()
+	cfg, ok := e.config[lang]
+	if !ok {
+		return nil, errors.New("no configured language server")
+	}
 	key := lang + "\x00" + root
 	e.mu.Lock()
 	if e.closed {
 		e.mu.Unlock()
 		return nil, errors.New("engine stopped")
 	}
-	s := e.servers[key]
-	if s != nil && s.stopped() {
-		e.failed[key] = s.errorText()
-		delete(e.servers, key)
-		s = nil
+	// Dead contexts do not occupy capacity, but keep their real failure for
+	// status and the existing explicit retry contract.
+	for existingKey, existing := range e.servers {
+		if existing.stopped() {
+			e.failed[existingKey] = existing.errorText()
+			delete(e.servers, existingKey)
+		}
 	}
+	s := e.servers[key]
 	if s == nil {
 		if err := e.failed[key]; err != "" && !retry {
 			e.mu.Unlock()
 			return nil, fmt.Errorf("%s (retry to restart)", err)
+		}
+		if len(e.servers) >= languageServerLimit && ctx.Value(projectPreparationContext{}) == true {
+			e.mu.Unlock()
+			return nil, errServerCapacity
+		}
+		if err := ctx.Err(); err != nil {
+			e.mu.Unlock()
+			return nil, err
 		}
 		argv, err := e.command(cfg, root)
 		if err != nil {
 			e.mu.Unlock()
 			return nil, err
 		}
-		if len(e.servers) >= 3 {
-			var oldestKey string
-			var oldest *LSPServer
-			for k, x := range e.servers {
-				if oldest == nil || x.usedAt().Before(oldest.usedAt()) {
-					oldestKey = k
-					oldest = x
-				}
+		if len(e.servers) >= languageServerLimit {
+			// Respect the editor's documentMu -> mu order. poolMu prevents
+			// another admission while we drop mu to acquire documentMu.
+			e.mu.Unlock()
+			e.documentMu.Lock()
+			e.mu.Lock()
+			oldestKey, oldest := e.idleServerLocked(time.Time{})
+			if oldest != nil {
+				delete(e.servers, oldestKey)
 			}
-			delete(e.servers, oldestKey)
-			go oldest.Stop()
+			e.mu.Unlock()
+			e.documentMu.Unlock()
+			if oldest == nil {
+				return nil, errServerCapacity
+			}
+			// Retire before replacement; never accumulate detached processes
+			// through a stream of asynchronous shutdowns.
+			oldest.Stop()
+			e.mu.Lock()
+			if e.closed {
+				e.mu.Unlock()
+				return nil, errors.New("engine stopped")
+			}
+		}
+		if err := ctx.Err(); err != nil {
+			e.mu.Unlock()
+			return nil, err
 		}
 		env := map[string]string{}
 		for k, v := range cfg.Env {
@@ -335,17 +421,51 @@ func (e *Engine) Server(ctx context.Context, path string, retry bool) (*LSPServe
 	}
 	s.touch()
 	e.mu.Unlock()
-	select {
-	case <-s.ready:
-		if s.stopped() {
-			return nil, errors.New(s.errorText())
-		}
-		return s, nil
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case <-s.done:
-		return nil, errors.New(s.errorText())
+	return s, nil
+}
+
+// Caller holds documentMu and mu. A zero cutoff permits capacity eviction.
+// Retirement and Call's pending registration share the server mutex.
+func (e *Engine) idleServerLocked(cutoff time.Time) (string, *LSPServer) {
+	keys := make([]string, 0, len(e.servers))
+	for key := range e.servers {
+		keys = append(keys, key)
 	}
+	sort.Slice(keys, func(i, j int) bool { return e.servers[keys[i]].usedAt().Before(e.servers[keys[j]].usedAt()) })
+	for _, key := range keys {
+		s := e.servers[key]
+		leased := false
+		for path, doc := range e.documents {
+			if !doc.touched.IsZero() && time.Since(doc.touched) >= documentLeaseTTL {
+				continue
+			}
+			if doc.server == s {
+				leased = true
+				break
+			}
+			// A pending lease has not necessarily attached to a server yet.
+			if doc.server == nil || doc.server.stopped() {
+				lang, cfg := e.language(path)
+				if lang == s.lang && findRoot(path, cfg) == s.Root {
+					leased = true
+					break
+				}
+			}
+		}
+		if leased {
+			continue
+		}
+		s.mu.Lock()
+		idle := s.state == "ready" && !s.retiring && len(s.pending) == 0 && (cutoff.IsZero() || s.used.Before(cutoff))
+		if idle {
+			s.retiring = true
+		}
+		s.mu.Unlock()
+		if idle {
+			return key, s
+		}
+	}
+	return "", nil
 }
 func (e *Engine) Close() {
 	e.mu.Lock()
@@ -360,6 +480,10 @@ func (e *Engine) Close() {
 	}
 	e.servers = map[string]*LSPServer{}
 	e.mu.Unlock()
+	e.closeProjects()
+	if e.database != nil {
+		e.database.Close()
+	}
 	var wg sync.WaitGroup
 	for _, s := range all {
 		wg.Add(1)
@@ -368,20 +492,23 @@ func (e *Engine) Close() {
 	wg.Wait()
 }
 func (e *Engine) reap(now time.Time) bool {
-	e.mu.Lock()
-	old := []*LSPServer{}
-	for k, s := range e.servers {
-		if now.Sub(s.usedAt()) > 10*time.Minute {
-			delete(e.servers, k)
-			old = append(old, s)
+	e.poolMu.Lock()
+	defer e.poolMu.Unlock()
+	for {
+		e.documentMu.Lock()
+		e.mu.Lock()
+		key, s := e.idleServerLocked(now.Add(-10 * time.Minute))
+		if s != nil {
+			delete(e.servers, key)
 		}
+		idle := now.Sub(e.lastRequest) > time.Hour
+		e.mu.Unlock()
+		e.documentMu.Unlock()
+		if s == nil {
+			return idle
+		}
+		s.Stop()
 	}
-	idle := now.Sub(e.lastRequest) > time.Hour
-	e.mu.Unlock()
-	for _, s := range old {
-		go s.Stop()
-	}
-	return idle
 }
 
 type RPCError struct {
@@ -402,31 +529,35 @@ type outbound struct {
 type document struct {
 	text    string
 	version int
+	owner   string
 }
 type LSPServer struct {
-	Root         string
-	lang         string
-	argv         []string
-	init         any
-	proc         *exec.Cmd
-	stdin        io.WriteCloser
-	stdout       io.ReadCloser
-	mu           sync.Mutex
-	pending      map[int64]chan rpcReply
-	next         int64
-	docs         map[string]document
-	diagnostics  map[string][]json.RawMessage
-	progress     map[string]string
-	capabilities map[string]json.RawMessage
-	used         time.Time
-	state        string
-	err          string
-	ready        chan struct{}
-	done         chan struct{}
-	outgoing     chan outbound
-	stopOnce     sync.Once
-	failOnce     sync.Once
-	docMu        sync.Mutex
+	Root               string
+	lang               string
+	argv               []string
+	init               any
+	proc               *exec.Cmd
+	stdin              io.WriteCloser
+	stdout             io.ReadCloser
+	mu                 sync.Mutex
+	pending            map[int64]chan rpcReply
+	next               int64
+	docs               map[string]document
+	documentVersions   map[string]int
+	diagnostics        map[string][]json.RawMessage
+	diagnosticVersions map[string]*int
+	progress           map[string]string
+	capabilities       map[string]json.RawMessage
+	used               time.Time
+	state              string
+	retiring           bool
+	err                string
+	ready              chan struct{}
+	done               chan struct{}
+	outgoing           chan outbound
+	stopOnce           sync.Once
+	failOnce           sync.Once
+	docMu              sync.Mutex
 }
 
 func startLSP(lang, root string, argv []string, init any, env map[string]string) (*LSPServer, error) {
@@ -465,7 +596,7 @@ func startLSP(lang, root string, argv []string, init any, env map[string]string)
 		out.Close()
 		return nil, err
 	}
-	s := &LSPServer{Root: root, lang: lang, argv: argv, init: init, proc: cmd, stdin: in, stdout: out, pending: map[int64]chan rpcReply{}, docs: map[string]document{}, diagnostics: map[string][]json.RawMessage{}, progress: map[string]string{}, capabilities: map[string]json.RawMessage{}, used: time.Now(), state: "starting", ready: make(chan struct{}), done: make(chan struct{}), outgoing: make(chan outbound, 64)}
+	s := &LSPServer{Root: root, lang: lang, argv: argv, init: init, proc: cmd, stdin: in, stdout: out, pending: map[int64]chan rpcReply{}, docs: map[string]document{}, diagnostics: map[string][]json.RawMessage{}, diagnosticVersions: map[string]*int{}, progress: map[string]string{}, capabilities: map[string]json.RawMessage{}, used: time.Now(), state: "starting", ready: make(chan struct{}), done: make(chan struct{}), outgoing: make(chan outbound, 64)}
 	go s.writeLoop()
 	go s.readLoop()
 	go func() {
@@ -596,8 +727,12 @@ func (s *LSPServer) Call(ctx context.Context, method string, params any) (json.R
 		ctx, cancel = context.WithTimeout(ctx, 20*time.Second)
 		defer cancel()
 	}
-	s.touch()
 	s.mu.Lock()
+	if s.retiring && method != "shutdown" {
+		s.mu.Unlock()
+		return nil, errServerCapacity
+	}
+	s.used = time.Now()
 	s.next++
 	id := s.next
 	ch := make(chan rpcReply, 1)
@@ -664,6 +799,7 @@ func (s *LSPServer) readLoop() {
 		var p struct {
 			URI         string            `json:"uri"`
 			Diagnostics []json.RawMessage `json:"diagnostics"`
+			Version     *int              `json:"version"`
 			Token       json.RawMessage   `json:"token"`
 			Value       struct {
 				Kind  string `json:"kind"`
@@ -671,10 +807,22 @@ func (s *LSPServer) readLoop() {
 			} `json:"value"`
 		}
 		_ = json.Unmarshal(msg.Params, &p)
+		if msg.Method == "textDocument/publishDiagnostics" {
+			// Follow the same docMu -> mu order as synchronization. An older
+			// version must not replace a newer cached diagnosis for a buffer.
+			s.docMu.Lock()
+			doc := s.docs[p.URI]
+			if doc.owner == "" || p.Version == nil || *p.Version == doc.version {
+				s.mu.Lock()
+				s.diagnostics[p.URI] = p.Diagnostics
+				s.diagnosticVersions[p.URI] = p.Version
+				s.mu.Unlock()
+			}
+			s.docMu.Unlock()
+			continue
+		}
 		s.mu.Lock()
 		switch msg.Method {
-		case "textDocument/publishDiagnostics":
-			s.diagnostics[p.URI] = p.Diagnostics
 		case "$/progress":
 			if p.Value.Kind == "begin" {
 				s.progress[string(p.Token)] = p.Value.Title
@@ -737,6 +885,8 @@ func (s *LSPServer) initialize() {
 	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
 	caps := map[string]any{"general": map[string]any{"positionEncodings": []string{"utf-16"}}, "window": map[string]any{"workDoneProgress": true}, "workspace": map[string]any{"configuration": true, "workspaceFolders": true, "symbol": map[string]any{}}, "textDocument": map[string]any{"synchronization": map[string]any{"dynamicRegistration": false, "didSave": false}, "hover": map[string]any{"contentFormat": []string{"markdown", "plaintext"}}, "definition": map[string]any{"linkSupport": true}, "typeDefinition": map[string]any{"linkSupport": true}, "implementation": map[string]any{"linkSupport": true}, "references": map[string]any{}, "documentSymbol": map[string]any{"hierarchicalDocumentSymbolSupport": true}, "publishDiagnostics": map[string]any{"relatedInformation": false}, "typeHierarchy": map[string]any{"dynamicRegistration": false}}}
+	caps["textDocument"].(map[string]any)["completion"] = map[string]any{"completionItem": map[string]any{"snippetSupport": true, "insertReplaceSupport": false, "resolveSupport": map[string]any{"properties": []string{"detail", "documentation", "textEdit", "additionalTextEdits"}}}}
+	caps["textDocument"].(map[string]any)["formatting"] = map[string]any{}
 	raw, err := s.Call(ctx, "initialize", map[string]any{"processId": os.Getpid(), "rootUri": toURI(s.Root), "rootPath": s.Root, "workspaceFolders": []any{map[string]any{"uri": toURI(s.Root), "name": filepath.Base(s.Root)}}, "capabilities": caps, "initializationOptions": s.init})
 	if err != nil {
 		s.fail(fmt.Errorf("initialize: %w", err))
@@ -790,6 +940,17 @@ func languageID(path, lang string) string {
 		return "javascriptreact"
 	case ".js", ".mjs", ".cjs":
 		return "javascript"
+	case ".jsonc":
+		return "jsonc"
+	case ".scss":
+		return "scss"
+	case ".less":
+		return "less"
+	case ".c", ".h":
+		// clangd uses build flags to disambiguate C/C++ headers.
+		if lang == "cpp" && filepath.Ext(path) != ".C" && filepath.Ext(path) != ".H" {
+			return "c"
+		}
 	}
 	return lang
 }
@@ -812,28 +973,51 @@ func (s *LSPServer) syncOptions() (bool, int) {
 	return options.OpenClose, options.Change
 }
 func (s *LSPServer) Open(ctx context.Context, path string) (string, error) {
-	select {
-	case <-s.ready:
-	case <-ctx.Done():
-		return "", ctx.Err()
-	case <-s.done:
-		return "", errors.New(s.errorText())
-	}
-	s.touch()
-	s.docMu.Lock()
-	defer s.docMu.Unlock()
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
-	text := strings.ToValidUTF8(string(b), "�")
-	uri := toURI(path)
-	doc, exists := s.docs[uri]
-	if exists && doc.text == text {
-		return uri, nil
+	uri, _, err := s.syncText(ctx, path, strings.ToValidUTF8(string(b), "�"), "")
+	return uri, err
+}
+
+func (s *LSPServer) syncText(ctx context.Context, path, text, owner string) (string, int, error) {
+	return s.syncURIText(ctx, path, toURI(path), text, owner)
+}
+
+func (s *LSPServer) syncURIText(ctx context.Context, path, uri, text, owner string) (string, int, error) {
+	select {
+	case <-s.ready:
+	case <-ctx.Done():
+		return "", 0, ctx.Err()
+	case <-s.done:
+		return "", 0, errors.New(s.errorText())
 	}
-	version := doc.version + 1
+	s.touch()
+	s.docMu.Lock()
+	defer s.docMu.Unlock()
+	doc, exists := s.docs[uri]
+	if exists && doc.owner != "" && doc.owner != owner {
+		return "", 0, errors.New("document owner conflict")
+	}
+	if exists && doc.text == text && doc.owner == owner {
+		return uri, doc.version, nil
+	}
+	if s.documentVersions == nil {
+		s.documentVersions = map[string]int{}
+	}
+	version := s.documentVersions[uri] + 1
 	openClose, syncKind := s.syncOptions()
+	if owner != "" && !openClose {
+		return "", 0, errors.New("language server does not support opening buffered documents")
+	}
+	if owner != "" {
+		s.mu.Lock()
+		delete(s.diagnostics, uri)
+		delete(s.diagnosticVersions, uri)
+		s.mu.Unlock()
+	}
+	var err error
 	if !exists {
 		if openClose {
 			err = s.Notify(ctx, "textDocument/didOpen", map[string]any{"textDocument": map[string]any{"uri": uri, "languageId": languageID(path, s.lang), "version": version, "text": text}})
@@ -842,7 +1026,7 @@ func (s *LSPServer) Open(ctx context.Context, path string) (string, error) {
 		if syncKind == 0 {
 			err := errors.New("language server does not support document changes; retry to restart")
 			s.fail(err)
-			return "", err
+			return "", 0, err
 		}
 		change := map[string]any{"text": text}
 		if syncKind == 2 {
@@ -850,14 +1034,39 @@ func (s *LSPServer) Open(ctx context.Context, path string) (string, error) {
 		}
 		err = s.Notify(ctx, "textDocument/didChange", map[string]any{"textDocument": map[string]any{"uri": uri, "version": version}, "contentChanges": []any{change}})
 	}
-	if err == nil {
-		s.docs[uri] = document{text, version}
-	} else {
-		// A cancelled write can have reached the child already. Discard the
-		// process instead of keeping an uncertain document/version cache.
+	if err != nil {
 		s.fail(fmt.Errorf("document synchronization: %w", err))
+		return "", 0, err
 	}
-	return uri, err
+	s.docs[uri] = document{text: text, version: version, owner: owner}
+	s.documentVersions[uri] = version
+	return uri, version, nil
+}
+
+func (s *LSPServer) closeDocument(ctx context.Context, path, owner string) error {
+	s.docMu.Lock()
+	defer s.docMu.Unlock()
+	uri := toURI(path)
+	doc, exists := s.docs[uri]
+	if !exists {
+		return nil
+	}
+	if doc.owner != owner {
+		return errors.New("document owner conflict")
+	}
+	openClose, _ := s.syncOptions()
+	if openClose && !s.stopped() {
+		if err := s.Notify(ctx, "textDocument/didClose", map[string]any{"textDocument": map[string]any{"uri": uri}}); err != nil {
+			s.fail(fmt.Errorf("document close: %w", err))
+			return err
+		}
+	}
+	delete(s.docs, uri)
+	s.mu.Lock()
+	delete(s.diagnostics, uri)
+	delete(s.diagnosticVersions, uri)
+	s.mu.Unlock()
+	return nil
 }
 func (s *LSPServer) Stop() {
 	s.stopOnce.Do(func() {
@@ -913,10 +1122,11 @@ func fromURI(uri string) (string, error) {
 }
 func (e *Engine) materialize(ctx context.Context, uri string, s *LSPServer) (string, error) {
 	if strings.HasPrefix(uri, "file:") {
-		return fromURI(uri)
+		return e.materializeLibraryFile(uri, s)
 	}
-	h := sha1.Sum([]byte(uri))
-	dir := filepath.Join(e.cache, "sources", hex.EncodeToString(h[:])[:16])
+	e.libraryMu.Lock()
+	defer e.libraryMu.Unlock()
+	dir := e.libraryDirectory(uri, s)
 	name := ""
 	var data []byte
 	if strings.HasPrefix(uri, "jar:") {
@@ -983,8 +1193,8 @@ func (e *Engine) materialize(ctx context.Context, uri string, s *LSPServer) (str
 			name = "Class.java"
 		}
 		target := filepath.Join(dir, name)
-		if _, err = os.Stat(target); err == nil {
-			return target, nil
+		if _, err = e.readLibrarySource(target); err == nil {
+			return target, e.rememberLibrary(target, uri, s)
 		}
 		raw, err := s.Call(ctx, "java/classFileContents", map[string]any{"uri": uri})
 		if err != nil {
@@ -1002,35 +1212,10 @@ func (e *Engine) materialize(ctx context.Context, uri string, s *LSPServer) (str
 		return "", errors.New("source too large")
 	}
 	target := filepath.Join(dir, name)
-	if _, err := os.Stat(target); err == nil {
-		return target, nil
-	}
-	if err := os.MkdirAll(filepath.Dir(target), 0700); err != nil {
+	if err := e.writeLibrarySource(target, data); err != nil {
 		return "", err
 	}
-	f, err := os.CreateTemp(filepath.Dir(target), ".source-*")
-	if err != nil {
-		return "", err
-	}
-	tmp := f.Name()
-	defer os.Remove(tmp)
-	if _, err = f.Write(data); err != nil {
-		f.Close()
-		return "", err
-	}
-	if err = f.Chmod(0444); err != nil {
-		f.Close()
-		return "", err
-	}
-	if err = f.Close(); err != nil {
-		return "", err
-	}
-	if err = os.Rename(tmp, target); err != nil {
-		if _, statErr := os.Stat(target); statErr != nil {
-			return "", err
-		}
-	}
-	return target, nil
+	return target, e.rememberLibrary(target, uri, s)
 }
 func (e *Engine) Locations(ctx context.Context, raw json.RawMessage, s *LSPServer) ([]Location, error) {
 	out := []Location{}
@@ -1081,17 +1266,20 @@ func (e *Engine) Locations(ctx context.Context, raw json.RawMessage, s *LSPServe
 		if err != nil {
 			return nil, err
 		}
-		out = append(out, Location{Path: path, Line: r.Start.Line, Col: r.Start.Character, EndLine: r.End.Line, EndCol: r.End.Character, External: !strings.HasPrefix(uri, "file:")})
+		out = append(out, Location{Path: path, Line: r.Start.Line, Col: r.Start.Character, EndLine: r.End.Line, EndCol: r.End.Character, External: !strings.HasPrefix(uri, "file:") || e.library(path)})
 	}
 	return out, nil
 }
 func withPreviews(locs []Location) []Location {
+	return withPreviewsFrom(locs, os.ReadFile)
+}
+func withPreviewsFrom(locs []Location, read func(string) ([]byte, error)) []Location {
 	files := map[string][]string{}
 	for i := range locs {
 		l := &locs[i]
 		lines, ok := files[l.Path]
 		if !ok {
-			b, _ := os.ReadFile(l.Path)
+			b, _ := read(l.Path)
 			lines = strings.Split(string(b), "\n")
 			files[l.Path] = lines
 		}

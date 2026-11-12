@@ -1,0 +1,591 @@
+Compiled from "ScriptModelUtil.java"
+public class com.intellij.database.script.ScriptModelUtil extends com.intellij.database.script.ScriptModelUtilCore {
+  private com.intellij.database.script.ScriptModelUtil();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method com/intellij/database/script/ScriptModelUtilCore."<init>":()V
+       4: return
+
+  public static com.intellij.openapi.util.TextRange getSelectedStatementsRange(com.intellij.database.console.client.DatabaseScriptingSessionClient, com.intellij.openapi.editor.Editor, com.intellij.database.settings.DatabaseSettings$ExecOption);
+    Code:
+       0: aload_0
+       1: ifnonnull     8
+       4: iconst_0
+       5: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+       8: aload_1
+       9: ifnonnull     16
+      12: iconst_1
+      13: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      16: aload_2
+      17: ifnonnull     24
+      20: iconst_2
+      21: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      24: aload_1
+      25: aload_2
+      26: invokestatic  #7                  // Method getSelectionForConsole:(Lcom/intellij/openapi/editor/Editor;Lcom/intellij/database/settings/DatabaseSettings$ExecOption;)Lcom/intellij/openapi/util/TextRange;
+      29: astore_3
+      30: aload_0
+      31: invokeinterface #13,  1           // InterfaceMethod com/intellij/database/console/client/DatabaseScriptingSessionClient.getScriptModel:()Lcom/intellij/database/script/ScriptModel;
+      36: aload_0
+      37: invokeinterface #19,  1           // InterfaceMethod com/intellij/database/console/client/DatabaseScriptingSessionClient.getDocument:()Lcom/intellij/openapi/editor/Document;
+      42: aload_3
+      43: aload_2
+      44: invokestatic  #23                 // Method adjustModelForSelection:(Lcom/intellij/database/script/ScriptModel;Lcom/intellij/openapi/editor/Document;Lcom/intellij/openapi/util/TextRange;Lcom/intellij/database/settings/DatabaseSettings$ExecOption;)Lcom/intellij/database/script/ScriptModel;
+      47: invokevirtual #27                 // Method com/intellij/database/script/ScriptModel.getTextRange:()Lcom/intellij/openapi/util/TextRange;
+      50: dup
+      51: ifnonnull     58
+      54: iconst_3
+      55: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      58: areturn
+
+  public static com.intellij.openapi.util.TextRange getSelectionForConsole(com.intellij.openapi.editor.Editor, com.intellij.database.settings.DatabaseSettings$ExecOption);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_4
+       5: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+       8: aload_0
+       9: ifnonnull     24
+      12: getstatic     #33                 // Field com/intellij/openapi/util/TextRange.EMPTY_RANGE:Lcom/intellij/openapi/util/TextRange;
+      15: dup
+      16: ifnonnull     23
+      19: iconst_5
+      20: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      23: areturn
+      24: aload_1
+      25: getfield      #39                 // Field com/intellij/database/settings/DatabaseSettings$ExecOption.execSelection:I
+      28: iconst_3
+      29: if_icmpne     46
+      32: aload_0
+      33: invokestatic  #47                 // Method com/intellij/openapi/editor/ex/util/EditorUtil.getSelectionInAnyMode:(Lcom/intellij/openapi/editor/Editor;)Lcom/intellij/openapi/util/TextRange;
+      36: dup
+      37: ifnonnull     45
+      40: bipush        6
+      42: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      45: areturn
+      46: aload_0
+      47: invokeinterface #53,  1           // InterfaceMethod com/intellij/openapi/editor/Editor.getCaretModel:()Lcom/intellij/openapi/editor/CaretModel;
+      52: invokeinterface #59,  1           // InterfaceMethod com/intellij/openapi/editor/CaretModel.getPrimaryCaret:()Lcom/intellij/openapi/editor/Caret;
+      57: astore_2
+      58: aload_2
+      59: invokeinterface #65,  1           // InterfaceMethod com/intellij/openapi/editor/Caret.getSelectionStart:()I
+      64: aload_2
+      65: invokeinterface #71,  1           // InterfaceMethod com/intellij/openapi/editor/Caret.getSelectionEnd:()I
+      70: invokestatic  #74                 // Method com/intellij/openapi/util/TextRange.create:(II)Lcom/intellij/openapi/util/TextRange;
+      73: dup
+      74: ifnonnull     82
+      77: bipush        7
+      79: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      82: areturn
+
+  public static com.intellij.openapi.util.TextRange adjustSelectionRange(com.intellij.database.script.ScriptModel<?>, com.intellij.openapi.editor.Document, com.intellij.openapi.util.TextRange, com.intellij.database.settings.DatabaseSettings$ExecOption);
+    Code:
+       0: aload_0
+       1: ifnonnull     9
+       4: bipush        8
+       6: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+       9: aload_1
+      10: ifnonnull     18
+      13: bipush        9
+      15: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      18: aload_2
+      19: ifnonnull     27
+      22: bipush        10
+      24: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      27: aload_3
+      28: ifnonnull     36
+      31: bipush        11
+      33: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      36: aload_2
+      37: invokevirtual #78                 // Method com/intellij/openapi/util/TextRange.isEmpty:()Z
+      40: ifeq          250
+      43: aload_1
+      44: invokeinterface #82,  1           // InterfaceMethod com/intellij/openapi/editor/Document.getCharsSequence:()Ljava/lang/CharSequence;
+      49: astore        4
+      51: aload         4
+      53: invokeinterface #88,  1           // InterfaceMethod java/lang/CharSequence.length:()I
+      58: istore        5
+      60: iload         5
+      62: ifne          76
+      65: aload_2
+      66: dup
+      67: ifnonnull     75
+      70: bipush        12
+      72: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      75: areturn
+      76: iload         5
+      78: iconst_1
+      79: isub
+      80: aload_2
+      81: invokevirtual #93                 // Method com/intellij/openapi/util/TextRange.getStartOffset:()I
+      84: invokestatic  #96                 // Method java/lang/Math.min:(II)I
+      87: istore        6
+      89: aload         4
+      91: iload         6
+      93: invokeinterface #102,  2          // InterfaceMethod java/lang/CharSequence.charAt:(I)C
+      98: invokestatic  #106                // Method java/lang/Character.isWhitespace:(C)Z
+     101: ifne          107
+     104: iinc          6, 1
+     107: aload_1
+     108: iload         6
+     110: invokeinterface #112,  2          // InterfaceMethod com/intellij/openapi/editor/Document.getLineNumber:(I)I
+     115: istore        7
+     117: aload_1
+     118: iload         7
+     120: invokeinterface #116,  2          // InterfaceMethod com/intellij/openapi/editor/Document.getLineStartOffset:(I)I
+     125: istore        8
+     127: aload_1
+     128: iload         7
+     130: invokeinterface #119,  2          // InterfaceMethod com/intellij/openapi/editor/Document.getLineEndOffset:(I)I
+     135: istore        9
+     137: aload         4
+     139: iload         8
+     141: iload         9
+     143: invokestatic  #122                // Method com/intellij/openapi/editor/actions/EditorActionUtil.findFirstNonSpaceOffsetInRange:(Ljava/lang/CharSequence;II)I
+     146: istore        10
+     148: iload         10
+     150: iflt          239
+     153: iload         10
+     155: iload         10
+     157: iload         6
+     159: invokestatic  #128                // Method java/lang/Math.max:(II)I
+     162: invokestatic  #74                 // Method com/intellij/openapi/util/TextRange.create:(II)Lcom/intellij/openapi/util/TextRange;
+     165: astore        11
+     167: getstatic     #131                // Field com/intellij/sql/dialects/EvaluationHelper.EP:Lcom/intellij/lang/LanguageExtension;
+     170: aload_0
+     171: invokevirtual #137                // Method com/intellij/database/script/ScriptModel.getLanguage:()Lcom/intellij/lang/Language;
+     174: invokevirtual #141                // Method com/intellij/lang/LanguageExtension.forLanguage:(Lcom/intellij/lang/Language;)Ljava/lang/Object;
+     177: checkcast     #132                // class com/intellij/sql/dialects/EvaluationHelper
+     180: astore        12
+     182: aload_0
+     183: new           #147                // class com/intellij/database/script/ScriptModel$PositionRange
+     186: dup
+     187: aload         11
+     189: invokespecial #149                // Method com/intellij/database/script/ScriptModel$PositionRange."<init>":(Lcom/intellij/openapi/util/TextRange;)V
+     192: invokevirtual #152                // Method com/intellij/database/script/ScriptModel.subModel:(Lcom/intellij/openapi/util/TextRange;)Lcom/intellij/database/script/ScriptModel;
+     195: invokevirtual #156                // Method com/intellij/database/script/ScriptModel.statements:()Lcom/intellij/util/containers/JBIterable;
+     198: aload         12
+     200: invokedynamic #160,  0            // InvokeDynamic #0:value:(Lcom/intellij/sql/dialects/EvaluationHelper;)Lcom/intellij/openapi/util/Condition;
+     205: invokevirtual #164                // Method com/intellij/util/containers/JBIterable.filter:(Lcom/intellij/openapi/util/Condition;)Lcom/intellij/util/containers/JBIterable;
+     208: getstatic     #170                // Field TO_RANGE:Lcom/intellij/util/Function;
+     211: invokevirtual #174                // Method com/intellij/util/containers/JBIterable.transform:(Lcom/intellij/util/Function;)Lcom/intellij/util/containers/JBIterable;
+     214: invokevirtual #178                // Method com/intellij/util/containers/JBIterable.last:()Ljava/lang/Object;
+     217: checkcast     #34                 // class com/intellij/openapi/util/TextRange
+     220: astore        13
+     222: aload         13
+     224: ifnull        239
+     227: aload         13
+     229: dup
+     230: ifnonnull     238
+     233: bipush        13
+     235: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+     238: areturn
+     239: aload_2
+     240: dup
+     241: ifnonnull     249
+     244: bipush        14
+     246: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+     249: areturn
+     250: aload_3
+     251: getfield      #39                 // Field com/intellij/database/settings/DatabaseSettings$ExecOption.execSelection:I
+     254: iconst_1
+     255: if_icmpne     267
+     258: new           #182                // class com/intellij/database/script/ScriptModel$StrictRange
+     261: dup
+     262: aload_2
+     263: invokespecial #184                // Method com/intellij/database/script/ScriptModel$StrictRange."<init>":(Lcom/intellij/openapi/util/TextRange;)V
+     266: areturn
+     267: aload_3
+     268: getfield      #39                 // Field com/intellij/database/settings/DatabaseSettings$ExecOption.execSelection:I
+     271: iconst_2
+     272: if_icmpne     286
+     275: aload_2
+     276: dup
+     277: ifnonnull     285
+     280: bipush        15
+     282: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+     285: areturn
+     286: aload_3
+     287: getfield      #39                 // Field com/intellij/database/settings/DatabaseSettings$ExecOption.execSelection:I
+     290: iconst_3
+     291: if_icmpne     403
+     294: new           #185                // class com/intellij/database/script/ScriptModel$SmartRange
+     297: dup
+     298: aload_2
+     299: invokespecial #187                // Method com/intellij/database/script/ScriptModel$SmartRange."<init>":(Lcom/intellij/openapi/util/TextRange;)V
+     302: astore        4
+     304: aload_0
+     305: aload         4
+     307: invokevirtual #152                // Method com/intellij/database/script/ScriptModel.subModel:(Lcom/intellij/openapi/util/TextRange;)Lcom/intellij/database/script/ScriptModel;
+     310: astore        5
+     312: aload         5
+     314: invokevirtual #156                // Method com/intellij/database/script/ScriptModel.statements:()Lcom/intellij/util/containers/JBIterable;
+     317: iconst_2
+     318: invokevirtual #188                // Method com/intellij/util/containers/JBIterable.take:(I)Lcom/intellij/util/containers/JBIterable;
+     321: invokevirtual #192                // Method com/intellij/util/containers/JBIterable.size:()I
+     324: iconst_1
+     325: if_icmple     391
+     328: aload_2
+     329: astore        6
+     331: aload         5
+     333: invokevirtual #156                // Method com/intellij/database/script/ScriptModel.statements:()Lcom/intellij/util/containers/JBIterable;
+     336: getstatic     #170                // Field TO_RANGE:Lcom/intellij/util/Function;
+     339: invokevirtual #174                // Method com/intellij/util/containers/JBIterable.transform:(Lcom/intellij/util/Function;)Lcom/intellij/util/containers/JBIterable;
+     342: invokevirtual #195                // Method com/intellij/util/containers/JBIterable.iterator:()Ljava/util/Iterator;
+     345: astore        7
+     347: aload         7
+     349: invokeinterface #199,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     354: ifeq          381
+     357: aload         7
+     359: invokeinterface #204,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     364: checkcast     #34                 // class com/intellij/openapi/util/TextRange
+     367: astore        8
+     369: aload         6
+     371: aload         8
+     373: invokevirtual #207                // Method com/intellij/openapi/util/TextRange.union:(Lcom/intellij/openapi/util/TextRange;)Lcom/intellij/openapi/util/TextRange;
+     376: astore        6
+     378: goto          347
+     381: new           #185                // class com/intellij/database/script/ScriptModel$SmartRange
+     384: dup
+     385: aload         6
+     387: invokespecial #187                // Method com/intellij/database/script/ScriptModel$SmartRange."<init>":(Lcom/intellij/openapi/util/TextRange;)V
+     390: areturn
+     391: aload         4
+     393: dup
+     394: ifnonnull     402
+     397: bipush        16
+     399: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+     402: areturn
+     403: new           #211                // class java/lang/AssertionError
+     406: dup
+     407: aload_3
+     408: getfield      #39                 // Field com/intellij/database/settings/DatabaseSettings$ExecOption.execSelection:I
+     411: invokespecial #213                // Method java/lang/AssertionError."<init>":(I)V
+     414: athrow
+
+  public static <V> com.intellij.database.script.ScriptModel<V> adjustModelForSelection(com.intellij.database.script.ScriptModel<V>, com.intellij.openapi.editor.Document, com.intellij.openapi.util.TextRange, com.intellij.database.settings.DatabaseSettings$ExecOption);
+    Code:
+       0: aload_0
+       1: ifnonnull     9
+       4: bipush        17
+       6: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+       9: aload_1
+      10: ifnonnull     18
+      13: bipush        18
+      15: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      18: aload_2
+      19: ifnonnull     27
+      22: bipush        19
+      24: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      27: aload_3
+      28: ifnonnull     36
+      31: bipush        20
+      33: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+      36: aload_0
+      37: aload_1
+      38: aload_2
+      39: aload_3
+      40: invokestatic  #216                // Method adjustSelectionRange:(Lcom/intellij/database/script/ScriptModel;Lcom/intellij/openapi/editor/Document;Lcom/intellij/openapi/util/TextRange;Lcom/intellij/database/settings/DatabaseSettings$ExecOption;)Lcom/intellij/openapi/util/TextRange;
+      43: astore        4
+      45: aload         4
+      47: aload_2
+      48: invokevirtual #93                 // Method com/intellij/openapi/util/TextRange.getStartOffset:()I
+      51: invokevirtual #220                // Method com/intellij/openapi/util/TextRange.contains:(I)Z
+      54: ifeq          64
+      57: aload_2
+      58: invokevirtual #93                 // Method com/intellij/openapi/util/TextRange.getStartOffset:()I
+      61: goto          69
+      64: aload         4
+      66: invokevirtual #93                 // Method com/intellij/openapi/util/TextRange.getStartOffset:()I
+      69: istore        5
+      71: aload_2
+      72: invokevirtual #224                // Method com/intellij/openapi/util/TextRange.getLength:()I
+      75: ifne          94
+      78: aload_0
+      79: new           #147                // class com/intellij/database/script/ScriptModel$PositionRange
+      82: dup
+      83: iload         5
+      85: invokespecial #227                // Method com/intellij/database/script/ScriptModel$PositionRange."<init>":(I)V
+      88: invokevirtual #152                // Method com/intellij/database/script/ScriptModel.subModel:(Lcom/intellij/openapi/util/TextRange;)Lcom/intellij/database/script/ScriptModel;
+      91: goto          100
+      94: aload_0
+      95: aload         4
+      97: invokevirtual #152                // Method com/intellij/database/script/ScriptModel.subModel:(Lcom/intellij/openapi/util/TextRange;)Lcom/intellij/database/script/ScriptModel;
+     100: dup
+     101: ifnonnull     109
+     104: bipush        21
+     106: invokestatic  #334                // Method $$$reportNull$$$0:(I)V
+     109: areturn
+
+  private static boolean lambda$adjustSelectionRange$0(com.intellij.sql.dialects.EvaluationHelper, com.intellij.database.script.ScriptModel$StatementIt);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokeinterface #228,  1          // InterfaceMethod com/intellij/database/script/ScriptModel$StatementIt.api:()Lcom/intellij/psi/SyntaxTraverser$Api;
+       7: invokeinterface #234,  2          // InterfaceMethod com/intellij/sql/dialects/EvaluationHelper.isStatement:(Lcom/intellij/psi/SyntaxTraverser$Api;)Lcom/intellij/openapi/util/Condition;
+      12: aload_1
+      13: invokeinterface #238,  1          // InterfaceMethod com/intellij/database/script/ScriptModel$StatementIt.object:()Ljava/lang/Object;
+      18: invokeinterface #241,  2          // InterfaceMethod com/intellij/openapi/util/Condition.value:(Ljava/lang/Object;)Z
+      23: ireturn
+
+  private static void $$$reportNull$$$0(int);
+    Code:
+       0: iload_0
+       1: tableswitch   { // 0 to 21
+                     0: 104
+                     1: 104
+                     2: 104
+                     3: 110
+                     4: 104
+                     5: 110
+                     6: 110
+                     7: 110
+                     8: 104
+                     9: 104
+                    10: 104
+                    11: 104
+                    12: 110
+                    13: 110
+                    14: 110
+                    15: 110
+                    16: 110
+                    17: 104
+                    18: 104
+                    19: 104
+                    20: 104
+                    21: 110
+               default: 104
+          }
+     104: ldc_w         #336                // String Argument for @NotNull parameter \'%s\' of %s.%s must not be null
+     107: goto          116
+     110: ldc_w         #338                // String @NotNull method %s.%s must not return null
+     113: goto          116
+     116: iload_0
+     117: tableswitch   { // 0 to 21
+                     0: 220
+                     1: 220
+                     2: 220
+                     3: 224
+                     4: 220
+                     5: 224
+                     6: 224
+                     7: 224
+                     8: 220
+                     9: 220
+                    10: 220
+                    11: 220
+                    12: 224
+                    13: 224
+                    14: 224
+                    15: 224
+                    16: 224
+                    17: 220
+                    18: 220
+                    19: 220
+                    20: 220
+                    21: 224
+               default: 220
+          }
+     220: iconst_3
+     221: goto          228
+     224: iconst_2
+     225: goto          228
+     228: anewarray     #340                // class java/lang/Object
+     231: iload_0
+     232: tableswitch   { // 0 to 21
+                     0: 336
+                     1: 345
+                     2: 354
+                     3: 363
+                     4: 354
+                     5: 363
+                     6: 363
+                     7: 363
+                     8: 372
+                     9: 381
+                    10: 390
+                    11: 354
+                    12: 363
+                    13: 363
+                    14: 363
+                    15: 363
+                    16: 363
+                    17: 372
+                    18: 381
+                    19: 390
+                    20: 354
+                    21: 363
+               default: 336
+          }
+     336: dup
+     337: iconst_0
+     338: ldc_w         #341                // String client
+     341: aastore
+     342: goto          399
+     345: dup
+     346: iconst_0
+     347: ldc_w         #342                // String editor
+     350: aastore
+     351: goto          399
+     354: dup
+     355: iconst_0
+     356: ldc_w         #343                // String execOption
+     359: aastore
+     360: goto          399
+     363: dup
+     364: iconst_0
+     365: ldc_w         #344                // String com/intellij/database/script/ScriptModelUtil
+     368: aastore
+     369: goto          399
+     372: dup
+     373: iconst_0
+     374: ldc_w         #345                // String model
+     377: aastore
+     378: goto          399
+     381: dup
+     382: iconst_0
+     383: ldc_w         #346                // String document
+     386: aastore
+     387: goto          399
+     390: dup
+     391: iconst_0
+     392: ldc_w         #347                // String selectionRange
+     395: aastore
+     396: goto          399
+     399: iload_0
+     400: tableswitch   { // 0 to 21
+                     0: 504
+                     1: 504
+                     2: 504
+                     3: 513
+                     4: 504
+                     5: 522
+                     6: 522
+                     7: 522
+                     8: 504
+                     9: 504
+                    10: 504
+                    11: 504
+                    12: 531
+                    13: 531
+                    14: 531
+                    15: 531
+                    16: 531
+                    17: 504
+                    18: 504
+                    19: 504
+                    20: 504
+                    21: 540
+               default: 504
+          }
+     504: dup
+     505: iconst_1
+     506: ldc_w         #344                // String com/intellij/database/script/ScriptModelUtil
+     509: aastore
+     510: goto          549
+     513: dup
+     514: iconst_1
+     515: ldc_w         #348                // String getSelectedStatementsRange
+     518: aastore
+     519: goto          549
+     522: dup
+     523: iconst_1
+     524: ldc_w         #349                // String getSelectionForConsole
+     527: aastore
+     528: goto          549
+     531: dup
+     532: iconst_1
+     533: ldc_w         #350                // String adjustSelectionRange
+     536: aastore
+     537: goto          549
+     540: dup
+     541: iconst_1
+     542: ldc_w         #351                // String adjustModelForSelection
+     545: aastore
+     546: goto          549
+     549: iload_0
+     550: tableswitch   { // 0 to 21
+                     0: 652
+                     1: 652
+                     2: 652
+                     3: 661
+                     4: 664
+                     5: 661
+                     6: 661
+                     7: 661
+                     8: 673
+                     9: 673
+                    10: 673
+                    11: 673
+                    12: 661
+                    13: 661
+                    14: 661
+                    15: 661
+                    16: 661
+                    17: 682
+                    18: 682
+                    19: 682
+                    20: 682
+                    21: 661
+               default: 652
+          }
+     652: dup
+     653: iconst_2
+     654: ldc_w         #348                // String getSelectedStatementsRange
+     657: aastore
+     658: goto          691
+     661: goto          691
+     664: dup
+     665: iconst_2
+     666: ldc_w         #349                // String getSelectionForConsole
+     669: aastore
+     670: goto          691
+     673: dup
+     674: iconst_2
+     675: ldc_w         #350                // String adjustSelectionRange
+     678: aastore
+     679: goto          691
+     682: dup
+     683: iconst_2
+     684: ldc_w         #351                // String adjustModelForSelection
+     687: aastore
+     688: goto          691
+     691: invokestatic  #357                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     694: iload_0
+     695: tableswitch   { // 0 to 21
+                     0: 796
+                     1: 796
+                     2: 796
+                     3: 807
+                     4: 796
+                     5: 807
+                     6: 807
+                     7: 807
+                     8: 796
+                     9: 796
+                    10: 796
+                    11: 796
+                    12: 807
+                    13: 807
+                    14: 807
+                    15: 807
+                    16: 807
+                    17: 796
+                    18: 796
+                    19: 796
+                    20: 796
+                    21: 807
+               default: 796
+          }
+     796: new           #359                // class java/lang/IllegalArgumentException
+     799: dup_x1
+     800: swap
+     801: invokespecial #362                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     804: goto          818
+     807: new           #364                // class java/lang/IllegalStateException
+     810: dup_x1
+     811: swap
+     812: invokespecial #365                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     815: goto          818
+     818: athrow
+}

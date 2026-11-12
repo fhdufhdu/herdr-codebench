@@ -1,0 +1,1696 @@
+Compiled from "LocalDataSourceManager.java"
+public final class com.intellij.database.dataSource.LocalDataSourceManager extends com.intellij.database.connectivity.dataSource.AbstractDataSourceManager<com.intellij.database.dataSource.LocalDataSource> {
+  private static final java.lang.String LRU_KEY;
+
+  private final com.intellij.database.dataSource.DataSourceStorage myProjectStorage;
+
+  public static com.intellij.database.dataSource.LocalDataSourceManager getInstance(com.intellij.openapi.project.Project);
+    Code:
+       0: aload_0
+       1: ifnonnull     8
+       4: iconst_0
+       5: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       8: getstatic     #17                 // Field EP_NAME:Lcom/intellij/openapi/extensions/ProjectExtensionPointName;
+      11: aload_0
+      12: invokevirtual #21                 // Method com/intellij/openapi/extensions/ProjectExtensionPointName.getExtensions:(Lcom/intellij/openapi/extensions/AreaInstance;)Ljava/util/List;
+      15: ldc           #2                  // class com/intellij/database/dataSource/LocalDataSourceManager
+      17: invokestatic  #27                 // Method com/intellij/util/containers/ContainerUtil.findInstance:(Ljava/lang/Iterable;Ljava/lang/Class;)Ljava/lang/Object;
+      20: checkcast     #2                  // class com/intellij/database/dataSource/LocalDataSourceManager
+      23: invokestatic  #33                 // Method java/util/Objects.requireNonNull:(Ljava/lang/Object;)Ljava/lang/Object;
+      26: checkcast     #2                  // class com/intellij/database/dataSource/LocalDataSourceManager
+      29: dup
+      30: ifnonnull     37
+      33: iconst_1
+      34: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      37: areturn
+
+  public com.intellij.database.dataSource.LocalDataSourceManager(com.intellij.openapi.project.Project);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_2
+       5: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       8: aload_0
+       9: aload_1
+      10: aload_1
+      11: invokestatic  #39                 // Method com/intellij/database/dataSource/DataSourceStorage.getProjectStorage:(Lcom/intellij/openapi/project/Project;)Lcom/intellij/database/dataSource/DataSourceStorage;
+      14: invokevirtual #45                 // Method com/intellij/database/dataSource/DataSourceStorage.getDataSources:()Ljava/util/List;
+      17: invokespecial #49                 // Method com/intellij/database/connectivity/dataSource/AbstractDataSourceManager."<init>":(Lcom/intellij/openapi/project/Project;Ljava/util/List;)V
+      20: aload_0
+      21: aload_1
+      22: invokestatic  #39                 // Method com/intellij/database/dataSource/DataSourceStorage.getProjectStorage:(Lcom/intellij/openapi/project/Project;)Lcom/intellij/database/dataSource/DataSourceStorage;
+      25: putfield      #55                 // Field myProjectStorage:Lcom/intellij/database/dataSource/DataSourceStorage;
+      28: aload_1
+      29: invokeinterface #59,  1           // InterfaceMethod com/intellij/openapi/project/Project.getMessageBus:()Lcom/intellij/util/messages/MessageBus;
+      34: invokeinterface #65,  1           // InterfaceMethod com/intellij/util/messages/MessageBus.connect:()Lcom/intellij/util/messages/MessageBusConnection;
+      39: getstatic     #71                 // Field com/intellij/database/dataSource/DataSourceStorage.TOPIC:Lcom/intellij/util/messages/Topic;
+      42: new           #75                 // class com/intellij/database/dataSource/LocalDataSourceManager$1
+      45: dup
+      46: aload_0
+      47: invokespecial #77                 // Method com/intellij/database/dataSource/LocalDataSourceManager$1."<init>":(Lcom/intellij/database/dataSource/LocalDataSourceManager;)V
+      50: invokeinterface #80,  3           // InterfaceMethod com/intellij/util/messages/MessageBusConnection.subscribe:(Lcom/intellij/util/messages/Topic;Ljava/lang/Object;)V
+      55: return
+
+  public boolean isLoading(com.intellij.database.dataSource.LocalDataSource);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_3
+       5: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       8: aload_0
+       9: getfield      #55                 // Field myProjectStorage:Lcom/intellij/database/dataSource/DataSourceStorage;
+      12: aload_1
+      13: invokevirtual #86                 // Method com/intellij/database/dataSource/DataSourceStorage.isLoading:(Lcom/intellij/database/dataSource/LocalDataSource;)Z
+      16: ireturn
+
+  public void addDataSource(com.intellij.database.dataSource.LocalDataSource);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_4
+       5: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       8: aload_0
+       9: getfield      #55                 // Field myProjectStorage:Lcom/intellij/database/dataSource/DataSourceStorage;
+      12: aload_1
+      13: invokevirtual #90                 // Method com/intellij/database/dataSource/DataSourceStorage.addDataSource:(Lcom/intellij/database/dataSource/LocalDataSource;)V
+      16: return
+
+  public void removeDataSource(com.intellij.database.dataSource.LocalDataSource);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_5
+       5: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       8: aload_0
+       9: getfield      #55                 // Field myProjectStorage:Lcom/intellij/database/dataSource/DataSourceStorage;
+      12: aload_1
+      13: invokevirtual #94                 // Method com/intellij/database/dataSource/DataSourceStorage.removeDataSource:(Lcom/intellij/database/dataSource/LocalDataSource;)V
+      16: return
+
+  public void renameDataSource(com.intellij.database.dataSource.LocalDataSource, java.lang.String);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        6
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_2
+      10: ifnonnull     18
+      13: bipush        7
+      15: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      18: aload_1
+      19: aload_2
+      20: invokevirtual #97                 // Method com/intellij/database/dataSource/LocalDataSource.setName:(Ljava/lang/String;)V
+      23: aload_0
+      24: getfield      #55                 // Field myProjectStorage:Lcom/intellij/database/dataSource/DataSourceStorage;
+      27: aload_1
+      28: invokevirtual #103                // Method com/intellij/database/dataSource/DataSourceStorage.updateDataSource:(Lcom/intellij/database/dataSource/LocalDataSource;)V
+      31: return
+
+  public void saveDataSource(com.intellij.database.dataSource.LocalDataSource);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        8
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_0
+      10: getfield      #55                 // Field myProjectStorage:Lcom/intellij/database/dataSource/DataSourceStorage;
+      13: aload_1
+      14: invokevirtual #103                // Method com/intellij/database/dataSource/DataSourceStorage.updateDataSource:(Lcom/intellij/database/dataSource/LocalDataSource;)V
+      17: return
+
+  public com.intellij.openapi.options.Configurable createDataSourceEditor(com.intellij.database.dataSource.LocalDataSource);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        9
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: new           #105                // class com/intellij/database/dataSource/DataSourceConfigurable
+      12: dup
+      13: aload_0
+      14: aload_1
+      15: aload_0
+      16: getfield      #107                // Field myProject:Lcom/intellij/openapi/project/Project;
+      19: invokespecial #111                // Method com/intellij/database/dataSource/DataSourceConfigurable."<init>":(Lcom/intellij/database/dataSource/LocalDataSourceManager;Lcom/intellij/database/dataSource/LocalDataSource;Lcom/intellij/openapi/project/Project;)V
+      22: areturn
+
+  public com.intellij.openapi.actionSystem.AnAction getCreateDataSourceAction(com.intellij.util.Consumer<? super com.intellij.database.dataSource.LocalDataSource>);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        10
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_0
+      10: invokestatic  #114                // Method com/intellij/database/dataSource/DatabaseDriverManager.getInstance:()Lcom/intellij/database/dataSource/DatabaseDriverManager;
+      13: invokevirtual #120                // Method com/intellij/database/dataSource/DatabaseDriverManager.getDrivers:()Ljava/util/Collection;
+      16: aload_1
+      17: invokevirtual #124                // Method getCreateDataSourceActions:(Ljava/util/Collection;Lcom/intellij/util/Consumer;)Ljava/util/List;
+      20: astore_2
+      21: new           #128                // class com/intellij/database/dataSource/LocalDataSourceManager$NewDataSourceActionGroup
+      24: dup
+      25: aload_2
+      26: invokespecial #130                // Method com/intellij/database/dataSource/LocalDataSourceManager$NewDataSourceActionGroup."<init>":(Ljava/util/List;)V
+      29: astore_3
+      30: aload_3
+      31: iconst_1
+      32: invokevirtual #132                // Method com/intellij/database/dataSource/LocalDataSourceManager$NewDataSourceActionGroup.setPopup:(Z)V
+      35: aload_3
+      36: invokevirtual #136                // Method com/intellij/database/dataSource/LocalDataSourceManager$NewDataSourceActionGroup.getTemplatePresentation:()Lcom/intellij/openapi/actionSystem/Presentation;
+      39: getstatic     #140                // Field icons/DatabaseIcons.Dbms:Ljavax/swing/Icon;
+      42: invokevirtual #146                // Method com/intellij/openapi/actionSystem/Presentation.setIcon:(Ljavax/swing/Icon;)V
+      45: aload_3
+      46: dup
+      47: ifnonnull     55
+      50: bipush        11
+      52: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      55: areturn
+
+  public com.intellij.database.dataSource.LocalDataSource createEmpty();
+    Code:
+       0: new           #98                 // class com/intellij/database/dataSource/LocalDataSource
+       3: dup
+       4: invokespecial #152                // Method com/intellij/database/dataSource/LocalDataSource."<init>":()V
+       7: areturn
+
+  public java.util.List<com.intellij.openapi.actionSystem.AnAction> getCreateDataSourceActions(java.util.Collection<? extends com.intellij.database.dataSource.DatabaseDriver>, com.intellij.util.Consumer<? super com.intellij.database.dataSource.LocalDataSource>);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        12
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_2
+      10: ifnonnull     18
+      13: bipush        13
+      15: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      18: aload_0
+      19: aload_2
+      20: invokedynamic #155,  0            // InvokeDynamic #0:consume:(Lcom/intellij/database/dataSource/LocalDataSourceManager;Lcom/intellij/util/Consumer;)Lcom/intellij/util/Consumer;
+      25: astore_3
+      26: aload_0
+      27: getfield      #107                // Field myProject:Lcom/intellij/openapi/project/Project;
+      30: ldc           #159                // String DatabaseDriversLRU
+      32: invokestatic  #161                // Method com/intellij/database/actions/DatabaseViewActions.getLRUNames:(Lcom/intellij/openapi/project/Project;Ljava/lang/String;)Ljava/util/List;
+      35: astore        4
+      37: new           #167                // class java/util/LinkedHashMap
+      40: dup
+      41: invokespecial #169                // Method java/util/LinkedHashMap."<init>":()V
+      44: astore        5
+      46: new           #167                // class java/util/LinkedHashMap
+      49: dup
+      50: invokespecial #169                // Method java/util/LinkedHashMap."<init>":()V
+      53: astore        6
+      55: new           #167                // class java/util/LinkedHashMap
+      58: dup
+      59: invokespecial #169                // Method java/util/LinkedHashMap."<init>":()V
+      62: astore        7
+      64: new           #167                // class java/util/LinkedHashMap
+      67: dup
+      68: invokespecial #169                // Method java/util/LinkedHashMap."<init>":()V
+      71: astore        8
+      73: invokestatic  #170                // Method com/intellij/util/containers/MultiMap.createLinked:()Lcom/intellij/util/containers/MultiMap;
+      76: astore        9
+      78: aload_1
+      79: invokeinterface #176,  1          // InterfaceMethod java/util/Collection.iterator:()Ljava/util/Iterator;
+      84: astore        10
+      86: aload         10
+      88: invokeinterface #182,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      93: ifeq          245
+      96: aload         10
+      98: invokeinterface #188,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     103: checkcast     #192                // class com/intellij/database/dataSource/DatabaseDriver
+     106: astore        11
+     108: aload_0
+     109: aload         11
+     111: invokevirtual #194                // Method getDriverKey:(Lcom/intellij/database/dataSource/DatabaseDriver;)Ljava/lang/String;
+     114: astore        12
+     116: aload         9
+     118: aload         12
+     120: aload         11
+     122: invokevirtual #198                // Method com/intellij/util/containers/MultiMap.putValue:(Ljava/lang/Object;Ljava/lang/Object;)V
+     125: aload         4
+     127: aload         12
+     129: invokeinterface #202,  2          // InterfaceMethod java/util/List.contains:(Ljava/lang/Object;)Z
+     134: ifeq          182
+     137: aload         5
+     139: aload         12
+     141: aload         11
+     143: invokeinterface #208,  3          // InterfaceMethod java/util/Map.putIfAbsent:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     148: pop
+     149: aload         11
+     151: invokeinterface #214,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.isPredefined:()Z
+     156: ifeq          242
+     159: aload         11
+     161: invokestatic  #217                // Method isGenericSupport:(Lcom/intellij/database/dataSource/DatabaseDriver;)Z
+     164: ifeq          242
+     167: aload         8
+     169: aload         12
+     171: aload         11
+     173: invokeinterface #208,  3          // InterfaceMethod java/util/Map.putIfAbsent:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     178: pop
+     179: goto          242
+     182: aload         11
+     184: invokeinterface #214,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.isPredefined:()Z
+     189: ifne          207
+     192: aload         7
+     194: aload         12
+     196: aload         11
+     198: invokeinterface #208,  3          // InterfaceMethod java/util/Map.putIfAbsent:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     203: pop
+     204: goto          242
+     207: aload         11
+     209: invokestatic  #217                // Method isGenericSupport:(Lcom/intellij/database/dataSource/DatabaseDriver;)Z
+     212: ifne          230
+     215: aload         6
+     217: aload         12
+     219: aload         11
+     221: invokeinterface #208,  3          // InterfaceMethod java/util/Map.putIfAbsent:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     226: pop
+     227: goto          242
+     230: aload         8
+     232: aload         12
+     234: aload         11
+     236: invokeinterface #208,  3          // InterfaceMethod java/util/Map.putIfAbsent:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     241: pop
+     242: goto          86
+     245: aload         9
+     247: invokevirtual #221                // Method com/intellij/util/containers/MultiMap.entrySet:()Ljava/util/Set;
+     250: invokedynamic #225,  0            // InvokeDynamic #1:fun:()Lcom/intellij/util/Function;
+     255: invokestatic  #229                // Method com/intellij/util/containers/ContainerUtil.mapNotNull:(Ljava/util/Collection;Lcom/intellij/util/Function;)Ljava/util/List;
+     258: astore        10
+     260: aload         10
+     262: invokestatic  #233                // Method getDisplayDriverNamer:(Ljava/util/Collection;)Ljava/util/function/Function;
+     265: astore        11
+     267: aload_0
+     268: aload         9
+     270: invokedynamic #237,  0            // InvokeDynamic #2:apply:(Lcom/intellij/database/dataSource/LocalDataSourceManager;Lcom/intellij/util/containers/MultiMap;)Ljava/util/function/Function;
+     275: astore        12
+     277: aload         11
+     279: invokestatic  #241                // InterfaceMethod java/util/Comparator.comparing:(Ljava/util/function/Function;)Ljava/util/Comparator;
+     282: astore        13
+     284: new           #247                // class java/util/ArrayList
+     287: dup
+     288: invokespecial #249                // Method java/util/ArrayList."<init>":()V
+     291: astore        14
+     293: aload_0
+     294: ldc           #250                // String separator.data.sources.recent
+     296: iconst_0
+     297: anewarray     #252                // class java/lang/Object
+     300: invokestatic  #254                // Method com/intellij/database/DatabaseBundle.message:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     303: invokestatic  #260                // Method com/intellij/openapi/actionSystem/Separator.create:(Ljava/lang/String;)Lcom/intellij/openapi/actionSystem/Separator;
+     306: aload         14
+     308: aload         5
+     310: invokeinterface #266,  1          // InterfaceMethod java/util/Map.values:()Ljava/util/Collection;
+     315: aload_0
+     316: aload         4
+     318: invokedynamic #269,  0            // InvokeDynamic #3:applyAsInt:(Lcom/intellij/database/dataSource/LocalDataSourceManager;Ljava/util/List;)Ljava/util/function/ToIntFunction;
+     323: invokestatic  #273                // InterfaceMethod java/util/Comparator.comparingInt:(Ljava/util/function/ToIntFunction;)Ljava/util/Comparator;
+     326: aload         13
+     328: invokeinterface #277,  2          // InterfaceMethod java/util/Comparator.thenComparing:(Ljava/util/Comparator;)Ljava/util/Comparator;
+     333: aload_3
+     334: aload         11
+     336: aload         12
+     338: invokevirtual #281                // Method addActions:(Lcom/intellij/openapi/actionSystem/Separator;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Comparator;Lcom/intellij/util/Consumer;Ljava/util/function/Function;Ljava/util/function/Function;)V
+     341: aload_0
+     342: ldc_w         #285                // String separator.user.drivers
+     345: iconst_0
+     346: anewarray     #252                // class java/lang/Object
+     349: invokestatic  #254                // Method com/intellij/database/DatabaseBundle.message:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     352: invokestatic  #260                // Method com/intellij/openapi/actionSystem/Separator.create:(Ljava/lang/String;)Lcom/intellij/openapi/actionSystem/Separator;
+     355: aload         14
+     357: aload         7
+     359: invokeinterface #266,  1          // InterfaceMethod java/util/Map.values:()Ljava/util/Collection;
+     364: aload         13
+     366: aload_3
+     367: aload         11
+     369: aload         12
+     371: invokevirtual #281                // Method addActions:(Lcom/intellij/openapi/actionSystem/Separator;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Comparator;Lcom/intellij/util/Consumer;Ljava/util/function/Function;Ljava/util/function/Function;)V
+     374: aload_0
+     375: ldc_w         #287                // String separator.complete.support
+     378: iconst_0
+     379: anewarray     #252                // class java/lang/Object
+     382: invokestatic  #254                // Method com/intellij/database/DatabaseBundle.message:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     385: invokestatic  #260                // Method com/intellij/openapi/actionSystem/Separator.create:(Ljava/lang/String;)Lcom/intellij/openapi/actionSystem/Separator;
+     388: aload         14
+     390: aload         6
+     392: invokeinterface #266,  1          // InterfaceMethod java/util/Map.values:()Ljava/util/Collection;
+     397: aload         13
+     399: aload_3
+     400: aload         11
+     402: aload         12
+     404: invokevirtual #281                // Method addActions:(Lcom/intellij/openapi/actionSystem/Separator;Ljava/util/List;Ljava/lang/Iterable;Ljava/util/Comparator;Lcom/intellij/util/Consumer;Ljava/util/function/Function;Ljava/util/function/Function;)V
+     407: aload         8
+     409: invokeinterface #289,  1          // InterfaceMethod java/util/Map.isEmpty:()Z
+     414: ifne          602
+     417: aload         14
+     419: invokestatic  #292                // Method com/intellij/openapi/actionSystem/Separator.getInstance:()Lcom/intellij/openapi/actionSystem/Separator;
+     422: invokevirtual #295                // Method java/util/ArrayList.add:(Ljava/lang/Object;)Z
+     425: pop
+     426: new           #298                // class com/intellij/openapi/actionSystem/DefaultActionGroup
+     429: dup
+     430: ldc_w         #300                // String action.data.sources.other.text
+     433: iconst_0
+     434: anewarray     #252                // class java/lang/Object
+     437: invokestatic  #254                // Method com/intellij/database/DatabaseBundle.message:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     440: iconst_1
+     441: invokespecial #302                // Method com/intellij/openapi/actionSystem/DefaultActionGroup."<init>":(Ljava/lang/String;Z)V
+     444: astore        15
+     446: aload         14
+     448: aload         15
+     450: invokevirtual #295                // Method java/util/ArrayList.add:(Ljava/lang/Object;)Z
+     453: pop
+     454: aload         15
+     456: ldc_w         #305                // String separator.basic.support
+     459: iconst_0
+     460: anewarray     #252                // class java/lang/Object
+     463: invokestatic  #254                // Method com/intellij/database/DatabaseBundle.message:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     466: invokevirtual #307                // Method com/intellij/openapi/actionSystem/DefaultActionGroup.addSeparator:(Ljava/lang/String;)V
+     469: invokedynamic #310,  0            // InvokeDynamic #4:apply:()Ljava/util/function/Function;
+     474: invokedynamic #313,  0            // InvokeDynamic #5:compare:()Ljava/util/Comparator;
+     479: invokestatic  #317                // InterfaceMethod java/util/Comparator.comparing:(Ljava/util/function/Function;Ljava/util/Comparator;)Ljava/util/Comparator;
+     482: aload         13
+     484: invokeinterface #277,  2          // InterfaceMethod java/util/Comparator.thenComparing:(Ljava/util/Comparator;)Ljava/util/Comparator;
+     489: astore        16
+     491: aconst_null
+     492: astore        17
+     494: aload         8
+     496: invokeinterface #266,  1          // InterfaceMethod java/util/Map.values:()Ljava/util/Collection;
+     501: aload         16
+     503: invokestatic  #320                // Method com/intellij/util/containers/ContainerUtil.sorted:(Ljava/util/Collection;Ljava/util/Comparator;)Ljava/util/List;
+     506: invokeinterface #324,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+     511: astore        18
+     513: aload         18
+     515: invokeinterface #182,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     520: ifeq          602
+     523: aload         18
+     525: invokeinterface #188,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     530: checkcast     #192                // class com/intellij/database/dataSource/DatabaseDriver
+     533: astore        19
+     535: aload         19
+     537: invokestatic  #325                // Method getExtraSection:(Lcom/intellij/database/dataSource/DatabaseDriver;)Ljava/lang/String;
+     540: astore        20
+     542: aload         17
+     544: aload         20
+     546: invokestatic  #328                // Method java/util/Objects.equals:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     549: ifne          563
+     552: aload         15
+     554: aload         20
+     556: invokevirtual #307                // Method com/intellij/openapi/actionSystem/DefaultActionGroup.addSeparator:(Ljava/lang/String;)V
+     559: aload         20
+     561: astore        17
+     563: aload         15
+     565: aload_0
+     566: aload_3
+     567: aload         19
+     569: aload         12
+     571: aload         19
+     573: invokeinterface #332,  2          // InterfaceMethod java/util/function/Function.apply:(Ljava/lang/Object;)Ljava/lang/Object;
+     578: checkcast     #177                // class java/util/Collection
+     581: aload         11
+     583: aload         19
+     585: invokeinterface #332,  2          // InterfaceMethod java/util/function/Function.apply:(Ljava/lang/Object;)Ljava/lang/Object;
+     590: checkcast     #336                // class java/lang/String
+     593: invokevirtual #338                // Method createAction:(Lcom/intellij/util/Consumer;Lcom/intellij/database/dataSource/DatabaseDriver;Ljava/util/Collection;Ljava/lang/String;)Lcom/intellij/openapi/actionSystem/AnAction;
+     596: invokevirtual #342                // Method com/intellij/openapi/actionSystem/DefaultActionGroup.add:(Lcom/intellij/openapi/actionSystem/AnAction;)V
+     599: goto          513
+     602: aload         14
+     604: dup
+     605: ifnonnull     613
+     608: bipush        14
+     610: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+     613: areturn
+
+  public static boolean isGenericSupport(com.intellij.database.dataSource.DatabaseDriver);
+    Code:
+       0: aload_0
+       1: invokestatic  #345                // Method com/intellij/database/util/DbImplUtilCore.getDbms:(Lcom/intellij/database/dataSource/DatabaseDriver;)Lcom/intellij/database/Dbms;
+       4: invokestatic  #351                // Method com/intellij/database/util/DbImplUtil.isGenericSupport:(Lcom/intellij/database/Dbms;)Z
+       7: ifne          17
+      10: aload_0
+      11: invokestatic  #325                // Method getExtraSection:(Lcom/intellij/database/dataSource/DatabaseDriver;)Ljava/lang/String;
+      14: ifnull        21
+      17: iconst_1
+      18: goto          22
+      21: iconst_0
+      22: ireturn
+
+  public static java.lang.String getExtraSection(com.intellij.database.dataSource.DatabaseDriver);
+    Code:
+       0: aload_0
+       1: invokeinterface #356,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.getComment:()Ljava/lang/String;
+       6: astore_1
+       7: aload_1
+       8: ifnull        25
+      11: aload_1
+      12: ldc_w         #360                // String drivers.xml
+      15: invokevirtual #362                // Method java/lang/String.endsWith:(Ljava/lang/String;)Z
+      18: ifeq          25
+      21: aload_1
+      22: goto          26
+      25: aconst_null
+      26: areturn
+
+  public void addActions(com.intellij.openapi.actionSystem.Separator, java.util.List<? super com.intellij.openapi.actionSystem.AnAction>, java.lang.Iterable<? extends com.intellij.database.dataSource.DatabaseDriver>, java.util.Comparator<? super com.intellij.database.dataSource.DatabaseDriver>, com.intellij.util.Consumer<? super com.intellij.database.dataSource.DatabaseDriver>, java.util.function.Function<com.intellij.database.dataSource.DatabaseDriver, java.lang.String>, java.util.function.Function<com.intellij.database.dataSource.DatabaseDriver, java.util.Collection<? extends com.intellij.database.dataSource.DatabaseDriver>>);
+    Code:
+       0: aload         5
+       2: ifnonnull     10
+       5: bipush        15
+       7: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      10: aload         6
+      12: ifnonnull     20
+      15: bipush        16
+      17: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      20: aload         7
+      22: ifnonnull     30
+      25: bipush        17
+      27: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      30: aload_1
+      31: ifnull        42
+      34: aload_2
+      35: aload_1
+      36: invokeinterface #366,  2          // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+      41: pop
+      42: aload_3
+      43: aload         4
+      45: invokestatic  #367                // Method com/intellij/util/containers/ContainerUtil.sorted:(Ljava/lang/Iterable;Ljava/util/Comparator;)Ljava/util/List;
+      48: invokeinterface #324,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      53: astore        8
+      55: aload         8
+      57: invokeinterface #182,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      62: ifeq          119
+      65: aload         8
+      67: invokeinterface #188,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      72: checkcast     #192                // class com/intellij/database/dataSource/DatabaseDriver
+      75: astore        9
+      77: aload_2
+      78: aload_0
+      79: aload         5
+      81: aload         9
+      83: aload         7
+      85: aload         9
+      87: invokeinterface #332,  2          // InterfaceMethod java/util/function/Function.apply:(Ljava/lang/Object;)Ljava/lang/Object;
+      92: checkcast     #177                // class java/util/Collection
+      95: aload         6
+      97: aload         9
+      99: invokeinterface #332,  2          // InterfaceMethod java/util/function/Function.apply:(Ljava/lang/Object;)Ljava/lang/Object;
+     104: checkcast     #336                // class java/lang/String
+     107: invokevirtual #338                // Method createAction:(Lcom/intellij/util/Consumer;Lcom/intellij/database/dataSource/DatabaseDriver;Ljava/util/Collection;Ljava/lang/String;)Lcom/intellij/openapi/actionSystem/AnAction;
+     110: invokeinterface #366,  2          // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     115: pop
+     116: goto          55
+     119: return
+
+  private com.intellij.openapi.actionSystem.AnAction createAction(com.intellij.util.Consumer<? super com.intellij.database.dataSource.DatabaseDriver>, com.intellij.database.dataSource.DatabaseDriver, java.util.Collection<? extends com.intellij.database.dataSource.DatabaseDriver>, java.lang.String);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        18
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_2
+      10: ifnonnull     18
+      13: bipush        19
+      15: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      18: aload_3
+      19: ifnonnull     27
+      22: bipush        20
+      24: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      27: aload_3
+      28: invokestatic  #370                // Method com/intellij/util/containers/ContainerUtil.getOnlyItem:(Ljava/util/Collection;)Ljava/lang/Object;
+      31: aload_2
+      32: if_acmpne     41
+      35: getstatic     #374                // Field com/intellij/openapi/actionSystem/AnAction.EMPTY_ARRAY:[Lcom/intellij/openapi/actionSystem/AnAction;
+      38: goto          63
+      41: aload_3
+      42: aload_0
+      43: aload_1
+      44: invokedynamic #380,  0            // InvokeDynamic #6:fun:(Lcom/intellij/database/dataSource/LocalDataSourceManager;Lcom/intellij/util/Consumer;)Lcom/intellij/util/Function;
+      49: invokestatic  #383                // Method com/intellij/util/containers/ContainerUtil.map:(Ljava/util/Collection;Lcom/intellij/util/Function;)Ljava/util/List;
+      52: getstatic     #374                // Field com/intellij/openapi/actionSystem/AnAction.EMPTY_ARRAY:[Lcom/intellij/openapi/actionSystem/AnAction;
+      55: invokeinterface #386,  2          // InterfaceMethod java/util/List.toArray:([Ljava/lang/Object;)[Ljava/lang/Object;
+      60: checkcast     #390                // class "[Lcom/intellij/openapi/actionSystem/AnAction;"
+      63: astore        5
+      65: new           #391                // class com/intellij/database/dataSource/LocalDataSourceManager$3
+      68: dup
+      69: aload_0
+      70: aload         4
+      72: aconst_null
+      73: aload_2
+      74: iconst_0
+      75: invokeinterface #393,  2          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.getIcon:(I)Ljavax/swing/Icon;
+      80: aload_1
+      81: aload_2
+      82: aload         5
+      84: invokespecial #397                // Method com/intellij/database/dataSource/LocalDataSourceManager$3."<init>":(Lcom/intellij/database/dataSource/LocalDataSourceManager;Ljava/lang/String;Ljava/lang/String;Ljavax/swing/Icon;Lcom/intellij/util/Consumer;Lcom/intellij/database/dataSource/DatabaseDriver;[Lcom/intellij/openapi/actionSystem/AnAction;)V
+      87: areturn
+
+  public java.lang.String getDriverKey(com.intellij.database.dataSource.DatabaseDriver);
+    Code:
+       0: aload_1
+       1: invokeinterface #214,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.isPredefined:()Z
+       6: ifeq          23
+       9: aload_1
+      10: invokestatic  #325                // Method getExtraSection:(Lcom/intellij/database/dataSource/DatabaseDriver;)Ljava/lang/String;
+      13: ifnonnull     23
+      16: aload_1
+      17: invokestatic  #400                // Method predefinedDriverKey:(Lcom/intellij/database/dataSource/DatabaseDriver;)Ljava/lang/String;
+      20: goto          29
+      23: aload_1
+      24: invokeinterface #403,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.getId:()Ljava/lang/String;
+      29: areturn
+
+  private static java.lang.String predefinedDriverKey(com.intellij.database.dataSource.DatabaseDriver);
+    Code:
+       0: aload_0
+       1: instanceof    #406                // class com/intellij/database/dataSource/DatabaseDriverImpl
+       4: ifeq          24
+       7: aload_0
+       8: checkcast     #406                // class com/intellij/database/dataSource/DatabaseDriverImpl
+      11: astore_1
+      12: aload_1
+      13: invokevirtual #408                // Method com/intellij/database/dataSource/DatabaseDriverImpl.getGroupWithId:()Ljava/lang/String;
+      16: ifnull        24
+      19: aload_1
+      20: invokevirtual #408                // Method com/intellij/database/dataSource/DatabaseDriverImpl.getGroupWithId:()Ljava/lang/String;
+      23: areturn
+      24: aload_0
+      25: invokeinterface #403,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.getId:()Ljava/lang/String;
+      30: astore_1
+      31: aload_1
+      32: ldc_w         #411                // String .
+      35: invokevirtual #413                // Method java/lang/String.lastIndexOf:(Ljava/lang/String;)I
+      38: istore_2
+      39: iload_2
+      40: iconst_m1
+      41: if_icmpne     48
+      44: aload_1
+      45: goto          54
+      48: aload_1
+      49: iconst_0
+      50: iload_2
+      51: invokevirtual #417                // Method java/lang/String.substring:(II)Ljava/lang/String;
+      54: astore_3
+      55: aload_3
+      56: ldc_w         #421                // String _aurora
+      59: invokestatic  #423                // Method com/intellij/openapi/util/text/StringUtil.trimEnd:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+      62: areturn
+
+  public static java.util.function.Function<com.intellij.database.dataSource.DatabaseDriver, java.lang.String> getDisplayDriverNamer(java.util.Collection<com.intellij.database.dataSource.DatabaseDriver>);
+    Code:
+       0: invokestatic  #429                // Method com/intellij/util/containers/MultiMap.create:()Lcom/intellij/util/containers/MultiMap;
+       3: astore_1
+       4: new           #431                // class java/util/HashMap
+       7: dup
+       8: invokespecial #433                // Method java/util/HashMap."<init>":()V
+      11: astore_2
+      12: aload_0
+      13: invokeinterface #176,  1          // InterfaceMethod java/util/Collection.iterator:()Ljava/util/Iterator;
+      18: astore_3
+      19: aload_3
+      20: invokeinterface #182,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      25: ifeq          68
+      28: aload_3
+      29: invokeinterface #188,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      34: checkcast     #192                // class com/intellij/database/dataSource/DatabaseDriver
+      37: astore        4
+      39: aload         4
+      41: invokestatic  #434                // Method getDisplayDriverName:(Lcom/intellij/database/dataSource/DatabaseDriver;)Ljava/lang/String;
+      44: astore        5
+      46: aload_2
+      47: aload         4
+      49: aload         5
+      51: invokeinterface #437,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      56: pop
+      57: aload_1
+      58: aload         5
+      60: aload         4
+      62: invokevirtual #198                // Method com/intellij/util/containers/MultiMap.putValue:(Ljava/lang/Object;Ljava/lang/Object;)V
+      65: goto          19
+      68: aload_1
+      69: invokevirtual #221                // Method com/intellij/util/containers/MultiMap.entrySet:()Ljava/util/Set;
+      72: invokeinterface #440,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      77: astore_3
+      78: aload_3
+      79: invokeinterface #182,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      84: ifeq          181
+      87: aload_3
+      88: invokeinterface #188,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      93: checkcast     #443                // class java/util/Map$Entry
+      96: astore        4
+      98: aload         4
+     100: invokeinterface #445,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+     105: checkcast     #177                // class java/util/Collection
+     108: invokeinterface #448,  1          // InterfaceMethod java/util/Collection.size:()I
+     113: iconst_2
+     114: if_icmpge     120
+     117: goto          78
+     120: aload         4
+     122: invokeinterface #445,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+     127: checkcast     #177                // class java/util/Collection
+     130: invokeinterface #176,  1          // InterfaceMethod java/util/Collection.iterator:()Ljava/util/Iterator;
+     135: astore        5
+     137: aload         5
+     139: invokeinterface #182,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     144: ifeq          178
+     147: aload         5
+     149: invokeinterface #188,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     154: checkcast     #192                // class com/intellij/database/dataSource/DatabaseDriver
+     157: astore        6
+     159: aload_2
+     160: aload         6
+     162: aload         6
+     164: invokeinterface #452,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.getName:()Ljava/lang/String;
+     169: invokeinterface #437,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     174: pop
+     175: goto          137
+     178: goto          78
+     181: aload_2
+     182: invokedynamic #455,  0            // InvokeDynamic #7:apply:(Ljava/util/Map;)Ljava/util/function/Function;
+     187: dup
+     188: ifnonnull     196
+     191: bipush        21
+     193: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+     196: areturn
+
+  private static java.lang.String getDisplayDriverName(com.intellij.database.dataSource.DatabaseDriver);
+    Code:
+       0: aload_0
+       1: invokestatic  #345                // Method com/intellij/database/util/DbImplUtilCore.getDbms:(Lcom/intellij/database/dataSource/DatabaseDriver;)Lcom/intellij/database/Dbms;
+       4: astore_1
+       5: aload_0
+       6: invokeinterface #214,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.isPredefined:()Z
+      11: ifeq          21
+      14: aload_0
+      15: invokestatic  #325                // Method getExtraSection:(Lcom/intellij/database/dataSource/DatabaseDriver;)Ljava/lang/String;
+      18: ifnull        37
+      21: aload_0
+      22: invokeinterface #452,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.getName:()Ljava/lang/String;
+      27: dup
+      28: ifnonnull     36
+      31: bipush        22
+      33: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      36: areturn
+      37: aload_1
+      38: getstatic     #458                // Field com/intellij/database/Dbms.UNKNOWN:Lcom/intellij/database/Dbms;
+      41: if_acmpne     53
+      44: aload_0
+      45: invokeinterface #452,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.getName:()Ljava/lang/String;
+      50: goto          57
+      53: aload_1
+      54: invokevirtual #464                // Method com/intellij/database/Dbms.getDisplayName:()Ljava/lang/String;
+      57: dup
+      58: ifnonnull     66
+      61: bipush        23
+      63: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      66: areturn
+
+  public com.intellij.database.dataSource.LocalDataSource copyDataSource(java.lang.String, com.intellij.database.dataSource.LocalDataSource);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        24
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_2
+      10: ifnonnull     18
+      13: bipush        25
+      15: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      18: aload_2
+      19: iconst_0
+      20: invokevirtual #467                // Method com/intellij/database/dataSource/LocalDataSource.copy:(Z)Lcom/intellij/database/dataSource/LocalDataSource;
+      23: astore_3
+      24: aload_3
+      25: aload_1
+      26: invokestatic  #471                // Method com/intellij/openapi/util/text/StringUtil.notNullize:(Ljava/lang/String;)Ljava/lang/String;
+      29: invokevirtual #97                 // Method com/intellij/database/dataSource/LocalDataSource.setName:(Ljava/lang/String;)V
+      32: aload_3
+      33: dup
+      34: ifnonnull     42
+      37: bipush        26
+      39: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      42: areturn
+
+  public boolean canCreateDataSourceByFiles(java.util.Collection<com.intellij.openapi.vfs.VirtualFile>);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        27
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_1
+      10: invokeinterface #176,  1          // InterfaceMethod java/util/Collection.iterator:()Ljava/util/Iterator;
+      15: astore_2
+      16: aload_2
+      17: invokeinterface #182,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      22: ifeq          50
+      25: aload_2
+      26: invokeinterface #188,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      31: checkcast     #475                // class com/intellij/openapi/vfs/VirtualFile
+      34: astore_3
+      35: aload_3
+      36: invokevirtual #477                // Method com/intellij/openapi/vfs/VirtualFile.getFileType:()Lcom/intellij/openapi/fileTypes/FileType;
+      39: instanceof    #481                // class com/intellij/database/vfs/DbStorageFileType
+      42: ifeq          47
+      45: iconst_1
+      46: ireturn
+      47: goto          16
+      50: iconst_0
+      51: ireturn
+
+  public java.util.List<com.intellij.database.dataSource.LocalDataSource> createDataSourceByFiles(com.intellij.database.access.DatabaseCredentials, java.util.List<com.intellij.openapi.vfs.VirtualFile>);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        28
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_2
+      10: ifnonnull     18
+      13: bipush        29
+      15: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      18: new           #247                // class java/util/ArrayList
+      21: dup
+      22: invokespecial #249                // Method java/util/ArrayList."<init>":()V
+      25: astore_3
+      26: new           #483                // class com/intellij/database/autoconfig/DataSourceRegistry
+      29: dup
+      30: aload_0
+      31: getfield      #107                // Field myProject:Lcom/intellij/openapi/project/Project;
+      34: invokespecial #485                // Method com/intellij/database/autoconfig/DataSourceRegistry."<init>":(Lcom/intellij/openapi/project/Project;)V
+      37: astore        4
+      39: aload         4
+      41: iconst_0
+      42: invokevirtual #488                // Method com/intellij/database/autoconfig/DataSourceRegistry.setImportedFlag:(Z)V
+      45: new           #491                // class com/intellij/database/dataSource/LocalDataSourceManager$4
+      48: dup
+      49: aload_0
+      50: aload_3
+      51: invokespecial #493                // Method com/intellij/database/dataSource/LocalDataSourceManager$4."<init>":(Lcom/intellij/database/dataSource/LocalDataSourceManager;Ljava/util/List;)V
+      54: astore        5
+      56: aload_2
+      57: invokeinterface #324,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      62: astore        6
+      64: aload         6
+      66: invokeinterface #182,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      71: ifeq          172
+      74: aload         6
+      76: invokeinterface #188,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      81: checkcast     #475                // class com/intellij/openapi/vfs/VirtualFile
+      84: astore        7
+      86: aload         7
+      88: invokevirtual #477                // Method com/intellij/openapi/vfs/VirtualFile.getFileType:()Lcom/intellij/openapi/fileTypes/FileType;
+      91: astore        8
+      93: aload         8
+      95: instanceof    #481                // class com/intellij/database/vfs/DbStorageFileType
+      98: ifne          104
+     101: goto          64
+     104: aload         8
+     106: checkcast     #481                // class com/intellij/database/vfs/DbStorageFileType
+     109: invokevirtual #496                // Method com/intellij/database/vfs/DbStorageFileType.getDbms:()Lcom/intellij/database/Dbms;
+     112: astore        9
+     114: aload_0
+     115: getfield      #107                // Field myProject:Lcom/intellij/openapi/project/Project;
+     118: aload         7
+     120: invokevirtual #499                // Method com/intellij/openapi/vfs/VirtualFile.getNameWithoutExtension:()Ljava/lang/String;
+     123: invokestatic  #502                // Method com/intellij/database/util/DbUtil.generateUniqueDataSourceName:(Lcom/intellij/openapi/project/Project;Ljava/lang/String;)Ljava/lang/String;
+     126: astore        10
+     128: aload         7
+     130: invokestatic  #508                // Method com/intellij/openapi/vfs/VfsUtilCore.virtualToIoFile:(Lcom/intellij/openapi/vfs/VirtualFile;)Ljava/io/File;
+     133: invokevirtual #514                // Method java/io/File.getAbsolutePath:()Ljava/lang/String;
+     136: astore        11
+     138: aload         9
+     140: aload         10
+     142: aconst_null
+     143: aconst_null
+     144: new           #519                // class com/intellij/database/dataSource/LocalDataSourceManager$5
+     147: dup
+     148: aload_0
+     149: aload         11
+     151: invokespecial #521                // Method com/intellij/database/dataSource/LocalDataSourceManager$5."<init>":(Lcom/intellij/database/dataSource/LocalDataSourceManager;Ljava/lang/String;)V
+     154: aload         4
+     156: invokevirtual #524                // Method com/intellij/database/autoconfig/DataSourceRegistry.getBuilder:()Lcom/intellij/database/autoconfig/DataSourceDetector$Builder;
+     159: aload         5
+     161: invokeinterface #528,  2          // InterfaceMethod com/intellij/database/autoconfig/DataSourceDetector$Builder.withCallback:(Lcom/intellij/database/autoconfig/DataSourceDetector$Callback;)Lcom/intellij/database/autoconfig/DataSourceDetector$Builder;
+     166: invokestatic  #534                // Method com/intellij/database/autoconfig/DataSourceConfigUtil.buildDataSource:(Lcom/intellij/database/Dbms;Ljava/lang/String;Ljava/lang/String;Lcom/intellij/psi/PsiElement;Lcom/intellij/database/autoconfig/DataSourceConfiguration;Lcom/intellij/database/autoconfig/DataSourceDetector$Builder;)V
+     169: goto          64
+     172: aload_0
+     173: getfield      #107                // Field myProject:Lcom/intellij/openapi/project/Project;
+     176: aload         4
+     178: iconst_1
+     179: iconst_1
+     180: aload_1
+     181: invokestatic  #540                // Method com/intellij/database/autoconfig/DataSourceConfigUtil.configureDetectedDataSources:(Lcom/intellij/openapi/project/Project;Lcom/intellij/database/autoconfig/DataSourceRegistry;ZZLcom/intellij/database/access/DatabaseCredentials;)V
+     184: aload_3
+     185: dup
+     186: ifnonnull     194
+     189: bipush        30
+     191: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+     194: areturn
+
+  public boolean isMyDataSource(java.lang.Class<? extends com.intellij.database.model.DasDataSource>);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        31
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: ldc           #98                 // class com/intellij/database/dataSource/LocalDataSource
+      11: aload_1
+      12: invokevirtual #544                // Method java/lang/Class.isAssignableFrom:(Ljava/lang/Class;)Z
+      15: ireturn
+
+  public void fireDataSourceUpdated(com.intellij.database.dataSource.LocalDataSource);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        32
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_0
+      10: getfield      #55                 // Field myProjectStorage:Lcom/intellij/database/dataSource/DataSourceStorage;
+      13: aload_1
+      14: invokevirtual #103                // Method com/intellij/database/dataSource/DataSourceStorage.updateDataSource:(Lcom/intellij/database/dataSource/LocalDataSource;)V
+      17: return
+
+  public com.intellij.database.dialects.DatabaseDialectEx getDatabaseDialect(com.intellij.database.dataSource.LocalDataSource);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        33
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_1
+      10: invokestatic  #550                // Method com/intellij/database/util/DbImplUtilCore.guessDatabaseDialect:(Lcom/intellij/database/model/RawConnectionConfig;)Lcom/intellij/database/dialects/DatabaseDialectEx;
+      13: areturn
+
+  public com.intellij.lang.Language getQueryLanguage(com.intellij.database.dataSource.LocalDataSource);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        34
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_1
+      10: invokestatic  #554                // Method com/intellij/database/util/DbSqlUtilCore.findLanguage:(Lcom/intellij/database/dataSource/LocalDataSource;)Lcom/intellij/lang/Language;
+      13: astore_2
+      14: aload_2
+      15: instanceof    #560                // class com/intellij/sql/dialects/SqlLanguageDialect
+      18: ifeq          43
+      21: aload_2
+      22: checkcast     #560                // class com/intellij/sql/dialects/SqlLanguageDialect
+      25: astore_3
+      26: invokestatic  #562                // Method com/intellij/openapi/application/ApplicationManager.getApplication:()Lcom/intellij/openapi/application/Application;
+      29: aload_0
+      30: aload_1
+      31: aload_3
+      32: invokedynamic #568,  0            // InvokeDynamic #8:run:(Lcom/intellij/database/dataSource/LocalDataSourceManager;Lcom/intellij/database/dataSource/LocalDataSource;Lcom/intellij/sql/dialects/SqlLanguageDialect;)Ljava/lang/Runnable;
+      37: invokeinterface #572,  2          // InterfaceMethod com/intellij/openapi/application/Application.executeOnPooledThread:(Ljava/lang/Runnable;)Ljava/util/concurrent/Future;
+      42: pop
+      43: aload_2
+      44: areturn
+
+  public com.intellij.lang.Language getPushedQueryLanguage(com.intellij.database.dataSource.LocalDataSource);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        35
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_1
+      10: invokestatic  #578                // Method com/intellij/database/editor/DatabaseEditorHelper.getConsoleRootDir:(Lcom/intellij/database/model/DasDataSource;)Lcom/intellij/openapi/vfs/VirtualFile;
+      13: astore_2
+      14: aload_2
+      15: ifnonnull     22
+      18: aconst_null
+      19: goto          41
+      22: aload_0
+      23: getfield      #107                // Field myProject:Lcom/intellij/openapi/project/Project;
+      26: invokestatic  #584                // Method com/intellij/sql/psi/SqlPsiFacade.getInstance:(Lcom/intellij/openapi/project/Project;)Lcom/intellij/sql/psi/SqlPsiFacade;
+      29: invokevirtual #589                // Method com/intellij/sql/psi/SqlPsiFacade.getDialectPusherKey:()Lcom/intellij/psi/FilePropertyKey;
+      32: aload_2
+      33: invokeinterface #593,  2          // InterfaceMethod com/intellij/psi/FilePropertyKey.getPersistentValue:(Lcom/intellij/openapi/vfs/VirtualFile;)Ljava/lang/Object;
+      38: checkcast     #599                // class com/intellij/lang/Language
+      41: areturn
+
+  public org.jetbrains.concurrency.Promise<?> getLoadingPromise(com.intellij.database.dataSource.LocalDataSource);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        36
+       6: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+       9: aload_0
+      10: getfield      #55                 // Field myProjectStorage:Lcom/intellij/database/dataSource/DataSourceStorage;
+      13: aload_1
+      14: invokevirtual #601                // Method com/intellij/database/dataSource/DataSourceStorage.getLoadingPromise:(Lcom/intellij/database/dataSource/LocalDataSource;)Lorg/jetbrains/concurrency/Promise;
+      17: dup
+      18: ifnonnull     26
+      21: bipush        37
+      23: invokestatic  #953                // Method $$$reportNull$$$0:(I)V
+      26: areturn
+
+  public java.lang.String toString();
+    Code:
+       0: ldc_w         #605                // String %s(project %s and %d data sources)
+       3: iconst_3
+       4: anewarray     #252                // class java/lang/Object
+       7: dup
+       8: iconst_0
+       9: ldc           #2                  // class com/intellij/database/dataSource/LocalDataSourceManager
+      11: invokevirtual #607                // Method java/lang/Class.getSimpleName:()Ljava/lang/String;
+      14: aastore
+      15: dup
+      16: iconst_1
+      17: aload_0
+      18: getfield      #107                // Field myProject:Lcom/intellij/openapi/project/Project;
+      21: invokeinterface #610,  1          // InterfaceMethod com/intellij/openapi/project/Project.getName:()Ljava/lang/String;
+      26: aastore
+      27: dup
+      28: iconst_2
+      29: aload_0
+      30: getfield      #55                 // Field myProjectStorage:Lcom/intellij/database/dataSource/DataSourceStorage;
+      33: invokevirtual #611                // Method com/intellij/database/dataSource/DataSourceStorage.getCount:()I
+      36: invokestatic  #614                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      39: aastore
+      40: invokevirtual #620                // Method java/lang/String.formatted:([Ljava/lang/Object;)Ljava/lang/String;
+      43: areturn
+
+  public void saveDataSource(com.intellij.database.dataSource.AbstractDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #98                 // class com/intellij/database/dataSource/LocalDataSource
+       5: invokevirtual #624                // Method saveDataSource:(Lcom/intellij/database/dataSource/LocalDataSource;)V
+       8: return
+
+  public org.jetbrains.concurrency.Promise getLoadingPromise(com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #98                 // class com/intellij/database/dataSource/LocalDataSource
+       5: invokevirtual #627                // Method getLoadingPromise:(Lcom/intellij/database/dataSource/LocalDataSource;)Lorg/jetbrains/concurrency/Promise;
+       8: areturn
+
+  public com.intellij.openapi.options.Configurable createDataSourceEditor(com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #98                 // class com/intellij/database/dataSource/LocalDataSource
+       5: invokevirtual #628                // Method createDataSourceEditor:(Lcom/intellij/database/dataSource/LocalDataSource;)Lcom/intellij/openapi/options/Configurable;
+       8: areturn
+
+  public com.intellij.lang.Language getPushedQueryLanguage(com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #98                 // class com/intellij/database/dataSource/LocalDataSource
+       5: invokevirtual #632                // Method getPushedQueryLanguage:(Lcom/intellij/database/dataSource/LocalDataSource;)Lcom/intellij/lang/Language;
+       8: areturn
+
+  public com.intellij.lang.Language getQueryLanguage(com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #98                 // class com/intellij/database/dataSource/LocalDataSource
+       5: invokevirtual #635                // Method getQueryLanguage:(Lcom/intellij/database/dataSource/LocalDataSource;)Lcom/intellij/lang/Language;
+       8: areturn
+
+  public com.intellij.database.dialects.DatabaseDialect getDatabaseDialect(com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #98                 // class com/intellij/database/dataSource/LocalDataSource
+       5: invokevirtual #638                // Method getDatabaseDialect:(Lcom/intellij/database/dataSource/LocalDataSource;)Lcom/intellij/database/dialects/DatabaseDialectEx;
+       8: areturn
+
+  public void renameDataSource(com.intellij.database.model.RawDataSource, java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #98                 // class com/intellij/database/dataSource/LocalDataSource
+       5: aload_2
+       6: invokevirtual #642                // Method renameDataSource:(Lcom/intellij/database/dataSource/LocalDataSource;Ljava/lang/String;)V
+       9: return
+
+  public com.intellij.database.model.RawDataSource copyDataSource(java.lang.String, com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: checkcast     #98                 // class com/intellij/database/dataSource/LocalDataSource
+       6: invokevirtual #646                // Method copyDataSource:(Ljava/lang/String;Lcom/intellij/database/dataSource/LocalDataSource;)Lcom/intellij/database/dataSource/LocalDataSource;
+       9: areturn
+
+  public com.intellij.database.model.RawDataSource createEmpty();
+    Code:
+       0: aload_0
+       1: invokevirtual #650                // Method createEmpty:()Lcom/intellij/database/dataSource/LocalDataSource;
+       4: areturn
+
+  public boolean isLoading(com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #98                 // class com/intellij/database/dataSource/LocalDataSource
+       5: invokevirtual #654                // Method isLoading:(Lcom/intellij/database/dataSource/LocalDataSource;)Z
+       8: ireturn
+
+  public void removeDataSource(com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #98                 // class com/intellij/database/dataSource/LocalDataSource
+       5: invokevirtual #655                // Method removeDataSource:(Lcom/intellij/database/dataSource/LocalDataSource;)V
+       8: return
+
+  public void addDataSource(com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #98                 // class com/intellij/database/dataSource/LocalDataSource
+       5: invokevirtual #656                // Method addDataSource:(Lcom/intellij/database/dataSource/LocalDataSource;)V
+       8: return
+
+  static void access$000(com.intellij.database.dataSource.LocalDataSourceManager, com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #14                 // Method attachDataSource:(Lcom/intellij/database/model/RawDataSource;)V
+       5: return
+
+  static void access$100(com.intellij.database.dataSource.LocalDataSourceManager, com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #11                 // Method detachDataSource:(Lcom/intellij/database/model/RawDataSource;)V
+       5: return
+
+  static void access$200(com.intellij.database.dataSource.LocalDataSourceManager, java.util.List);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #7                  // Method resetElementMap:(Ljava/util/List;)V
+       5: return
+
+  static void access$300(com.intellij.database.dataSource.LocalDataSourceManager, com.intellij.database.model.RawDataSource);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #1                  // Method updateDataSource:(Lcom/intellij/database/model/RawDataSource;)V
+       5: return
+
+  private void lambda$getQueryLanguage$0(com.intellij.database.dataSource.LocalDataSource, com.intellij.sql.dialects.SqlLanguageDialect);
+    Code:
+       0: aload_1
+       1: invokestatic  #578                // Method com/intellij/database/editor/DatabaseEditorHelper.getConsoleRootDir:(Lcom/intellij/database/model/DasDataSource;)Lcom/intellij/openapi/vfs/VirtualFile;
+       4: astore_3
+       5: aload_3
+       6: ifnull        27
+       9: aload_0
+      10: getfield      #107                // Field myProject:Lcom/intellij/openapi/project/Project;
+      13: invokestatic  #584                // Method com/intellij/sql/psi/SqlPsiFacade.getInstance:(Lcom/intellij/openapi/project/Project;)Lcom/intellij/sql/psi/SqlPsiFacade;
+      16: invokevirtual #589                // Method com/intellij/sql/psi/SqlPsiFacade.getDialectPusherKey:()Lcom/intellij/psi/FilePropertyKey;
+      19: aload_3
+      20: aload_2
+      21: invokeinterface #657,  3          // InterfaceMethod com/intellij/psi/FilePropertyKey.setPersistentValue:(Lcom/intellij/openapi/vfs/VirtualFile;Ljava/lang/Object;)Z
+      26: pop
+      27: return
+
+  private static java.lang.String lambda$getDisplayDriverNamer$0(java.util.Map, com.intellij.database.dataSource.DatabaseDriver);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_1
+       3: invokeinterface #452,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.getName:()Ljava/lang/String;
+       8: invokeinterface #661,  3          // InterfaceMethod java/util/Map.getOrDefault:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      13: checkcast     #336                // class java/lang/String
+      16: areturn
+
+  private com.intellij.database.dataSource.LocalDataSourceManager$2 lambda$createAction$0(com.intellij.util.Consumer, com.intellij.database.dataSource.DatabaseDriver);
+    Code:
+       0: new           #664                // class com/intellij/database/dataSource/LocalDataSourceManager$2
+       3: dup
+       4: aload_0
+       5: aload_2
+       6: invokeinterface #452,  1          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.getName:()Ljava/lang/String;
+      11: aconst_null
+      12: aload_2
+      13: iconst_0
+      14: invokeinterface #393,  2          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.getIcon:(I)Ljavax/swing/Icon;
+      19: aload_1
+      20: aload_2
+      21: invokespecial #666                // Method com/intellij/database/dataSource/LocalDataSourceManager$2."<init>":(Lcom/intellij/database/dataSource/LocalDataSourceManager;Ljava/lang/String;Ljava/lang/String;Ljavax/swing/Icon;Lcom/intellij/util/Consumer;Lcom/intellij/database/dataSource/DatabaseDriver;)V
+      24: areturn
+
+  private static java.lang.String lambda$getCreateDataSourceActions$4(com.intellij.database.dataSource.DatabaseDriver);
+    Code:
+       0: aload_0
+       1: invokestatic  #325                // Method getExtraSection:(Lcom/intellij/database/dataSource/DatabaseDriver;)Ljava/lang/String;
+       4: areturn
+
+  private int lambda$getCreateDataSourceActions$3(java.util.List, com.intellij.database.dataSource.DatabaseDriver);
+    Code:
+       0: aload_1
+       1: aload_0
+       2: aload_2
+       3: invokevirtual #194                // Method getDriverKey:(Lcom/intellij/database/dataSource/DatabaseDriver;)Ljava/lang/String;
+       6: invokeinterface #669,  2          // InterfaceMethod java/util/List.indexOf:(Ljava/lang/Object;)I
+      11: ireturn
+
+  private java.util.Collection lambda$getCreateDataSourceActions$2(com.intellij.util.containers.MultiMap, com.intellij.database.dataSource.DatabaseDriver);
+    Code:
+       0: aload_1
+       1: aload_0
+       2: aload_2
+       3: invokevirtual #194                // Method getDriverKey:(Lcom/intellij/database/dataSource/DatabaseDriver;)Ljava/lang/String;
+       6: invokevirtual #673                // Method com/intellij/util/containers/MultiMap.get:(Ljava/lang/Object;)Ljava/util/Collection;
+       9: areturn
+
+  private static com.intellij.database.dataSource.DatabaseDriver lambda$getCreateDataSourceActions$1(java.util.Map$Entry);
+    Code:
+       0: aload_0
+       1: invokeinterface #445,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+       6: checkcast     #177                // class java/util/Collection
+       9: invokestatic  #677                // Method com/intellij/util/containers/ContainerUtil.getFirstItem:(Ljava/util/Collection;)Ljava/lang/Object;
+      12: checkcast     #192                // class com/intellij/database/dataSource/DatabaseDriver
+      15: areturn
+
+  private void lambda$getCreateDataSourceActions$0(com.intellij.util.Consumer, com.intellij.database.dataSource.DatabaseDriver);
+    Code:
+       0: aload_0
+       1: getfield      #107                // Field myProject:Lcom/intellij/openapi/project/Project;
+       4: iconst_5
+       5: ldc           #159                // String DatabaseDriversLRU
+       7: aload_0
+       8: aload_2
+       9: invokevirtual #194                // Method getDriverKey:(Lcom/intellij/database/dataSource/DatabaseDriver;)Ljava/lang/String;
+      12: invokestatic  #680                // Method com/intellij/database/actions/DatabaseViewActions.addToLRUNames:(Lcom/intellij/openapi/project/Project;ILjava/lang/String;Ljava/lang/String;)V
+      15: aload_2
+      16: aconst_null
+      17: invokeinterface #684,  2          // InterfaceMethod com/intellij/database/dataSource/DatabaseDriver.createDataSource:(Ljava/lang/String;)Lcom/intellij/database/dataSource/LocalDataSource;
+      22: astore_3
+      23: aload_1
+      24: aload_3
+      25: invokeinterface #688,  2          // InterfaceMethod com/intellij/util/Consumer.consume:(Ljava/lang/Object;)V
+      30: return
+
+  private static void $$$reportNull$$$0(int);
+    Code:
+       0: iload_0
+       1: tableswitch   { // 0 to 37
+                     0: 168
+                     1: 174
+                     2: 168
+                     3: 168
+                     4: 168
+                     5: 168
+                     6: 168
+                     7: 168
+                     8: 168
+                     9: 168
+                    10: 168
+                    11: 174
+                    12: 168
+                    13: 168
+                    14: 174
+                    15: 168
+                    16: 168
+                    17: 168
+                    18: 168
+                    19: 168
+                    20: 168
+                    21: 174
+                    22: 174
+                    23: 174
+                    24: 168
+                    25: 168
+                    26: 174
+                    27: 168
+                    28: 168
+                    29: 168
+                    30: 174
+                    31: 168
+                    32: 168
+                    33: 168
+                    34: 168
+                    35: 168
+                    36: 168
+                    37: 174
+               default: 168
+          }
+     168: ldc_w         #957                // String Argument for @NotNull parameter \'%s\' of %s.%s must not be null
+     171: goto          180
+     174: ldc_w         #959                // String @NotNull method %s.%s must not return null
+     177: goto          180
+     180: iload_0
+     181: tableswitch   { // 0 to 37
+                     0: 348
+                     1: 352
+                     2: 348
+                     3: 348
+                     4: 348
+                     5: 348
+                     6: 348
+                     7: 348
+                     8: 348
+                     9: 348
+                    10: 348
+                    11: 352
+                    12: 348
+                    13: 348
+                    14: 352
+                    15: 348
+                    16: 348
+                    17: 348
+                    18: 348
+                    19: 348
+                    20: 348
+                    21: 352
+                    22: 352
+                    23: 352
+                    24: 348
+                    25: 348
+                    26: 352
+                    27: 348
+                    28: 348
+                    29: 348
+                    30: 352
+                    31: 348
+                    32: 348
+                    33: 348
+                    34: 348
+                    35: 348
+                    36: 348
+                    37: 352
+               default: 348
+          }
+     348: iconst_3
+     349: goto          356
+     352: iconst_2
+     353: goto          356
+     356: anewarray     #252                // class java/lang/Object
+     359: iload_0
+     360: tableswitch   { // 0 to 37
+                     0: 528
+                     1: 537
+                     2: 528
+                     3: 546
+                     4: 546
+                     5: 546
+                     6: 546
+                     7: 555
+                     8: 564
+                     9: 546
+                    10: 573
+                    11: 537
+                    12: 582
+                    13: 573
+                    14: 537
+                    15: 573
+                    16: 591
+                    17: 600
+                    18: 573
+                    19: 609
+                    20: 618
+                    21: 537
+                    22: 537
+                    23: 537
+                    24: 627
+                    25: 636
+                    26: 537
+                    27: 645
+                    28: 654
+                    29: 645
+                    30: 537
+                    31: 663
+                    32: 564
+                    33: 546
+                    34: 546
+                    35: 546
+                    36: 672
+                    37: 537
+               default: 528
+          }
+     528: dup
+     529: iconst_0
+     530: ldc_w         #960                // String project
+     533: aastore
+     534: goto          681
+     537: dup
+     538: iconst_0
+     539: ldc_w         #961                // String com/intellij/database/dataSource/LocalDataSourceManager
+     542: aastore
+     543: goto          681
+     546: dup
+     547: iconst_0
+     548: ldc_w         #962                // String element
+     551: aastore
+     552: goto          681
+     555: dup
+     556: iconst_0
+     557: ldc_w         #963                // String name
+     560: aastore
+     561: goto          681
+     564: dup
+     565: iconst_0
+     566: ldc_w         #964                // String dataSource
+     569: aastore
+     570: goto          681
+     573: dup
+     574: iconst_0
+     575: ldc_w         #965                // String consumer
+     578: aastore
+     579: goto          681
+     582: dup
+     583: iconst_0
+     584: ldc_w         #966                // String allDrivers
+     587: aastore
+     588: goto          681
+     591: dup
+     592: iconst_0
+     593: ldc_w         #967                // String driverNames
+     596: aastore
+     597: goto          681
+     600: dup
+     601: iconst_0
+     602: ldc_w         #968                // String children
+     605: aastore
+     606: goto          681
+     609: dup
+     610: iconst_0
+     611: ldc_w         #969                // String defaultDriver
+     614: aastore
+     615: goto          681
+     618: dup
+     619: iconst_0
+     620: ldc_w         #970                // String subDrivers
+     623: aastore
+     624: goto          681
+     627: dup
+     628: iconst_0
+     629: ldc_w         #971                // String newName
+     632: aastore
+     633: goto          681
+     636: dup
+     637: iconst_0
+     638: ldc_w         #972                // String copyFrom
+     641: aastore
+     642: goto          681
+     645: dup
+     646: iconst_0
+     647: ldc_w         #973                // String files
+     650: aastore
+     651: goto          681
+     654: dup
+     655: iconst_0
+     656: ldc_w         #974                // String credentials
+     659: aastore
+     660: goto          681
+     663: dup
+     664: iconst_0
+     665: ldc_w         #975                // String clazz
+     668: aastore
+     669: goto          681
+     672: dup
+     673: iconst_0
+     674: ldc_w         #976                // String source
+     677: aastore
+     678: goto          681
+     681: iload_0
+     682: tableswitch   { // 0 to 37
+                     0: 848
+                     1: 857
+                     2: 848
+                     3: 848
+                     4: 848
+                     5: 848
+                     6: 848
+                     7: 848
+                     8: 848
+                     9: 848
+                    10: 848
+                    11: 866
+                    12: 848
+                    13: 848
+                    14: 875
+                    15: 848
+                    16: 848
+                    17: 848
+                    18: 848
+                    19: 848
+                    20: 848
+                    21: 884
+                    22: 893
+                    23: 893
+                    24: 848
+                    25: 848
+                    26: 902
+                    27: 848
+                    28: 848
+                    29: 848
+                    30: 911
+                    31: 848
+                    32: 848
+                    33: 848
+                    34: 848
+                    35: 848
+                    36: 848
+                    37: 920
+               default: 848
+          }
+     848: dup
+     849: iconst_1
+     850: ldc_w         #961                // String com/intellij/database/dataSource/LocalDataSourceManager
+     853: aastore
+     854: goto          929
+     857: dup
+     858: iconst_1
+     859: ldc_w         #977                // String getInstance
+     862: aastore
+     863: goto          929
+     866: dup
+     867: iconst_1
+     868: ldc_w         #978                // String getCreateDataSourceAction
+     871: aastore
+     872: goto          929
+     875: dup
+     876: iconst_1
+     877: ldc_w         #979                // String getCreateDataSourceActions
+     880: aastore
+     881: goto          929
+     884: dup
+     885: iconst_1
+     886: ldc_w         #980                // String getDisplayDriverNamer
+     889: aastore
+     890: goto          929
+     893: dup
+     894: iconst_1
+     895: ldc_w         #981                // String getDisplayDriverName
+     898: aastore
+     899: goto          929
+     902: dup
+     903: iconst_1
+     904: ldc_w         #982                // String copyDataSource
+     907: aastore
+     908: goto          929
+     911: dup
+     912: iconst_1
+     913: ldc_w         #983                // String createDataSourceByFiles
+     916: aastore
+     917: goto          929
+     920: dup
+     921: iconst_1
+     922: ldc_w         #984                // String getLoadingPromise
+     925: aastore
+     926: goto          929
+     929: iload_0
+     930: tableswitch   { // 0 to 37
+                     0: 1096
+                     1: 1105
+                     2: 1108
+                     3: 1117
+                     4: 1126
+                     5: 1135
+                     6: 1144
+                     7: 1144
+                     8: 1153
+                     9: 1162
+                    10: 1171
+                    11: 1105
+                    12: 1180
+                    13: 1180
+                    14: 1105
+                    15: 1189
+                    16: 1189
+                    17: 1189
+                    18: 1198
+                    19: 1198
+                    20: 1198
+                    21: 1105
+                    22: 1105
+                    23: 1105
+                    24: 1207
+                    25: 1207
+                    26: 1105
+                    27: 1216
+                    28: 1225
+                    29: 1225
+                    30: 1105
+                    31: 1234
+                    32: 1243
+                    33: 1252
+                    34: 1261
+                    35: 1270
+                    36: 1279
+                    37: 1105
+               default: 1096
+          }
+    1096: dup
+    1097: iconst_2
+    1098: ldc_w         #977                // String getInstance
+    1101: aastore
+    1102: goto          1288
+    1105: goto          1288
+    1108: dup
+    1109: iconst_2
+    1110: ldc_w         #985                // String <init>
+    1113: aastore
+    1114: goto          1288
+    1117: dup
+    1118: iconst_2
+    1119: ldc_w         #986                // String isLoading
+    1122: aastore
+    1123: goto          1288
+    1126: dup
+    1127: iconst_2
+    1128: ldc_w         #987                // String addDataSource
+    1131: aastore
+    1132: goto          1288
+    1135: dup
+    1136: iconst_2
+    1137: ldc_w         #988                // String removeDataSource
+    1140: aastore
+    1141: goto          1288
+    1144: dup
+    1145: iconst_2
+    1146: ldc_w         #989                // String renameDataSource
+    1149: aastore
+    1150: goto          1288
+    1153: dup
+    1154: iconst_2
+    1155: ldc_w         #990                // String saveDataSource
+    1158: aastore
+    1159: goto          1288
+    1162: dup
+    1163: iconst_2
+    1164: ldc_w         #991                // String createDataSourceEditor
+    1167: aastore
+    1168: goto          1288
+    1171: dup
+    1172: iconst_2
+    1173: ldc_w         #978                // String getCreateDataSourceAction
+    1176: aastore
+    1177: goto          1288
+    1180: dup
+    1181: iconst_2
+    1182: ldc_w         #979                // String getCreateDataSourceActions
+    1185: aastore
+    1186: goto          1288
+    1189: dup
+    1190: iconst_2
+    1191: ldc_w         #992                // String addActions
+    1194: aastore
+    1195: goto          1288
+    1198: dup
+    1199: iconst_2
+    1200: ldc_w         #993                // String createAction
+    1203: aastore
+    1204: goto          1288
+    1207: dup
+    1208: iconst_2
+    1209: ldc_w         #982                // String copyDataSource
+    1212: aastore
+    1213: goto          1288
+    1216: dup
+    1217: iconst_2
+    1218: ldc_w         #994                // String canCreateDataSourceByFiles
+    1221: aastore
+    1222: goto          1288
+    1225: dup
+    1226: iconst_2
+    1227: ldc_w         #983                // String createDataSourceByFiles
+    1230: aastore
+    1231: goto          1288
+    1234: dup
+    1235: iconst_2
+    1236: ldc_w         #995                // String isMyDataSource
+    1239: aastore
+    1240: goto          1288
+    1243: dup
+    1244: iconst_2
+    1245: ldc_w         #996                // String fireDataSourceUpdated
+    1248: aastore
+    1249: goto          1288
+    1252: dup
+    1253: iconst_2
+    1254: ldc_w         #997                // String getDatabaseDialect
+    1257: aastore
+    1258: goto          1288
+    1261: dup
+    1262: iconst_2
+    1263: ldc_w         #998                // String getQueryLanguage
+    1266: aastore
+    1267: goto          1288
+    1270: dup
+    1271: iconst_2
+    1272: ldc_w         #999                // String getPushedQueryLanguage
+    1275: aastore
+    1276: goto          1288
+    1279: dup
+    1280: iconst_2
+    1281: ldc_w         #984                // String getLoadingPromise
+    1284: aastore
+    1285: goto          1288
+    1288: invokestatic  #1002               // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+    1291: iload_0
+    1292: tableswitch   { // 0 to 37
+                     0: 1460
+                     1: 1471
+                     2: 1460
+                     3: 1460
+                     4: 1460
+                     5: 1460
+                     6: 1460
+                     7: 1460
+                     8: 1460
+                     9: 1460
+                    10: 1460
+                    11: 1471
+                    12: 1460
+                    13: 1460
+                    14: 1471
+                    15: 1460
+                    16: 1460
+                    17: 1460
+                    18: 1460
+                    19: 1460
+                    20: 1460
+                    21: 1471
+                    22: 1471
+                    23: 1471
+                    24: 1460
+                    25: 1460
+                    26: 1471
+                    27: 1460
+                    28: 1460
+                    29: 1460
+                    30: 1471
+                    31: 1460
+                    32: 1460
+                    33: 1460
+                    34: 1460
+                    35: 1460
+                    36: 1460
+                    37: 1471
+               default: 1460
+          }
+    1460: new           #1004               // class java/lang/IllegalArgumentException
+    1463: dup_x1
+    1464: swap
+    1465: invokespecial #1006               // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+    1468: goto          1482
+    1471: new           #1008               // class java/lang/IllegalStateException
+    1474: dup_x1
+    1475: swap
+    1476: invokespecial #1009               // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+    1479: goto          1482
+    1482: athrow
+}

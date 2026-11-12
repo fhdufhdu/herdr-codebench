@@ -1,0 +1,101 @@
+{
+  "source_jar": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.jar",
+  "sha256": "b1c56c37515894c154104b9c03aa3d2b798ba6956c9343d42ad3a99b0b40b26b",
+  "matches": [
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 416,
+      "text": "authentication.type=Authentication:\nexportable.dataSourceStorage.presentable.name=Database: global data sources\nexportable.DatabaseSettings.presentable.name=Database: settings\nexportable.LocalDatabaseDriverManager.presentable.name=Database: drivers"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 603,
+      "text": "database.explore.delete.confirmation.text.section.folders.subtitle=Folders:\ndatabase.explore.delete.confirmation.text.section.applicationDS.subtitle=Global data sources:\ndatabase.explore.delete.confirmation.text.section.applicationDS.caution=Global data sources will be deleted from all projects\ndatabase.explore.delete.confirmation.text.section.projectDS.subtitle=Project data sources:"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 604,
+      "text": "database.explore.delete.confirmation.text.section.applicationDS.subtitle=Global data sources:\ndatabase.explore.delete.confirmation.text.section.applicationDS.caution=Global data sources will be deleted from all projects\ndatabase.explore.delete.confirmation.text.section.projectDS.subtitle=Project data sources:\ndatabase.explore.delete.confirmation.button.delete=Delete"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 692,
+      "text": "action.Console.Jdbc.ExplainPlan.description=Explain plan\naction.Console.Jdbc.Execute.3.text=Execute (3)\naction.Console.Jdbc.Execute.3.description=Execute statements (extra)\naction.Console.Jdbc.Execute.2.text=Execute (2)"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 693,
+      "text": "action.Console.Jdbc.Execute.3.text=Execute (3)\naction.Console.Jdbc.Execute.3.description=Execute statements (extra)\naction.Console.Jdbc.Execute.2.text=Execute (2)\naction.Console.Jdbc.Execute.2.description=Execute statements (alternative)"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 694,
+      "text": "action.Console.Jdbc.Execute.3.description=Execute statements (extra)\naction.Console.Jdbc.Execute.2.text=Execute (2)\naction.Console.Jdbc.Execute.2.description=Execute statements (alternative)\naction.Console.Jdbc.Execute.Selection.text=Execute Selection as Single Statement"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 695,
+      "text": "action.Console.Jdbc.Execute.2.text=Execute (2)\naction.Console.Jdbc.Execute.2.description=Execute statements (alternative)\naction.Console.Jdbc.Execute.Selection.text=Execute Selection as Single Statement\naction.Sql.EditParameter.text=Edit Parameter"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 696,
+      "text": "action.Console.Jdbc.Execute.2.description=Execute statements (alternative)\naction.Console.Jdbc.Execute.Selection.text=Execute Selection as Single Statement\naction.Sql.EditParameter.text=Edit Parameter\naction.Sql.EditParameter.description=Edit selected parameter"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 699,
+      "text": "action.Sql.EditParameter.description=Edit selected parameter\naction.Console.Jdbc.Execute.text=Execute\naction.Console.Jdbc.Execute.description=Execute queries\naction.Console.Toggle.Notebook.Mode.text=In-Editor Results"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 700,
+      "text": "action.Console.Jdbc.Execute.text=Execute\naction.Console.Jdbc.Execute.description=Execute queries\naction.Console.Toggle.Notebook.Mode.text=In-Editor Results\naction.Console.Toggle.Notebook.Mode.description=Switch the results place"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 716,
+      "text": "action.Console.Jdbc.ExplainPlan.New.Raw.showTree.text=Show Tree\naction.Console.Transaction.RevertAndRollback.text=Roll Back\naction.Console.Transaction.RevertAndRollback.description=Roll back a transaction\naction.Console.TableResult.SubmitAndCommit.text=Submit and Commit"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 717,
+      "text": "action.Console.Transaction.RevertAndRollback.text=Roll Back\naction.Console.Transaction.RevertAndRollback.description=Roll back a transaction\naction.Console.TableResult.SubmitAndCommit.text=Submit and Commit\naction.Console.Transaction.Commit.text=Commit"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 718,
+      "text": "action.Console.Transaction.RevertAndRollback.description=Roll back a transaction\naction.Console.TableResult.SubmitAndCommit.text=Submit and Commit\naction.Console.Transaction.Commit.text=Commit\naction.Console.Transaction.Rollback.text=Roll back"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 721,
+      "text": "action.Console.Transaction.Rollback.text=Roll back\naction.Console.TableResult.SubmitAndCommit.description=Submit and commit a transaction\naction.Console.TableResult.SelectRow.text=Select Row\naction.Console.TableResult.SelectColumn.text=Select Column"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 768,
+      "text": "action.DatabaseView.ScrollFromEditor.description=Select database element open in the active editor\naction.DatabaseView.CopyDdlAction.text=Generate DDL to Clipboard\naction.DatabaseView.CopyDdlFromDbAction.text=Request and Copy Original DDL\naction.DatabaseView.SqlGenerator.text=SQL Generator\\u2026"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 822,
+      "text": "action.Console.TableResult.ImportTable.description=Copy to Database\naction.Console.TableResult.Submit.text=Submit\naction.Console.TableResult.Submit.description=Submits changes to database\naction.Console.TableResult.PreviewDml.text=Preview Pending Changes"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 823,
+      "text": "action.Console.TableResult.Submit.text=Submit\naction.Console.TableResult.Submit.description=Submits changes to database\naction.Console.TableResult.PreviewDml.text=Preview Pending Changes\naction.DatabaseView.CopyAction.text=Duplicate"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 1213,
+      "text": "toolwindow.stripe.Database_Changes.shortName=DB Changes\nstatement.chooser.header=Statements\nstatement.chooser.settings.link.text=Customize\nFullTextSearch.title=Full-text Search"
+    },
+    {
+      "resource": "messages/DatabaseBundle.properties",
+      "line": 1214,
+      "text": "statement.chooser.header=Statements\nstatement.chooser.settings.link.text=Customize\nFullTextSearch.title=Full-text Search\nFullTextSearch.ok.text=Search"
+    }
+  ]
+}

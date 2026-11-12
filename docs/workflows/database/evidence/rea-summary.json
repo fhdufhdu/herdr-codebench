@@ -1,0 +1,116 @@
+{
+  "evidence_id": "ev_1fd0796ebb04facf697c9d8d11543a717fd5e7014413f7c599e7aa139a57deec",
+  "subject": {
+    "name": "database-plugin.jar",
+    "digest": {
+      "sha256": "d5178f9a63d4d432b653aa0aba1d99089cbc98cfefc72e21c1f5f4bdb05a88ef"
+    },
+    "local_path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/database-plugin.jar",
+    "format": "zip",
+    "architecture": null
+  },
+  "provider": {
+    "id": "rea-analysis-view",
+    "name": "REA analysis view projection",
+    "version": "1"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.analysis-view",
+  "operation": "inspect_analysis_view",
+  "parameters": {
+    "parent_evidence_id": "ev_7995a250fce0fa52807c61325ef9cd146d01b275d6e1d2c548d88a65b742ea48",
+    "view": {
+      "kind": "summary"
+    }
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "kind": "summary",
+    "view": {
+      "kind": "summary"
+    },
+    "parent_evidence_id": "ev_7995a250fce0fa52807c61325ef9cd146d01b275d6e1d2c548d88a65b742ea48",
+    "parent_operation": "inspect_artifact",
+    "parent_digest": "7995a250fce0fa52807c61325ef9cd146d01b275d6e1d2c548d88a65b742ea48",
+    "view_digest": "3bf611577e6093755fcd283d9e7a69493b43f95da4c2c0c7eb2d5cae492ddbe2",
+    "artifact": {
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/database-plugin.jar",
+      "sha256": "d5178f9a63d4d432b653aa0aba1d99089cbc98cfefc72e21c1f5f4bdb05a88ef"
+    },
+    "coverage": {
+      "status": "complete-within-view",
+      "examined": 287,
+      "total": 287,
+      "next_offset": null,
+      "exhausted": true
+    },
+    "limitations": [
+      "Inspection derives bounded static hypotheses and next probes; it does not execute the artifact or claim format-specific semantics.",
+      "ZIP inventory lists central-directory entries only. Non-entry bytes, including an APK Signing Block before the central directory or a ZIP comment after it, are not occurrences."
+    ],
+    "unknowns": [
+      "Inventory does not establish application runtime behavior or complete format-specific analysis."
+    ],
+    "summary": {
+      "manifest": {
+        "manifest_id": "agm_5bf7412cad0da5b28cb69dcf8485343db2b083cdd36a99d4e7ef0a2f5ace948f",
+        "root_artifact_id": "art_f0adbb905fda98cece1cf524cd6fdaa5128c4145dc7846b2b0d189db1bcac343",
+        "root_sha256": "d5178f9a63d4d432b653aa0aba1d99089cbc98cfefc72e21c1f5f4bdb05a88ef",
+        "root_format": "zip",
+        "graph_sha256": "96ee51280a759aeda7e0c3c1bfcfeb66d40c0f23582196c23f3dabf32bce50ed",
+        "node_count": 94,
+        "occurrence_count": 97,
+        "edge_count": 96
+      },
+      "available_counts": {
+        "nodes": 94,
+        "occurrences": 97,
+        "edges": 96,
+        "integrity_contradictions": 0
+      },
+      "observed_entry_kind_counts": {
+        "file": 97,
+        "directory": 0,
+        "symlink": 0,
+        "slice": 0
+      },
+      "source_complete": true,
+      "inventory_evidence_ids": [
+        "ev_7606040d65db2af6d04280030beec859f30e56b6f57ed387eb07ec6c626204d4"
+      ],
+      "inspection": {
+        "coverage": {
+          "status": "complete-within-substeps",
+          "substeps_completed": 1,
+          "observations_retained": 1,
+          "observations_omitted": 0,
+          "hypotheses_retained": 0,
+          "hypotheses_omitted": 0,
+          "unexplored_branches_retained": 0,
+          "unexplored_branches_omitted": 0,
+          "next_probes_retained": 0,
+          "next_probes_omitted": 0
+        },
+        "unexplored_branches": []
+      },
+      "limitation_count": 2
+    }
+  },
+  "confidence": "derived",
+  "authority": "shipped-artifact",
+  "environment": null,
+  "limitations": [
+    "Inspection derives bounded static hypotheses and next probes; it does not execute the artifact or claim format-specific semantics.",
+    "ZIP inventory lists central-directory entries only. Non-entry bytes, including an APK Signing Block before the central directory or a ZIP comment after it, are not occurrences."
+  ],
+  "relationship_coverage": null,
+  "locations": [
+    {
+      "kind": "artifact-path",
+      "path": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/database-plugin.jar"
+    }
+  ],
+  "evidence_links": [
+    "ev_7995a250fce0fa52807c61325ef9cd146d01b275d6e1d2c548d88a65b742ea48"
+  ]
+}

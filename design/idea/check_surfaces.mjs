@@ -4,6 +4,7 @@ import vm from "node:vm";
 import { readFile } from "node:fs/promises";
 import * as registry from "../../mods/codenav/actions.js";
 import * as model from "../../mods/codenav/toolbar-model.js";
+import * as projectOrder from "../../mods/codenav/project-order.js";
 
 const groups = { test: { items: [{ id: "a", kind: "action", action: "a" }, { id: "b", kind: "action", action: "b" }] } };
 const initial = { schemaVersion: 1, future: 42, groups: { unknown: { future: true } } };
@@ -24,6 +25,8 @@ const source = await readFile(new URL("../../mods/codenav/tools.js", import.meta
 const context = vm.createContext({ console, Date, Math });
 const store = { layout: "idea" }, buttons = [], menus = [], opened = [], dispatched = [], copiedDiagnostics = [], attachmentRequests = [], hovers = [], taskJobs = [];
 let commandResolve;
+let testingRunHeader = false;
+let executionState = { entries: [], selected: null };
 let activeFile = { path: "/repo/App.kt", on: null }, cx, layoutTree;
 function element(type = "div") {
   const state = { type, nodes: [], calls: [] };
@@ -43,24 +46,32 @@ function element(type = "div") {
 const button = (id, graphic, action, options = {}) => { buttons.push({ id, graphic, action, ...options }); return element("button").id(id); };
 const nodes=root=>[root,...(root.nodes??[]).filter(node=>node&&typeof node==='object').flatMap(nodes)];
 const overrides = {
-  ...registry, ...model,
+  ...registry, ...model, ...projectOrder,
   div: element, image: element, svg: element, v_flex: element, h_flex: element,
+  Select: { new: id => element("select").id(id) },
+  Popup: { new: (id, trigger) => element("popup").id(id).child(trigger) },
+  Input: { new: state => element("input").input_state(state) },
+  InputState: { new() {
+    return { text: "", events: {}, on(name, callback) { this.events[name] = callback; },
+      value() { return this.text; }, set_value(value) { this.text = value; }, release() { this.released = true; } };
+  } },
   shared: key => store[key], setShared: (key, value) => { store[key] = value; },
   layout: () => layoutTree,
   theme: () => ({}), window: () => ({ platform: "linux" }),
   spaces: () => [{ id: "one", active: true, name: "Repo", folder: "/repo", branch: "main", tabs: [] }], panes: () => [], focused: () => ({ terminal: "t1" }),
   runStore: () => ({ configs: [], selected: 0 }), isRunning: () => false,
+  executionStore: () => executionState, executionBusy: entry => ["queued","running"].includes(entry?.state),
   props: () => ({}), keys: () => [{ section: "layout:idea", keys: "cmd-shift-o", action: "codenav.find-file" }],
   run: (command, args) => dispatched.push([command, args]),
-  find: () => null, editorSpec: () => activeFile, editorKey: () => "one", basename: path => path.split("/").pop(), tilde: path => path,
+  find: function find(node, id) { if(!testingRunHeader)return null; return node?.id === id ? node : (node?.children || []).map(child => find(child,id)).find(Boolean); }, editorSpec: () => activeFile, editorKey: () => "one", basename: path => path.split("/").pop(), tilde: path => path,
   editorSnapshot: key => {
     const value = store[key];
     return value && activeFile && value.path === activeFile.path && (value.on ?? null) === (activeFile.on ?? null)
       && (!value.space || value.space === "one") ? value : null;
   },
-  T: value => value, icon: element, iconButton: button, toolImage: element, ideaImage: element, symbolImage: element,
-  IDEA: { iconSize: 16, toolbarButtonSize: 26, rowHeight: 22, stripeWidth: 32 },
-  ideaUI: el => el, uiColors: () => ({}), uiSize: () => 13,
+  T: value => value, icon: element, uiIcon: element, iconButton: (id, name, tip, action, options={}) => button(id,name,action,{...options,tip}), toolImage: element, ideaImage: element, symbolImage: element,
+  IDEA: { iconSize: 16, toolbarButtonSize: 26, toolbarHeight: 32, rowHeight: 22, stripeWidth: 32 },
+  ideaUI: el => el, popupSurface: el => el, uiColors: () => ({}), uiSize: () => 13,
   isIdea: () => store.layout === "idea",
   nextCommand: () => new Promise(resolve => { commandResolve = resolve; }),
   diagnosticKey: entry => JSON.stringify([entry.on ?? null, entry.path, entry.diagnostic.line, entry.diagnostic.message]),
@@ -72,13 +83,20 @@ const overrides = {
   requestDiagnosticAttachment: entries => attachmentRequests.push(entries),
   diagnosticCardOptions: entries => ({ entries }),
   uiDiagnosticTooltip: (id, trigger, diagnostics, options) => { hovers.push({ id, diagnostics, options }); return element("diagnostic-hover").id(id).child(trigger); },
-  uiIconButton: button, uiStripeButton: button, uiToolHeader: element, uiIslandBottom: element,
+  uiIconButton: button, uiStripeButton: button, uiButton: button, uiToolbar: (id, children) => element("toolbar").id(id).children(children), uiToolHeader: element, uiIslandBottom: element,
   uiSpinner: factory => factory().spin(1000),
   uiSeparator: element,
+  uiInputBox: input => element("input-box").child(input), uiCaption: text => element("caption").child(text),
+  uiManagedList: (id, rows, _controller, _cx, options) => element("managed-list").id(id).list_rows(rows).list_options(options),
   uiListRow: (id, children, opts) => element("row").id(id).row_options(opts).children(children), uiTreeRow: element, uiNoticeCard: element,
   openPath: (path, on) => opened.push({ path, on }),
-  MenuController: class { constructor() { this.focus = { focus() {} }; } release() {} },
+  MenuController: class {
+    constructor(_cx, selected = 0) { this.at = selected; this.focus = { focus() {}, release() {} }; }
+    ensureVisible() {}
+    release() {}
+  },
   uiMenu: (_id, rows) => { menus.push(rows); return element("menu"); },
+  uiPopupSize: (count, { width, maxHeight = 400, extraHeight = 14 }) => ({ width, height: Math.min(maxHeight, count * 26 + extraHeight) }),
 };
 async function linkRuntime(source) {
   const mod = new vm.SourceTextModule(source, { context });
@@ -95,6 +113,7 @@ await mod.evaluate();
 const { Toolbar, ToolHeader, Problems } = mod.namespace;
 const toolbar = new Toolbar(); toolbar.init(); toolbar.width = 1600;
 const toolbarTree = toolbar.render(), toolbarNodes = nodes(toolbarTree);
+assert.ok(!toolbarTree.calls.some(([name, button]) => name === "on_mouse_down" && button === "right"), "toolbar no longer opens the removed customization settings page on right-click");
 for (const side of ['left', 'center', 'right']) {
   const group = toolbarNodes.find(node=>node.id===`tb-group-${side}`);
   assert.ok(group.calls.some(([name])=>name==='h_full'));
@@ -189,11 +208,25 @@ assert.doesNotMatch(source,/\b(?:beginDrag|takeDrag|advanceDrag|dragState|cancel
 const projects=new mod.namespace.Projects();projects.init({},cx);projects.render(cx);
 menus.at(-1).find(row=>row.id==='pj-open').action();
 assert.equal(dispatched.at(-1)[0],'codenav.open-folder','closing project menu delegates picker work to the persistent view');
+projects.release();
 console.log('PASS drag removal, upper/lower separators on both edges, hidden groups and folder action routing');
 const toolHeader=new mod.namespace.ToolHeader();
 for(const status of ['working','idle','done','blocked']){
  const tab=toolHeader.tab({id:'agent-tab',name:'Task',status,active:false},{});
  const rotating=nodes(tab).filter(node=>node.calls.some(([name])=>name==='spin'));
  assert.equal(rotating.length,status==='working'?1:0,'only actual working state animates');
- if(rotating.length)assert.equal(rotating[0].type,'mods/codenav/idea-icons/progress.svg');
+ if(rotating.length)assert.equal(rotating[0].type,'progress');
 }
+
+// A shared header must reflect the selected execution, not a running config elsewhere.
+testingRunHeader=true;
+layoutTree={id:"root",children:[{id:"terminal-panel",hidden:false,children:[{id:"bottom-stack",active:"bottom-run-results",children:[{id:"bottom-run-results"}]}]}]};
+toolHeader.init({side:"bottom"});
+for(const entry of [null,{id:"result",state:"completed"},{id:"result",state:"untracked"},{id:"result",state:"running",stopRequested:true},{id:"result",state:"running"}]){
+ executionState={entries:entry?[entry]:[],selected:entry?.id||null};buttons.length=0;toolHeader.render();
+ const stop=buttons.find(button=>button.id==="th-run-results-run-results-stop");
+ assert.ok(stop,"Run Results owns its shared header stop action");
+ assert.equal(Boolean(stop.disabled),!entry||entry.state!=="running"||!!entry.stopRequested,"Stop is visibly disabled without a cancellable selected execution");
+ if(!stop.disabled){stop.action();assert.equal(dispatched.at(-1)[0],"codenav.run-results-stop");}
+}
+console.log('PASS Run Results shared header selected execution Stop state/dispatch');

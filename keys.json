@@ -69,7 +69,7 @@
   },
   "terminal": {
     "cmd-shift-space": "codenav.key:cmd-shift-space",
-    "cmd-shift-o": "codenav.terminal-files",
+    "cmd-shift-o": "mod.open:terminal-files-key",
     "cmd-o": "codenav.key:cmd-o",
     "cmd-alt-o": "codenav.key:cmd-alt-o",
     "ctrl-e": "codenav.key:ctrl-e",
@@ -80,5 +80,8 @@
     "cmd-shift-a": "codenav.key:cmd-shift-a",
     "cmd-,": "codenav.key:cmd-,",
     "cmd-shift-,": "codenav.key:cmd-shift-,"
+  },
+  "layout:ade": {
+    "cmd-shift-o": "ade.terminal-files"
   }
 }

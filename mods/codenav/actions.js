@@ -25,16 +25,16 @@ export const ACTIONS = Object.freeze([
   define("type-definition", "Go to Type Declaration", "Navigation", "interface", source),
   define("super-declaration", "Go to Super Declaration", "Navigation", "interface", { ...source, defaultKeys: ["cmd-u"] }),
   define("usages", "Find Usages", "Navigation", "find", { ...source, defaultKeys: ["alt-f7"] }),
-  define("nav-back", "Back", "Navigation", "locate", { defaultKeys: ["cmd-[", "cmd-alt-left"] }),
-  define("nav-forward", "Forward", "Navigation", "locate", { defaultKeys: ["cmd-]", "cmd-alt-right"] }),
+  define("nav-back", "Back", "Navigation", "back", { defaultKeys: ["cmd-[", "cmd-alt-left"] }),
+  define("nav-forward", "Forward", "Navigation", "forward", { defaultKeys: ["cmd-]", "cmd-alt-right"] }),
   define("close-tab", "Close", "Editor", "close", { requires: ["file"], defaultKeys: ["cmd-w"] }),
-  define("tab-next", "Next Tab", "Editor", "chevronRight", { defaultKeys: ["cmd-shift-]"] }),
-  define("tab-prev", "Previous Tab", "Editor", "chevronRight", { defaultKeys: ["cmd-shift-["] }),
+  define("tab-next", "Next Tab", "Editor", "nextTab", { defaultKeys: ["cmd-shift-]"] }),
+  define("tab-prev", "Previous Tab", "Editor", "previousTab", { defaultKeys: ["cmd-shift-["] }),
   define("next-error", "Next Problem", "Editor", "problems", { ...source, requires: ["source"], defaultKeys: ["f2"] }),
   define("prev-error", "Previous Problem", "Editor", "problems", { ...source, requires: ["source"], defaultKeys: ["shift-f2"] }),
-  define("rich-view", "Markdown Preview", "Editor", "markdown", { owner: "code", requires: ["source", "markdown"] }),
-  define("activity.save", "Save", "Editor", "anyType", { owner: "activity", requires: ["editable"], defaultKeys: ["cmd-s"] }),
-  define("activity.preview", "Markdown Editor Preview", "Editor", "markdown", { owner: "activity", requires: ["editable", "markdown"] }),
+  define("rich-view", "Markdown Preview", "Editor", "preview", { owner: "code", requires: ["source", "markdown"] }),
+  define("activity.save", "Save", "Editor", "save", { owner: "activity", requires: ["editable"], defaultKeys: ["cmd-s"] }),
+  define("activity.preview", "Markdown Editor Preview", "Editor", "preview", { owner: "activity", requires: ["editable", "markdown"] }),
   ...[["project", "Project", "project", "cmd-1"], ["commit", "Commit", "commit", "cmd-0"],
     ["structure", "Structure", "structure", "cmd-7"], ["find", "Find", "find", "cmd-3"],
     ["terminal", "Terminal", "terminal", "alt-f12"], ["problems", "Problems", "problems", "cmd-6"],
@@ -54,9 +54,18 @@ export const ACTIONS = Object.freeze([
   define("terminal-files", "Files in this terminal…", "Tools", "terminal", { requires: ["terminal"], keymapSection: "terminal", defaultKeys: ["cmd-shift-o"] }),
   define("show-terminal", "Show Terminal", "Tools", "terminal"),
   define("lsp-setup", "Language Server Setup", "Tools", "config", { terminal: true }),
+  define("tool-run-results", "Run Results", "Run", "play"),
+  define("run-results-stop", "Stop Selected Execution", "Run", "stop", { owner: "run-results" }),
+  define("tool-database", "Database", "Database", "database"),
+  define("database-settings", "Manage Data Sources", "Database", "config"),
+  define("database-add", "Add Data Source", "Database", "add", { owner: "database" }),
+  define("database-manage", "Manage Data Sources", "Database", "config", { owner: "database" }),
+  define("database-refresh", "Refresh Database", "Database", "refresh", { owner: "database" }),
+  define("database-run", "Execute SQL", "Database", "runAction", { owner: "database-editor" }),
+  define("database-cancel", "Cancel Query", "Database", "stopAction", { owner: "database-editor" }),
   define("review", "Review Changes", "Version Control", "commit", { requires: ["project"] }),
-  define("review-next-diff", "Next Difference", "Version Control", "chevronDown", { owner: "review", requires: ["review"] }),
-  define("review-prev-diff", "Previous Difference", "Version Control", "chevronRight", { owner: "review", requires: ["review"] }),
+  define("review-next-diff", "Next Difference", "Version Control", "nextDifference", { owner: "review", requires: ["review"] }),
+  define("review-prev-diff", "Previous Difference", "Version Control", "previousDifference", { owner: "review", requires: ["review"] }),
   define("review-open-source", "Open Source", "Version Control", "anyType", { owner: "review", requires: ["review"] }),
   define("spring-beans", "Spring Beans", "Spring", "services", source),
   define("spring-endpoints", "Spring Endpoints", "Spring", "http", source),
@@ -67,7 +76,7 @@ export const ACTIONS = Object.freeze([
   define("app.settings", "Herdr Settings", "Appearance & Behavior", "settings", { terminal: true, defaultKeys: ["cmd-,"] }),
   define("design-system", "UI Component Gallery", "Development", "layout"),
   define("lang", "Switch Interface Language", "Appearance & Behavior", "settings"),
-  ...[["new-file", "New File…", "anyType"], ["new-folder", "New Folder…", "folder"],
+  ...[["new-file", "New File…", "newFile"], ["new-folder", "New Folder…", "folder"],
     ["refresh", "Refresh", "refresh"], ["collapse", "Collapse folders", "collapseAll"]]
     .map(([name, label, icon]) => define(`activity.project-${name}`, label, "Project", icon, { owner: "activity", requires: ["project"] })),
   define("problems-errors-only", "Show Errors Only", "Problems", "problems", { toggle: "errorsOnly" }),
@@ -82,6 +91,10 @@ const byId = new Map(ACTIONS.map(action => [action.id, action]));
 export const getAction = id => byId.get(id) ?? byId.get(`codenav.${id}`) ?? null;
 export const listActions = context => context === undefined ? ACTIONS.slice() : ACTIONS.filter(action => actionPresentation(action, context).visible);
 
+// Routing and action capabilities must agree about the media/binary viewers.
+const VIEWER = /\.(png|jpe?g|gif|webp|bmp|svg|tiff?|avif|ico|pdf|mp3|mp4|m4a|wav|flac|ogg|mov|mkv|webm|avi|zip|gz|tgz|bz2|xz|7z|rar|tar|jar|war|class|so|dylib|dll|exe|bin|o|a|woff2?|ttf|otf|eot|sqlite|db)$/i;
+export const isSourceDocument = document => Boolean(document?.kind === "file" && document.path && !VIEWER.test(document.path));
+
 export function actionPresentation(actionOrId, context = {}) {
   const action = typeof actionOrId === "string" ? getAction(actionOrId) : actionOrId;
   if (!action) return { id: null, enabled: false, visible: false, selected: false, reason: "Unknown action" };
@@ -89,18 +102,22 @@ export function actionPresentation(actionOrId, context = {}) {
   const path = document?.path ?? context.path ?? "";
   const machine = document?.on ?? context.workspace?.machine ?? context.on ?? null;
   const local = !machine;
+  const sourceFile = isSourceDocument(document) && context.area !== "review";
+  const ownedEditor = context.layout === "idea" && local && sourceFile;
+  const sqlEditor = context.layout === "idea" && document?.kind === "database" && document.database?.kind === "console";
   const capabilities = {
     project: Boolean(context.hasWorkspace || context.workspace || context.cwd || context.root),
-    file: Boolean(path), source: Boolean(path && document?.kind === "file" && !document?.edit && context.area !== "review"
-      && !/\.(png|jpe?g|gif|webp|avif|ico|bmp|svg|pdf|mp[34]|mov|wav|ogg|woff2?|ttf|zip|jar)$/i.test(path)),
-    editable: Boolean(path && document?.edit), local,
+    file: Boolean(path), source: sourceFile && (!document?.edit || ownedEditor),
+    editable: Boolean(path && document?.edit) || ownedEditor || sqlEditor, local,
     markdown: /\.(md|markdown|mdx)$/i.test(path), http: /\.(http|rest)$/i.test(path),
     terminal: Boolean(context.terminal), runConfig: Boolean(context.runConfig), running: Boolean(context.running),
     review: context.area === "review" || Boolean(context.review),
     ...(context.capabilities ?? {}),
   };
   const missing = action.requires.filter(capability => !capabilities[capability]);
-  return { id: action.id, command: action.command, label: action.label, icon: action.icon,
+  const command = (ownedEditor || sqlEditor) && action.id === "activity.save" ? "codenav.save"
+    : ownedEditor && action.id === "activity.preview" ? "codenav.rich-view" : action.command;
+  return { id: action.id, command, label: action.label, icon: action.icon,
     visible: context.layout === undefined || context.layout === "idea" || action.id === "app.settings",
     enabled: !missing.length, selected: Boolean(action.toggle && context.problemsOptions?.[action.toggle]),
     reason: missing.length ? `Requires ${missing.join(", ")}` : "" };
@@ -112,10 +129,11 @@ const group = (label, items) => Object.freeze({ label, items: Object.freeze(item
 export const ACTION_GROUPS = Object.freeze({
   "MainToolbar.left": group("Main Toolbar / Left", [widget("project.widget", "project"), widget("branch.widget", "branch")]),
   "MainToolbar.center": group("Main Toolbar / Center", []),
-  "MainToolbar.right": group("Main Toolbar / Right", [widget("run.widget", "run"), item("search.action", "codenav.find-all"), item("tools.action", "codenav.tool-settings"), item("settings.action", "codenav.settings")]),
+  "MainToolbar.right": group("Main Toolbar / Right", [widget("run.widget", "run"), item("search.action", "codenav.find-all"), item("tools.action", "codenav.tool-settings"), item("settings.action", "codenav.settings"), item("design-system.action", "codenav.design-system")]),
   "header.Project": group("Tool Windows / Project Header", [item("new-file.action", "activity.project-new-file"), item("new-folder.action", "activity.project-new-folder"), item("refresh.action", "activity.project-refresh"), item("collapse.action", "activity.project-collapse")]),
   "header.Problems": group("Tool Windows / Problems Header", [item("copy-all.action", "codenav.problems-copy-all"), item("attach-all.action", "codenav.problems-attach-all"), item("errors-only.action", "codenav.problems-errors-only"), item("autoscroll.action", "codenav.problems-autoscroll"), item("group-source.action", "codenav.problems-group-source")]),
   "header.Notifications": group("Tool Windows / Notifications Header", [item("clear.action", "codenav.notifications-clear")]),
+  "header.Database": group("Tool Windows / Database Header", [item("add.action", "codenav.database-add"), item("manage.action", "codenav.database-manage"), item("refresh.action", "codenav.database-refresh")]),
   "ToolWindow.context": group("Tool Windows / Context Menu", [item("tool-settings.action", "codenav.tool-settings"), item("hide-active.action", "codenav.hide-active")]),
   "Editor.context": group("Editor / Context Menu", [item("definition.action", "codenav.definition"), item("implementation.action", "codenav.implementation"), item("type-definition.action", "codenav.type-definition"), item("super.action", "codenav.super-declaration"), item("usages.action", "codenav.usages"), item("structure.action", "codenav.file-structure")]),
   "HTTP.toolbar": group("HTTP Client / Toolbar", [item("run-all.action", "codenav.http-run-all"), item("environment.action", "codenav.http-env")]),

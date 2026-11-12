@@ -1,0 +1,223 @@
+Compiled from "BaseExtractorsHelper.java"
+public class com.intellij.database.extractors.BaseExtractorsHelper implements com.intellij.database.extractors.ExtractorsHelper {
+  public static final com.intellij.database.extractors.BaseExtractorsHelper INSTANCE;
+
+  protected com.intellij.database.extractors.BaseExtractorsHelper();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public boolean isApplicable(com.intellij.database.datagrid.CoreGrid<com.intellij.database.datagrid.GridRow, com.intellij.database.datagrid.GridColumn>);
+    Code:
+       0: iconst_1
+       1: ireturn
+
+  public com.intellij.database.extractors.DataExtractorFactory createScriptExtractorFactory(java.lang.String, java.util.function.BiConsumer<java.lang.String, com.intellij.openapi.project.Project>);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_0
+       5: invokestatic  #91                 // Method $$$reportNull$$$0:(I)V
+       8: new           #7                  // class com/intellij/database/extractors/BaseExtractorsHelper$Script
+      11: dup
+      12: aload_1
+      13: aload_2
+      14: invokespecial #9                  // Method com/intellij/database/extractors/BaseExtractorsHelper$Script."<init>":(Ljava/lang/String;Ljava/util/function/BiConsumer;)V
+      17: areturn
+
+  public com.intellij.database.extractors.DataAggregatorFactory createScriptAggregatorFactory(java.lang.String, java.util.function.BiConsumer<java.lang.String, com.intellij.openapi.project.Project>);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_1
+       5: invokestatic  #91                 // Method $$$reportNull$$$0:(I)V
+       8: new           #7                  // class com/intellij/database/extractors/BaseExtractorsHelper$Script
+      11: dup
+      12: aload_1
+      13: aload_2
+      14: invokespecial #9                  // Method com/intellij/database/extractors/BaseExtractorsHelper$Script."<init>":(Ljava/lang/String;Ljava/util/function/BiConsumer;)V
+      17: areturn
+
+  public com.intellij.database.extractors.DataExtractorFactory getDefaultExtractorFactory(com.intellij.database.datagrid.CoreGrid<com.intellij.database.datagrid.GridRow, com.intellij.database.datagrid.GridColumn>, java.util.function.BiConsumer<java.lang.String, com.intellij.openapi.project.Project>, com.intellij.database.csv.CsvFormatsSettings);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_2
+       5: invokestatic  #91                 // Method $$$reportNull$$$0:(I)V
+       8: aconst_null
+       9: areturn
+
+  public com.intellij.database.extractors.ExtractorConfig createExtractorConfig(com.intellij.database.datagrid.CoreGrid<com.intellij.database.datagrid.GridRow, com.intellij.database.datagrid.GridColumn>, com.intellij.database.extractors.ObjectFormatter);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_3
+       5: invokestatic  #91                 // Method $$$reportNull$$$0:(I)V
+       8: aload_2
+       9: ifnonnull     16
+      12: iconst_4
+      13: invokestatic  #91                 // Method $$$reportNull$$$0:(I)V
+      16: new           #12                 // class com/intellij/database/extractors/BaseExtractorConfig
+      19: dup
+      20: aload_2
+      21: aload_1
+      22: invokeinterface #14,  1           // InterfaceMethod com/intellij/database/datagrid/CoreGrid.getProject:()Lcom/intellij/openapi/project/Project;
+      27: invokespecial #20                 // Method com/intellij/database/extractors/BaseExtractorConfig."<init>":(Lcom/intellij/database/extractors/ObjectFormatter;Lcom/intellij/openapi/project/Project;)V
+      30: areturn
+
+  public java.util.List<com.intellij.database.extractors.DataExtractorFactory> getBuiltInFactories();
+    Code:
+       0: new           #23                 // class com/intellij/database/extractors/XlsxExtractorFactory
+       3: dup
+       4: invokespecial #25                 // Method com/intellij/database/extractors/XlsxExtractorFactory."<init>":()V
+       7: invokestatic  #26                 // InterfaceMethod java/util/List.of:(Ljava/lang/Object;)Ljava/util/List;
+      10: dup
+      11: ifnonnull     18
+      14: iconst_5
+      15: invokestatic  #91                 // Method $$$reportNull$$$0:(I)V
+      18: areturn
+
+  static {};
+    Code:
+       0: new           #32                 // class com/intellij/database/extractors/BaseExtractorsHelper
+       3: dup
+       4: invokespecial #34                 // Method "<init>":()V
+       7: putstatic     #35                 // Field INSTANCE:Lcom/intellij/database/extractors/BaseExtractorsHelper;
+      10: return
+
+  private static void $$$reportNull$$$0(int);
+    Code:
+       0: iload_0
+       1: tableswitch   { // 0 to 5
+                     0: 40
+                     1: 40
+                     2: 40
+                     3: 40
+                     4: 40
+                     5: 45
+               default: 40
+          }
+      40: ldc           #93                 // String Argument for @NotNull parameter \'%s\' of %s.%s must not be null
+      42: goto          50
+      45: ldc           #95                 // String @NotNull method %s.%s must not return null
+      47: goto          50
+      50: iload_0
+      51: tableswitch   { // 0 to 5
+                     0: 88
+                     1: 88
+                     2: 88
+                     3: 88
+                     4: 88
+                     5: 92
+               default: 88
+          }
+      88: iconst_3
+      89: goto          96
+      92: iconst_2
+      93: goto          96
+      96: anewarray     #2                  // class java/lang/Object
+      99: iload_0
+     100: tableswitch   { // 0 to 5
+                     0: 140
+                     1: 140
+                     2: 148
+                     3: 148
+                     4: 156
+                     5: 164
+               default: 140
+          }
+     140: dup
+     141: iconst_0
+     142: ldc           #96                 // String scriptFileName
+     144: aastore
+     145: goto          172
+     148: dup
+     149: iconst_0
+     150: ldc           #97                 // String grid
+     152: aastore
+     153: goto          172
+     156: dup
+     157: iconst_0
+     158: ldc           #98                 // String formatter
+     160: aastore
+     161: goto          172
+     164: dup
+     165: iconst_0
+     166: ldc           #99                 // String com/intellij/database/extractors/BaseExtractorsHelper
+     168: aastore
+     169: goto          172
+     172: iload_0
+     173: tableswitch   { // 0 to 5
+                     0: 212
+                     1: 212
+                     2: 212
+                     3: 212
+                     4: 212
+                     5: 220
+               default: 212
+          }
+     212: dup
+     213: iconst_1
+     214: ldc           #99                 // String com/intellij/database/extractors/BaseExtractorsHelper
+     216: aastore
+     217: goto          228
+     220: dup
+     221: iconst_1
+     222: ldc           #100                // String getBuiltInFactories
+     224: aastore
+     225: goto          228
+     228: iload_0
+     229: tableswitch   { // 0 to 5
+                     0: 268
+                     1: 276
+                     2: 284
+                     3: 292
+                     4: 292
+                     5: 300
+               default: 268
+          }
+     268: dup
+     269: iconst_2
+     270: ldc           #101                // String createScriptExtractorFactory
+     272: aastore
+     273: goto          303
+     276: dup
+     277: iconst_2
+     278: ldc           #102                // String createScriptAggregatorFactory
+     280: aastore
+     281: goto          303
+     284: dup
+     285: iconst_2
+     286: ldc           #103                // String getDefaultExtractorFactory
+     288: aastore
+     289: goto          303
+     292: dup
+     293: iconst_2
+     294: ldc           #104                // String createExtractorConfig
+     296: aastore
+     297: goto          303
+     300: goto          303
+     303: invokestatic  #110                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     306: iload_0
+     307: tableswitch   { // 0 to 5
+                     0: 344
+                     1: 344
+                     2: 344
+                     3: 344
+                     4: 344
+                     5: 355
+               default: 344
+          }
+     344: new           #112                // class java/lang/IllegalArgumentException
+     347: dup_x1
+     348: swap
+     349: invokespecial #115                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     352: goto          366
+     355: new           #117                // class java/lang/IllegalStateException
+     358: dup_x1
+     359: swap
+     360: invokespecial #118                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     363: goto          366
+     366: athrow
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "jar": "/Applications/IntelliJ IDEA.app/Contents/plugins/grid-core-plugin/lib/modules/intellij.grid.core.impl.jar",
+    "class": "com.intellij.database.extractors.BaseExtractorsHelper"
+  },
+  {
+    "jar": "/Applications/IntelliJ IDEA.app/Contents/plugins/DatabaseTools/lib/modules/intellij.database.impl.jar",
+    "class": "com.intellij.database.script.ScriptModelUtil"
+  }
+]

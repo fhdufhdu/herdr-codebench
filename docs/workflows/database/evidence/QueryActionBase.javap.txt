@@ -1,0 +1,712 @@
+Compiled from "QueryActionBase.java"
+public abstract class com.intellij.database.actions.QueryActionBase extends com.intellij.database.actions.PerformActionBase implements com.intellij.openapi.actionSystem.Toggleable {
+  public com.intellij.database.actions.QueryActionBase();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method com/intellij/database/actions/PerformActionBase."<init>":()V
+       4: return
+
+  public void update(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_0
+       5: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+       8: aload_1
+       9: getstatic     #7                  // Field com/intellij/openapi/actionSystem/CommonDataKeys.EDITOR:Lcom/intellij/openapi/actionSystem/DataKey;
+      12: invokevirtual #13                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      15: checkcast     #19                 // class com/intellij/openapi/editor/Editor
+      18: astore_2
+      19: aload_1
+      20: getstatic     #21                 // Field com/intellij/openapi/actionSystem/CommonDataKeys.PSI_FILE:Lcom/intellij/openapi/actionSystem/DataKey;
+      23: invokevirtual #13                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      26: checkcast     #24                 // class com/intellij/psi/PsiFile
+      29: astore_3
+      30: aload_1
+      31: getstatic     #26                 // Field com/intellij/openapi/actionSystem/PlatformCoreDataKeys.FILE_EDITOR:Lcom/intellij/openapi/actionSystem/DataKey;
+      34: invokevirtual #13                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      37: checkcast     #31                 // class com/intellij/openapi/fileEditor/FileEditor
+      40: astore        4
+      42: aload_1
+      43: invokestatic  #33                 // Method getConsole:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)Lcom/intellij/database/console/JdbcConsole;
+      46: astore        5
+      48: aload_1
+      49: getstatic     #39                 // Field com/intellij/openapi/actionSystem/PlatformCoreDataKeys.PSI_ELEMENT_ARRAY:Lcom/intellij/openapi/actionSystem/DataKey;
+      52: invokevirtual #13                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      55: checkcast     #42                 // class "[Lcom/intellij/psi/PsiElement;"
+      58: astore        6
+      60: aload_2
+      61: aload         4
+      63: invokestatic  #44                 // Method isEditorOrStructurePopup:(Lcom/intellij/openapi/editor/Editor;Lcom/intellij/openapi/fileEditor/FileEditor;)Z
+      66: ifeq          108
+      69: aload_0
+      70: invokevirtual #48                 // Method isConsoleRequired:()Z
+      73: ifeq          81
+      76: aload         5
+      78: ifnull        108
+      81: aload_0
+      82: aload         5
+      84: aload_2
+      85: aload_3
+      86: invokevirtual #52                 // Method isApplicable:(Lcom/intellij/database/console/JdbcConsole;Lcom/intellij/openapi/editor/Editor;Lcom/intellij/psi/PsiFile;)Z
+      89: ifeq          108
+      92: ldc           #58                 // String EditorTabPopup
+      94: aload_1
+      95: invokevirtual #60                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getPlace:()Ljava/lang/String;
+      98: invokevirtual #64                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+     101: ifne          108
+     104: iconst_1
+     105: goto          109
+     108: iconst_0
+     109: istore        7
+     111: iload         7
+     113: ifeq          146
+     116: aload_0
+     117: aload         5
+     119: aload_2
+     120: aload_3
+     121: invokevirtual #70                 // Method isEnabled:(Lcom/intellij/database/console/JdbcConsole;Lcom/intellij/openapi/editor/Editor;Lcom/intellij/psi/PsiFile;)Z
+     124: ifeq          146
+     127: aload_2
+     128: ifnonnull     142
+     131: aload         6
+     133: ifnull        146
+     136: aload         6
+     138: arraylength
+     139: ifle          146
+     142: iconst_1
+     143: goto          147
+     146: iconst_0
+     147: istore        8
+     149: aload_1
+     150: invokevirtual #73                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getPresentation:()Lcom/intellij/openapi/actionSystem/Presentation;
+     153: iload         8
+     155: invokevirtual #77                 // Method com/intellij/openapi/actionSystem/Presentation.setEnabled:(Z)V
+     158: aload_1
+     159: invokevirtual #73                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getPresentation:()Lcom/intellij/openapi/actionSystem/Presentation;
+     162: iload         7
+     164: ifne          174
+     167: aload_1
+     168: invokevirtual #83                 // Method com/intellij/openapi/actionSystem/AnActionEvent.isFromActionToolbar:()Z
+     171: ifeq          178
+     174: iconst_1
+     175: goto          179
+     178: iconst_0
+     179: invokevirtual #86                 // Method com/intellij/openapi/actionSystem/Presentation.setVisible:(Z)V
+     182: aload_1
+     183: invokestatic  #89                 // Method com/intellij/database/util/DbeTierUtil.adjustPaidTier:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)V
+     186: return
+
+  private static boolean isEditorOrStructurePopup(com.intellij.openapi.editor.Editor, com.intellij.openapi.fileEditor.FileEditor);
+    Code:
+       0: aload_0
+       1: invokestatic  #95                 // Method com/intellij/openapi/editor/ex/util/EditorUtil.isRealFileEditor:(Lcom/intellij/openapi/editor/Editor;)Z
+       4: ifne          18
+       7: aload_0
+       8: ifnonnull     22
+      11: aload_1
+      12: instanceof    #101                // class com/intellij/openapi/fileEditor/TextEditor
+      15: ifeq          22
+      18: iconst_1
+      19: goto          23
+      22: iconst_0
+      23: ireturn
+
+  static boolean shouldBePromoted(com.intellij.openapi.actionSystem.DataContext);
+    Code:
+       0: aload_0
+       1: ifnonnull     8
+       4: iconst_1
+       5: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+       8: getstatic     #26                 // Field com/intellij/openapi/actionSystem/PlatformCoreDataKeys.FILE_EDITOR:Lcom/intellij/openapi/actionSystem/DataKey;
+      11: aload_0
+      12: invokevirtual #103                // Method com/intellij/openapi/actionSystem/DataKey.getData:(Lcom/intellij/openapi/actionSystem/DataContext;)Ljava/lang/Object;
+      15: checkcast     #31                 // class com/intellij/openapi/fileEditor/FileEditor
+      18: astore_1
+      19: getstatic     #7                  // Field com/intellij/openapi/actionSystem/CommonDataKeys.EDITOR:Lcom/intellij/openapi/actionSystem/DataKey;
+      22: aload_0
+      23: invokevirtual #103                // Method com/intellij/openapi/actionSystem/DataKey.getData:(Lcom/intellij/openapi/actionSystem/DataContext;)Ljava/lang/Object;
+      26: checkcast     #19                 // class com/intellij/openapi/editor/Editor
+      29: astore_2
+      30: aload_2
+      31: aload_1
+      32: invokestatic  #44                 // Method isEditorOrStructurePopup:(Lcom/intellij/openapi/editor/Editor;Lcom/intellij/openapi/fileEditor/FileEditor;)Z
+      35: ireturn
+
+  protected boolean isApplicable(com.intellij.database.console.JdbcConsole, com.intellij.openapi.editor.Editor, com.intellij.psi.PsiFile);
+    Code:
+       0: aload_3
+       1: ifnull        18
+       4: aload_3
+       5: invokeinterface #108,  1          // InterfaceMethod com/intellij/psi/PsiFile.getVirtualFile:()Lcom/intellij/openapi/vfs/VirtualFile;
+      10: invokestatic  #112                // Method com/intellij/database/vfs/DbVFSUtils.isDdlVirtualFile:(Lcom/intellij/openapi/vfs/VirtualFile;)Z
+      13: ifeq          18
+      16: iconst_0
+      17: ireturn
+      18: aload_3
+      19: aload_2
+      20: invokestatic  #118                // Method com/intellij/database/console/JdbcConsoleProvider.isSqlAtPlace:(Lcom/intellij/psi/PsiFile;Lcom/intellij/openapi/editor/Editor;)Z
+      23: ifne          38
+      26: aload_1
+      27: ifnull        42
+      30: aload_3
+      31: aload_2
+      32: invokestatic  #124                // Method com/intellij/database/console/JdbcConsoleProvider.isJSAtPlace:(Lcom/intellij/psi/PsiFile;Lcom/intellij/openapi/editor/Editor;)Z
+      35: ifeq          42
+      38: iconst_1
+      39: goto          43
+      42: iconst_0
+      43: ireturn
+
+  protected boolean isEnabled(com.intellij.database.console.JdbcConsole, com.intellij.openapi.editor.Editor, com.intellij.psi.PsiFile);
+    Code:
+       0: iconst_1
+       1: ireturn
+
+  protected boolean isConsoleRequired();
+    Code:
+       0: iconst_1
+       1: ireturn
+
+  protected com.intellij.database.settings.DatabaseSettings$ExecOption getExecOption();
+    Code:
+       0: invokestatic  #127                // Method com/intellij/database/settings/DatabaseSettings.getDefaultExecOption:()Lcom/intellij/database/settings/DatabaseSettings$ExecOption;
+       3: dup
+       4: ifnonnull     11
+       7: iconst_2
+       8: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+      11: areturn
+
+  protected void onElementNotFound(com.intellij.openapi.editor.Editor);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_3
+       5: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+       8: return
+
+  public void actionPerformed(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_4
+       5: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+       8: aload_1
+       9: invokevirtual #133                // Method com/intellij/openapi/actionSystem/AnActionEvent.getProject:()Lcom/intellij/openapi/project/Project;
+      12: astore_2
+      13: aload_2
+      14: ifnonnull     18
+      17: return
+      18: aload_2
+      19: invokestatic  #137                // Method com/intellij/psi/PsiDocumentManager.getInstance:(Lcom/intellij/openapi/project/Project;)Lcom/intellij/psi/PsiDocumentManager;
+      22: invokevirtual #143                // Method com/intellij/psi/PsiDocumentManager.commitAllDocuments:()V
+      25: invokestatic  #146                // Method com/intellij/openapi/fileEditor/FileDocumentManager.getInstance:()Lcom/intellij/openapi/fileEditor/FileDocumentManager;
+      28: invokevirtual #151                // Method com/intellij/openapi/fileEditor/FileDocumentManager.saveAllDocuments:()V
+      31: aload_0
+      32: invokevirtual #154                // Method getExecOption:()Lcom/intellij/database/settings/DatabaseSettings$ExecOption;
+      35: astore_3
+      36: aload_0
+      37: aload_1
+      38: invokevirtual #157                // Method getPsiElements:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)Lcom/intellij/util/containers/JBIterable;
+      41: astore        4
+      43: aload_1
+      44: aload_3
+      45: aload_0
+      46: invokedynamic #161,  0            // InvokeDynamic #0:accept:(Lcom/intellij/database/actions/QueryActionBase;)Ljava/util/function/Consumer;
+      51: invokestatic  #165                // Method getInfoClassic:(Lcom/intellij/openapi/actionSystem/AnActionEvent;Lcom/intellij/database/settings/DatabaseSettings$ExecOption;Ljava/util/function/Consumer;)Lcom/intellij/database/console/JdbcConsoleProvider$Info;
+      54: aload_0
+      55: aload_1
+      56: aload_3
+      57: aload         4
+      59: invokevirtual #169                // Method findInfoFromFileStructure:(Lcom/intellij/openapi/actionSystem/AnActionEvent;Lcom/intellij/database/settings/DatabaseSettings$ExecOption;Lcom/intellij/util/containers/JBIterable;)Lcom/intellij/database/console/JdbcConsoleProvider$Info;
+      62: invokestatic  #173                // Method com/intellij/util/ObjectUtils.chooseNotNull:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      65: checkcast     #179                // class com/intellij/database/console/JdbcConsoleProvider$Info
+      68: astore        5
+      70: aload         5
+      72: ifnonnull     76
+      75: return
+      76: aload_0
+      77: aload_1
+      78: aload_1
+      79: invokestatic  #33                 // Method getConsole:(Lcom/intellij/openapi/actionSystem/AnActionEvent;)Lcom/intellij/database/console/JdbcConsole;
+      82: aload         5
+      84: invokevirtual #181                // Method invokeImpl:(Lcom/intellij/openapi/actionSystem/AnActionEvent;Lcom/intellij/database/console/JdbcConsole;Lcom/intellij/database/console/JdbcConsoleProvider$Info;)V
+      87: return
+
+  protected com.intellij.util.containers.JBIterable<com.intellij.psi.PsiElement> getPsiElements(com.intellij.openapi.actionSystem.AnActionEvent);
+    Code:
+       0: aload_1
+       1: ifnonnull     8
+       4: iconst_5
+       5: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+       8: aload_1
+       9: getstatic     #39                 // Field com/intellij/openapi/actionSystem/PlatformCoreDataKeys.PSI_ELEMENT_ARRAY:Lcom/intellij/openapi/actionSystem/DataKey;
+      12: invokevirtual #13                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      15: checkcast     #42                 // class "[Lcom/intellij/psi/PsiElement;"
+      18: invokestatic  #185                // Method com/intellij/util/containers/JBIterable.of:([Ljava/lang/Object;)Lcom/intellij/util/containers/JBIterable;
+      21: dup
+      22: ifnonnull     30
+      25: bipush        6
+      27: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+      30: areturn
+
+  public static com.intellij.database.console.JdbcConsoleProvider$Info getInfoClassic(com.intellij.openapi.actionSystem.AnActionEvent, com.intellij.database.settings.DatabaseSettings$ExecOption, java.util.function.Consumer<com.intellij.openapi.editor.Editor>);
+    Code:
+       0: aload_0
+       1: ifnonnull     9
+       4: bipush        7
+       6: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+       9: aload_1
+      10: ifnonnull     18
+      13: bipush        8
+      15: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+      18: aload_0
+      19: getstatic     #7                  // Field com/intellij/openapi/actionSystem/CommonDataKeys.EDITOR:Lcom/intellij/openapi/actionSystem/DataKey;
+      22: invokevirtual #13                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      25: checkcast     #19                 // class com/intellij/openapi/editor/Editor
+      28: astore_3
+      29: aload_0
+      30: getstatic     #21                 // Field com/intellij/openapi/actionSystem/CommonDataKeys.PSI_FILE:Lcom/intellij/openapi/actionSystem/DataKey;
+      33: invokevirtual #13                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      36: checkcast     #24                 // class com/intellij/psi/PsiFile
+      39: astore        4
+      41: aload         4
+      43: aload_3
+      44: aload_1
+      45: aload_2
+      46: invokestatic  #191                // Method getInfoClassic:(Lcom/intellij/psi/PsiFile;Lcom/intellij/openapi/editor/Editor;Lcom/intellij/database/settings/DatabaseSettings$ExecOption;Ljava/util/function/Consumer;)Lcom/intellij/database/console/JdbcConsoleProvider$Info;
+      49: areturn
+
+  public static com.intellij.database.console.JdbcConsoleProvider$Info getInfoClassic(com.intellij.psi.PsiFile, com.intellij.openapi.editor.Editor, com.intellij.database.settings.DatabaseSettings$ExecOption, java.util.function.Consumer<com.intellij.openapi.editor.Editor>);
+    Code:
+       0: aload_2
+       1: ifnonnull     9
+       4: bipush        9
+       6: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+       9: aload_0
+      10: aconst_null
+      11: aload_1
+      12: invokestatic  #194                // Method com/intellij/database/console/JdbcConsoleProvider.elementAt:(Lcom/intellij/psi/PsiFile;Lcom/intellij/psi/PsiElement;Lcom/intellij/openapi/editor/Editor;)Lcom/intellij/psi/PsiElement;
+      15: astore        4
+      17: aload         4
+      19: ifnonnull     39
+      22: aload_1
+      23: ifnull        37
+      26: aload_3
+      27: ifnull        37
+      30: aload_3
+      31: aload_1
+      32: invokeinterface #198,  2          // InterfaceMethod java/util/function/Consumer.accept:(Ljava/lang/Object;)V
+      37: aconst_null
+      38: areturn
+      39: aload_0
+      40: aload         4
+      42: aload_1
+      43: aload_2
+      44: invokestatic  #203                // Method com/intellij/database/console/JdbcConsoleProvider.findScriptModel:(Lcom/intellij/psi/PsiFile;Lcom/intellij/psi/PsiElement;Lcom/intellij/openapi/editor/Editor;Lcom/intellij/database/settings/DatabaseSettings$ExecOption;)Lcom/intellij/database/console/JdbcConsoleProvider$Info;
+      47: areturn
+
+  private com.intellij.database.console.JdbcConsoleProvider$Info findInfoFromFileStructure(com.intellij.openapi.actionSystem.AnActionEvent, com.intellij.database.settings.DatabaseSettings$ExecOption, com.intellij.util.containers.JBIterable<com.intellij.psi.PsiElement>);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        10
+       6: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+       9: aload_2
+      10: ifnonnull     18
+      13: bipush        11
+      15: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+      18: aload_3
+      19: ifnonnull     27
+      22: bipush        12
+      24: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+      27: aload_3
+      28: invokevirtual #207                // Method com/intellij/util/containers/JBIterable.isEmpty:()Z
+      31: ifeq          36
+      34: aconst_null
+      35: areturn
+      36: aload_1
+      37: getstatic     #21                 // Field com/intellij/openapi/actionSystem/CommonDataKeys.PSI_FILE:Lcom/intellij/openapi/actionSystem/DataKey;
+      40: invokevirtual #13                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      43: checkcast     #24                 // class com/intellij/psi/PsiFile
+      46: astore        4
+      48: aload         4
+      50: ifnonnull     80
+      53: aload_3
+      54: invokevirtual #210                // Method com/intellij/util/containers/JBIterable.first:()Ljava/lang/Object;
+      57: checkcast     #214                // class com/intellij/psi/PsiElement
+      60: astore        5
+      62: aload         5
+      64: ifnull        77
+      67: aload         5
+      69: invokeinterface #216,  1          // InterfaceMethod com/intellij/psi/PsiElement.getContainingFile:()Lcom/intellij/psi/PsiFile;
+      74: goto          78
+      77: aconst_null
+      78: astore        4
+      80: aload_1
+      81: getstatic     #7                  // Field com/intellij/openapi/actionSystem/CommonDataKeys.EDITOR:Lcom/intellij/openapi/actionSystem/DataKey;
+      84: invokevirtual #13                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+      87: checkcast     #19                 // class com/intellij/openapi/editor/Editor
+      90: astore        5
+      92: aload         5
+      94: ifnonnull     137
+      97: aload_1
+      98: getstatic     #26                 // Field com/intellij/openapi/actionSystem/PlatformCoreDataKeys.FILE_EDITOR:Lcom/intellij/openapi/actionSystem/DataKey;
+     101: invokevirtual #13                 // Method com/intellij/openapi/actionSystem/AnActionEvent.getData:(Lcom/intellij/openapi/actionSystem/DataKey;)Ljava/lang/Object;
+     104: checkcast     #31                 // class com/intellij/openapi/fileEditor/FileEditor
+     107: astore        6
+     109: aload         6
+     111: instanceof    #101                // class com/intellij/openapi/fileEditor/TextEditor
+     114: ifeq          134
+     117: aload         6
+     119: checkcast     #101                // class com/intellij/openapi/fileEditor/TextEditor
+     122: astore        7
+     124: aload         7
+     126: invokeinterface #220,  1          // InterfaceMethod com/intellij/openapi/fileEditor/TextEditor.getEditor:()Lcom/intellij/openapi/editor/Editor;
+     131: goto          135
+     134: aconst_null
+     135: astore        5
+     137: aload         4
+     139: ifnull        147
+     142: aload         5
+     144: ifnonnull     149
+     147: aconst_null
+     148: areturn
+     149: new           #224                // class java/util/HashSet
+     152: dup
+     153: invokespecial #226                // Method java/util/HashSet."<init>":()V
+     156: astore        6
+     158: aload_3
+     159: invokevirtual #227                // Method com/intellij/util/containers/JBIterable.iterator:()Ljava/util/Iterator;
+     162: astore        7
+     164: aload         7
+     166: invokeinterface #231,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     171: ifeq          223
+     174: aload         7
+     176: invokeinterface #236,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     181: checkcast     #214                // class com/intellij/psi/PsiElement
+     184: astore        8
+     186: aload         4
+     188: aload         8
+     190: invokeinterface #216,  1          // InterfaceMethod com/intellij/psi/PsiElement.getContainingFile:()Lcom/intellij/psi/PsiFile;
+     195: invokeinterface #239,  2          // InterfaceMethod com/intellij/psi/PsiFile.equals:(Ljava/lang/Object;)Z
+     200: ifne          205
+     203: aconst_null
+     204: areturn
+     205: aload         6
+     207: aload         8
+     209: invokeinterface #240,  1          // InterfaceMethod com/intellij/psi/PsiElement.getTextRange:()Lcom/intellij/openapi/util/TextRange;
+     214: invokeinterface #244,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+     219: pop
+     220: goto          164
+     223: aload         4
+     225: invokeinterface #249,  1          // InterfaceMethod com/intellij/psi/PsiFile.getProject:()Lcom/intellij/openapi/project/Project;
+     230: astore        7
+     232: aload         7
+     234: invokestatic  #137                // Method com/intellij/psi/PsiDocumentManager.getInstance:(Lcom/intellij/openapi/project/Project;)Lcom/intellij/psi/PsiDocumentManager;
+     237: aload         4
+     239: invokevirtual #250                // Method com/intellij/psi/PsiDocumentManager.getDocument:(Lcom/intellij/psi/PsiFile;)Lcom/intellij/openapi/editor/Document;
+     242: astore        8
+     244: aload         8
+     246: ifnonnull     251
+     249: aconst_null
+     250: areturn
+     251: aload         7
+     253: invokestatic  #254                // Method com/intellij/sql/psi/SqlPsiFacade.getInstance:(Lcom/intellij/openapi/project/Project;)Lcom/intellij/sql/psi/SqlPsiFacade;
+     256: aload         4
+     258: invokevirtual #259                // Method com/intellij/sql/psi/SqlPsiFacade.createScriptModel:(Lcom/intellij/psi/PsiFile;)Lcom/intellij/database/script/ScriptModel;
+     261: aload         6
+     263: invokestatic  #263                // Method filterRanges:(Lcom/intellij/database/script/ScriptModel;Ljava/util/Set;)Lcom/intellij/database/script/ScriptModel;
+     266: astore        9
+     268: new           #179                // class com/intellij/database/console/JdbcConsoleProvider$Info
+     271: dup
+     272: aload         4
+     274: aload         4
+     276: aload         5
+     278: checkcast     #267                // class com/intellij/openapi/editor/ex/EditorEx
+     281: aload         9
+     283: aload_2
+     284: aconst_null
+     285: invokespecial #269                // Method com/intellij/database/console/JdbcConsoleProvider$Info."<init>":(Lcom/intellij/psi/PsiFile;Lcom/intellij/psi/PsiFile;Lcom/intellij/openapi/editor/ex/EditorEx;Lcom/intellij/database/script/ScriptModel;Lcom/intellij/database/settings/DatabaseSettings$ExecOption;Lcom/intellij/util/NotNullFunction;)V
+     288: areturn
+
+  private static <V> com.intellij.database.script.ScriptModel<V> filterRanges(com.intellij.database.script.ScriptModel<V>, java.util.Set<com.intellij.openapi.util.TextRange>);
+    Code:
+       0: aload_0
+       1: new           #272                // class com/intellij/database/actions/QueryActionBase$1
+       4: dup
+       5: aload_1
+       6: invokespecial #274                // Method com/intellij/database/actions/QueryActionBase$1."<init>":(Ljava/util/Set;)V
+       9: invokevirtual #277                // Method com/intellij/database/script/ScriptModel.rawTransform:(Lcom/intellij/util/Function;)Lcom/intellij/database/script/ScriptModel;
+      12: areturn
+
+  protected void invokeImpl(com.intellij.openapi.actionSystem.AnActionEvent, com.intellij.database.console.JdbcConsole, com.intellij.database.console.JdbcConsoleProvider$Info);
+    Code:
+       0: aload_1
+       1: ifnonnull     9
+       4: bipush        13
+       6: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+       9: aload_3
+      10: ifnonnull     18
+      13: bipush        14
+      15: invokestatic  #417                // Method $$$reportNull$$$0:(I)V
+      18: aload_3
+      19: ldc_w         #283                // String no.query.found
+      22: iconst_0
+      23: anewarray     #285                // class java/lang/Object
+      26: invokestatic  #287                // Method com/intellij/database/DatabaseBundle.message:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      29: iconst_0
+      30: aload_0
+      31: aload_2
+      32: aload_3
+      33: invokedynamic #293,  0            // InvokeDynamic #1:consume:(Lcom/intellij/database/actions/QueryActionBase;Lcom/intellij/database/console/JdbcConsole;Lcom/intellij/database/console/JdbcConsoleProvider$Info;)Lcom/intellij/util/Consumer;
+      38: invokestatic  #297                // Method com/intellij/database/console/JdbcConsoleProvider.chooseStatements:(Lcom/intellij/database/console/JdbcConsoleProvider$Info;Ljava/lang/String;ZLcom/intellij/util/Consumer;)V
+      41: return
+
+  protected abstract void invokeImpl(com.intellij.database.console.JdbcConsole, com.intellij.database.script.ScriptModel<?>, com.intellij.database.console.JdbcConsoleProvider$Info);
+
+  private void lambda$invokeImpl$0(com.intellij.database.console.JdbcConsole, com.intellij.database.console.JdbcConsoleProvider$Info, com.intellij.database.script.ScriptModel);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_3
+       3: aload_2
+       4: invokevirtual #301                // Method invokeImpl:(Lcom/intellij/database/console/JdbcConsole;Lcom/intellij/database/script/ScriptModel;Lcom/intellij/database/console/JdbcConsoleProvider$Info;)V
+       7: return
+
+  private void lambda$actionPerformed$0(com.intellij.openapi.editor.Editor);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #304                // Method onElementNotFound:(Lcom/intellij/openapi/editor/Editor;)V
+       5: return
+
+  private static void $$$reportNull$$$0(int);
+    Code:
+       0: iload_0
+       1: tableswitch   { // 0 to 14
+                     0: 76
+                     1: 76
+                     2: 82
+                     3: 76
+                     4: 76
+                     5: 76
+                     6: 82
+                     7: 76
+                     8: 76
+                     9: 76
+                    10: 76
+                    11: 76
+                    12: 76
+                    13: 76
+                    14: 76
+               default: 76
+          }
+      76: ldc_w         #419                // String Argument for @NotNull parameter \'%s\' of %s.%s must not be null
+      79: goto          88
+      82: ldc_w         #421                // String @NotNull method %s.%s must not return null
+      85: goto          88
+      88: iload_0
+      89: tableswitch   { // 0 to 14
+                     0: 164
+                     1: 164
+                     2: 168
+                     3: 164
+                     4: 164
+                     5: 164
+                     6: 168
+                     7: 164
+                     8: 164
+                     9: 164
+                    10: 164
+                    11: 164
+                    12: 164
+                    13: 164
+                    14: 164
+               default: 164
+          }
+     164: iconst_3
+     165: goto          172
+     168: iconst_2
+     169: goto          172
+     172: anewarray     #285                // class java/lang/Object
+     175: iload_0
+     176: tableswitch   { // 0 to 14
+                     0: 252
+                     1: 261
+                     2: 270
+                     3: 279
+                     4: 252
+                     5: 252
+                     6: 270
+                     7: 252
+                     8: 288
+                     9: 288
+                    10: 252
+                    11: 288
+                    12: 297
+                    13: 252
+                    14: 306
+               default: 252
+          }
+     252: dup
+     253: iconst_0
+     254: ldc_w         #422                // String e
+     257: aastore
+     258: goto          315
+     261: dup
+     262: iconst_0
+     263: ldc_w         #423                // String context
+     266: aastore
+     267: goto          315
+     270: dup
+     271: iconst_0
+     272: ldc_w         #424                // String com/intellij/database/actions/QueryActionBase
+     275: aastore
+     276: goto          315
+     279: dup
+     280: iconst_0
+     281: ldc_w         #425                // String editor
+     284: aastore
+     285: goto          315
+     288: dup
+     289: iconst_0
+     290: ldc_w         #426                // String execOption
+     293: aastore
+     294: goto          315
+     297: dup
+     298: iconst_0
+     299: ldc_w         #427                // String elements
+     302: aastore
+     303: goto          315
+     306: dup
+     307: iconst_0
+     308: ldc_w         #428                // String info
+     311: aastore
+     312: goto          315
+     315: iload_0
+     316: tableswitch   { // 0 to 14
+                     0: 392
+                     1: 392
+                     2: 401
+                     3: 392
+                     4: 392
+                     5: 392
+                     6: 410
+                     7: 392
+                     8: 392
+                     9: 392
+                    10: 392
+                    11: 392
+                    12: 392
+                    13: 392
+                    14: 392
+               default: 392
+          }
+     392: dup
+     393: iconst_1
+     394: ldc_w         #424                // String com/intellij/database/actions/QueryActionBase
+     397: aastore
+     398: goto          419
+     401: dup
+     402: iconst_1
+     403: ldc_w         #429                // String getExecOption
+     406: aastore
+     407: goto          419
+     410: dup
+     411: iconst_1
+     412: ldc_w         #430                // String getPsiElements
+     415: aastore
+     416: goto          419
+     419: iload_0
+     420: tableswitch   { // 0 to 14
+                     0: 496
+                     1: 505
+                     2: 514
+                     3: 517
+                     4: 526
+                     5: 535
+                     6: 514
+                     7: 544
+                     8: 544
+                     9: 544
+                    10: 553
+                    11: 553
+                    12: 553
+                    13: 562
+                    14: 562
+               default: 496
+          }
+     496: dup
+     497: iconst_2
+     498: ldc_w         #431                // String update
+     501: aastore
+     502: goto          571
+     505: dup
+     506: iconst_2
+     507: ldc_w         #432                // String shouldBePromoted
+     510: aastore
+     511: goto          571
+     514: goto          571
+     517: dup
+     518: iconst_2
+     519: ldc_w         #433                // String onElementNotFound
+     522: aastore
+     523: goto          571
+     526: dup
+     527: iconst_2
+     528: ldc_w         #434                // String actionPerformed
+     531: aastore
+     532: goto          571
+     535: dup
+     536: iconst_2
+     537: ldc_w         #430                // String getPsiElements
+     540: aastore
+     541: goto          571
+     544: dup
+     545: iconst_2
+     546: ldc_w         #435                // String getInfoClassic
+     549: aastore
+     550: goto          571
+     553: dup
+     554: iconst_2
+     555: ldc_w         #436                // String findInfoFromFileStructure
+     558: aastore
+     559: goto          571
+     562: dup
+     563: iconst_2
+     564: ldc_w         #437                // String invokeImpl
+     567: aastore
+     568: goto          571
+     571: invokestatic  #440                // Method java/lang/String.format:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+     574: iload_0
+     575: tableswitch   { // 0 to 14
+                     0: 648
+                     1: 648
+                     2: 659
+                     3: 648
+                     4: 648
+                     5: 648
+                     6: 659
+                     7: 648
+                     8: 648
+                     9: 648
+                    10: 648
+                    11: 648
+                    12: 648
+                    13: 648
+                    14: 648
+               default: 648
+          }
+     648: new           #442                // class java/lang/IllegalArgumentException
+     651: dup_x1
+     652: swap
+     653: invokespecial #445                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     656: goto          670
+     659: new           #447                // class java/lang/IllegalStateException
+     662: dup_x1
+     663: swap
+     664: invokespecial #448                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     667: goto          670
+     670: athrow
+}
