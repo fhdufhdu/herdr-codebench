@@ -233,6 +233,11 @@ const other = new sessionAPI.LspSession(); other.init(cx, {}); other.attempted =
 cleanupHandler = async () => { throw new Error('document owner conflict'); };
 const conflictCalls = calls.length; await assert.rejects(other.close(cx), /owner conflict/);
 assert.equal(calls.length, conflictCalls + 1, 'owner conflicts never trigger fallback or steal another lease');
+cleanupHandler = async () => { throw Object.assign(new Error('document owner conflict'), { code: 'owner_conflict' }); };
+const supersededCalls = calls.length;
+await other.close(cx);
+assert.equal(other.closed, true, 'a confirmed foreign owner completes cleanup of a lease this session no longer owns');
+assert.equal(calls.length, supersededCalls + 1, 'superseded cleanup never closes or retries the foreign owner');
 cleanupHandler = null;
 
 // Cleanup also bypasses a discovery promise owned by an already cancelled task.

@@ -15,6 +15,7 @@ import { analyzeHttp, httpCompletions } from "./http-analysis.js";
 import { runConfiguration } from "./execution.js";
 import { GutterNavigation } from "./gutter-navigation.js";
 import { SQLAssist } from "./sql-assist.js";
+import { Viewer, viewerKind } from "./viewer.js";
 
 const sqlFile = path => /\.sql$/i.test(path);
 
@@ -116,7 +117,7 @@ export default class EditorSurface extends View {
       if (doc.lsp) sessions.add(doc.lsp);
       if (doc.retiringLsp) sessions.add(doc.retiringLsp);
       doc.completionMenu?.release(); doc.completionMenu?.focus.release(); doc.completionTimer?.cancel();
-      doc.sqlAssist?.release(); doc.gutter?.release(); doc.state?.release();
+      doc.sqlAssist?.release(); doc.gutter?.release(); doc.state?.release(); doc.viewer?.dispose();
     }
     for (const session of sessions) closing.push(cleanupCx ? session.close(cleanupCx) : Promise.reject(new Error("LSP 정리 작업 컨텍스트가 없습니다.")));
     this.alive = false;
@@ -181,6 +182,7 @@ export default class EditorSurface extends View {
     cx.notify();
   }
   title(path, project = currentProject()) { return this.document(path, project)?.path.split(/[\\/]/).pop() ?? path.split(/[\\/]/).pop(); }
+  icon(path) { return viewerKind(path) === "image" ? "image" : viewerKind(path) ? "file" : "file-text"; }
   dirty(path, project = currentProject()) { return isDirty(this.document(path, project)); }
   activate(path, cx, project = currentProject()) { this.select(project, path, cx); return this.document(path, project); }
   closePath(path, cx, project = currentProject()) {
@@ -213,11 +215,16 @@ export default class EditorSurface extends View {
     const current = () => this.owns(doc) && doc.loadGeneration === generation;
     doc.loading = true;
     doc.error = "";
+    doc.viewer?.dispose(); doc.viewer = null;
     this.spawn(context, async cx => {
       try {
-        const text = await readTextFile(doc.path, { on: doc.project.machine ?? null });
+        const kind = viewerKind(doc.path);
+        if (kind) { await this.loadViewer(doc, kind, cx, current); return; }
+        const text = await readTextFile(doc.path, { on: doc.project.machine ?? null }).catch(() => null);
         if (!current()) return;
-        if (text === null) throw new Error("파일이 없거나 읽을 수 없습니다.");
+        if (text === null || text.includes("\0")) {
+          await this.loadViewer(doc, "binary", cx, current); return;
+        }
         // Native state is created in a task callback, never in render.
         if (doc.lsp) {
           try { await doc.lsp.close(cx); } catch (error) { doc.lspCloseError = String(error); }
@@ -264,6 +271,19 @@ export default class EditorSurface extends View {
         if (current()) { doc.loading = false; cx.notify(); }
       }
     });
+  }
+  async loadViewer(doc, kind, cx, current) {
+    doc.analysisEpoch = (doc.analysisEpoch ?? 0) + 1; doc.lspStarting = false;
+    doc.completion = null; doc.completionTimer?.cancel();
+    doc.completionMenu?.release(); doc.completionMenu?.focus.release(); doc.completionMenu = null;
+    doc.sqlAssist?.release(); doc.sqlAssist = null; doc.gutter?.release(); doc.gutter = null;
+    doc.state?.release(); doc.state = null; doc.saved = null;
+    this.retireLsp(doc, cx);
+    const viewer = doc.viewer = new Viewer(kind, { path: doc.path, on: doc.project.machine ?? null });
+    doc.lspState = { status: "preview", symbolsStatus: "ready", symbols: [], diagnostics: [] };
+    this.publishOutline(doc);
+    await viewer.load(cx, () => current() && doc.viewer === viewer);
+    if (!current()) viewer.dispose();
   }
   save(doc, after, context) {
     if (!context) { this.enqueue(taskCx => this.save(doc, after, taskCx)); return; }
@@ -454,12 +474,13 @@ export default class EditorSurface extends View {
   }
   consumeNavigation(doc, cx) {
     const target = scoped("ade.navigation", doc.project);
-    if (!this.selected(doc) || !doc.state || target?.path !== doc.path || target.at === doc.navigationAt) return;
+    if (!this.selected(doc) || (!doc.state && (!doc.viewer || doc.loading)) || target?.path !== doc.path || target.at === doc.navigationAt) return;
     const history = this.observeNavigation(doc);
     if (target.history && history.pending === target.at) history.pending = null;
     else { history.pending = null; this.remember(history, { path: target.path, line: target.line ?? 1, column: target.column ?? 1 }); }
     history.doc = doc;
     doc.navigationAt = target.at;
+    if (!doc.state) return;
     const offset = textOffset(doc.state.value(), (target.line ?? 1) - 1, (target.column ?? 1) - 1);
     doc.preview = false;
     doc.state.setSelection({ anchor: offset, head: offset }, cx);
@@ -690,7 +711,7 @@ export default class EditorSurface extends View {
     this.documents.delete(doc.key);
     this.retireLsp(doc, cx);
     doc.completionMenu?.release(); doc.completionMenu?.focus.release(); doc.completionTimer?.cancel();
-    doc.sqlAssist?.release(); doc.gutter?.release(); doc.state?.release();
+    doc.sqlAssist?.release(); doc.gutter?.release(); doc.state?.release(); doc.viewer?.dispose();
     this.pending = null;
     const next = this.active();
     if (next?.state && !next.preview && !next.project.machine) next.state.focus();
@@ -745,6 +766,7 @@ export default class EditorSurface extends View {
         .child(`${project.name} · ${project.branch || "브랜치 없음"} · ${doc.path}`))
       .child(adeButton("ade-save", doc.saving ? "저장 중…" : "저장", (_event, eventCx) => this.save(doc, undefined, eventCx), { disabled: !doc.state || doc.loading || doc.saving || Boolean(project.machine) || doc.external || !isDirty(doc) }))
       .child(adeButton("ade-reload", "다시 읽기", (_event, eventCx) => this.request(doc, "reload", eventCx), { disabled: doc.loading || doc.saving }))
+      .when(Boolean(doc.viewer && !doc.loading), row => row.children(doc.viewer.tools(cx, { ...c, muted: c.secondary })))
       .when(markdownFile(doc.path), element => element.child(adeButton("ade-preview", doc.preview ? "소스" : "미리보기", (_event, eventCx) => this.togglePreview(doc, eventCx), { disabled: !doc.state, selected: doc.preview }))));
     if (this.pending?.doc === doc) {
       const request = this.pending, action = request.action;
@@ -760,6 +782,12 @@ export default class EditorSurface extends View {
     }
     if (doc.error) shell.child(adeNote(doc.error));
     if (doc.loading) return shell.child(adeNote("파일을 불러오는 중…"));
+    if (doc.viewer) {
+      this.consumeNavigation(doc, cx);
+      const theme = { ...c, dim: c.secondary, muted: c.secondary, raised: c.surface, solid: c.accent, solid_foreground: c.accentForeground };
+      return shell.child(v_flex().flex_1().min_w(0).min_h(0).overflow_hidden().child(doc.viewer.render(cx, theme)))
+        .child(div().flex_none().px(10).py(4).text_size(adeSize(11)).text_color(c.secondary).child(doc.viewer.subtitle()));
+    }
     if (!doc.state) return shell;
     this.scheduleNavigation(doc);
     if (doc.external) shell.child(adeNote("외부 라이브러리 소스 · 읽기 전용"));

@@ -16,7 +16,7 @@ export function fileAnalysisState(context = currentProject()) {
     diagnostics: outline.diagnosticCount, revision: outline.revision } : { path, status: "pending" };
 }
 export const fileAnalysisLabel = state => ({ idle: "파일 분석", pending: "파일 분석 중", loading: "파일 분석 중", syncing: "파일 분석 중",
-  requesting: "파일 분석 중", ready: "LSP 준비됨", unsupported: "LSP 미지원", unavailable: "LSP 연결 없음", local: "문맥 분석", error: "LSP 확인 필요" }[state?.status] ?? "파일 분석 중");
+  requesting: "파일 분석 중", ready: "LSP 준비됨", preview: "문서 미리보기", unsupported: "LSP 미지원", unavailable: "LSP 연결 없음", local: "문맥 분석", error: "LSP 확인 필요" }[state?.status] ?? "파일 분석 중");
 export function fileAnalysisButton(action) {
   const state = fileAnalysisState(), busy = ["pending", "loading", "syncing", "requesting"].includes(state.status);
   return adeButton("file-analysis", fileAnalysisLabel(state), action, {
@@ -40,7 +40,7 @@ export class FileAnalysisView {
         .when(Boolean(state.error || state.message), element => element.child(adeNote(state.error || state.message)))
         .when(state.diagnostics != null, element => element.child(adeNote(`진단 ${state.diagnostics}개 · 문서 revision ${state.revision ?? "—"}`)))
         .child(adeNote("파일을 열 때 분석을 연결합니다. 프로젝트 전체 사전 준비는 실행하지 않습니다.")),
-      footer: [adeButton("file-analysis-retry", "다시 연결", (_event, eventCx) => this.retry(context, state, eventCx), { disabled: !state.path || context.machine || state.status === "unsupported" || state.status === "local" }),
+      footer: [adeButton("file-analysis-retry", "다시 연결", (_event, eventCx) => this.retry(context, state, eventCx), { disabled: !state.path || context.machine || ["unsupported", "local", "preview"].includes(state.status) }),
         adeButton("file-analysis-close", "닫기", () => closeOverlay(this.props.overlay))],
     }).h(320);
   }

@@ -30,6 +30,8 @@ bindings["./execution.js"] = { runConfiguration() {} };
 Object.assign(bindings.herdr, { openOverlay() {}, run() {}, notify() {} });
 bindings['./sql-assist.js'] = { SQLAssist: class { release() {} } };
 bindings['./gutter-navigation.js'] = { GutterNavigation: class { sync() {} release() {} } };
+bindings['./viewer.js'] = { Viewer: class { async load() {} dispose() {} }, viewerKind: () => null };
+bindings['./http-analysis.js'] = { analyzeHttp() {}, httpCompletions() {} };
 const context = vm.createContext({ console }), module = new vm.SourceTextModule(await fs.readFile(new URL("../../mods/ade/text-editor.js", import.meta.url), 'utf8'), { context });
 await module.link(async name => { const values = bindings[name]; return new vm.SyntheticModule(Object.keys(values), function () { for (const [name, value] of Object.entries(values)) this.setExport(name, value); }, { context }); });
 await module.evaluate();

@@ -2,6 +2,8 @@
 
 HTTP 실행의 공통 코어는 `design/idea/http-client.js`다. `sync_ui.py`가 ADE·codenav의 로컬 사본을 생성하며, UI와 실행 기록 어댑터는 각 모드가 소유한다. 블록 파싱·환경 탐색·ijhttp 스크립트·메모리 globals·private snapshot 정리를 중복 구현하지 않는다. 편집기와 리뷰의 gutter 구분선은 의미 색 `separator`와 1px 두께를 사용한다.
 
+ADE의 이미지·PDF·미디어·바이너리 미리보기는 Activity의 `viewer.js`와 `io.js` 읽기 전용 헬퍼를 재사용한다. `sync_ui.py --mod ade`가 ADE 공통 버튼·색상과 로컬 import 경계에 맞춘 `viewer.js`, `viewer-io.js`를 생성한다. PDF는 설치된 Poppler로 보이는 페이지만 그리며, ICO·TIFF·AVIF는 FFmpeg로 PNG로 변환한다. 파일 탭의 닫기·다시 읽기는 viewer 타이머를 정리하고, 이 파일에는 편집 버퍼·LSP 세션을 생성하지 않는다.
+
 `tokens.json`의 `herdr.ux`는 현재 의미 색·치수·syntax의 원본, `ui.js`는 컴포넌트와 동작의 원본이다. 이전 IntelliJ 추출 데이터와 공개 이름은 호환을 위해 유지한다. 현재 설계 판단은 [UX 리디자인](../../docs/workflows/ux-redesign/03-architecture.md)에 있다. 모드에서는 생성된 `./idea-design.js`를 import한다. 모드 사이 상대경로 import나 생성 파일의 직접 수정은 하지 않는다.
 
 Database도 같은 계약을 따른다. `TOOLS.database.headerActions`가 제목/추가·관리·새로고침을 소유하고, 본문은 SQL 콘솔 진입과 lazy tree를 그린다. 전역 연결 창은 공통 관리 목록과 상세 입력, compact driver/TLS selector를 사용한다. idea의 SQL은 모드 소유 SQLBuffer와 공통 CodeView 표시를 재사용한다. 실행 범위는 `uiDialog` 안의 `uiManagedList` 선택·원문 미리보기·명시 실행으로 구성하며 선택만으로 실행하지 않는다. codebench 후보 popup은 기존 동작을 유지한다.

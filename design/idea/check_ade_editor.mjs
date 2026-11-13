@@ -65,10 +65,20 @@ Object.assign(stubs.herdr, { openOverlay() {}, run() {}, notify() {} });
 const modules = new Map();
 stubs['./sql-assist.js'] = { SQLAssist: class { release() {} } };
 stubs['./gutter-navigation.js'] = { GutterNavigation: class { constructor() { this.markers = []; } sync() {} release() {} } };
+const viewers = [];
+stubs['./viewer.js'] = {
+  viewerKind: path => /\.pdf$/i.test(path) ? 'pdf' : /\.(png|jpg|jpeg|svg|ico|webp|gif|bmp|tiff?|avif)$/i.test(path) ? 'image' : null,
+  Viewer: class {
+    constructor(kind, spec) { this.kind = kind; this.spec = spec; viewers.push(this); }
+    async load(_cx, alive) { this.loaded = alive(); }
+    dispose() { this.disposed = true; }
+  },
+};
 for (const [name, exports] of Object.entries(stubs)) modules.set(name, new vm.SyntheticModule(Object.keys(exports), function () { for (const [key, value] of Object.entries(exports)) this.setExport(key, value); }, { context }));
 const model = new vm.SourceTextModule(fs.readFileSync(new URL('../../mods/ade/editor-document.js', import.meta.url), 'utf8'), { context });
 modules.set('./editor-document.js', model);
 modules.set('./editor-completion.js', new vm.SourceTextModule(fs.readFileSync(new URL('../../mods/ade/editor-completion.js', import.meta.url), 'utf8'), { context }));
+modules.set('./http-analysis.js', new vm.SourceTextModule(fs.readFileSync(new URL('../../mods/ade/http-analysis.js', import.meta.url), 'utf8'), { context }));
 const source = new vm.SourceTextModule(fs.readFileSync(new URL('../../mods/ade/text-editor.js', import.meta.url), 'utf8'), { context });
 await source.link(name => modules.get(name));
 await source.evaluate();
@@ -245,4 +255,27 @@ session(project).active = '/cache/sources/dependency.java';
 const restoredEditor = new Editor(); restoredEditor.init({ owner: nativeOwner }, cx);
 assert.equal(restoredEditor.ensure(project, '/cache/sources/dependency.java').sourceOnly, true, 'readonly provenance survives editor restoration');
 await tick(); pendingReads.at(-1).resolve('class Dependency {}'); await Promise.all(tasks.splice(0)); await restoredEditor.release(cx);
+const viewerEditor = new Editor(); viewerEditor.init({ owner: nativeOwner }, cx);
+const sourceReads = pendingReads.length, servers = lspSessions.length;
+for (const path of ['/b/design.PDF', '/b/picture.png', '/b/favicon.ico', '/b/vector.svg']) {
+  session(project).tabs.push(path); session(project).active = path;
+  const doc = viewerEditor.ensure(project, path); await tick(); await Promise.all(tasks.splice(0));
+  assert.ok(doc.viewer.loaded); assert.equal(doc.state, null);
+  assert.equal(doc.lspState.status, 'preview');
+  assert.equal(pendingReads.length, sourceReads, 'binary previews never pass through UTF-8 source reads');
+  assert.equal(lspSessions.length, servers, 'binary previews never start a language server');
+  const previous = doc.viewer;
+  viewerEditor.load(doc, cx); await Promise.all(tasks.splice(0));
+  assert.equal(previous.disposed, true, 'reload releases the old PDF timer');
+  viewerEditor.history(project).pending = 'preview-back';
+  saved.set('ade.navigation', { [stubs['./workspace.js'].projectKey(project)]: { path, history: true, at: 'preview-back' } });
+  viewerEditor.consumeNavigation(doc, cx);
+  assert.equal(viewerEditor.history(project).pending, null, 'back/forward navigation completes for previews');
+  viewerEditor.closePath(path, cx, project); assert.equal(doc.viewer.disposed, true);
+}
+session(project).tabs.push('/b/archive.zip'); session(project).active = '/b/archive.zip';
+const binaryDoc = viewerEditor.ensure(project, '/b/archive.zip'); await tick(); pendingReads.at(-1).resolve('PK\0binary'); await Promise.all(tasks.splice(0));
+assert.equal(binaryDoc.viewer.kind, 'binary'); assert.equal(binaryDoc.state, null);
+await viewerEditor.release(cx);
+assert.ok(viewers.every(viewer => viewer.disposed), 'closing the editor releases all viewer resources');
 console.log('ADE editor: identity, stale reads/revisions/projects, CAS edits/conflict, canonical syntax/diagnostics, navigation, remote readonly and awaited lease release passed');

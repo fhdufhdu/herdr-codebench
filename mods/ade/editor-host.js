@@ -138,7 +138,7 @@ export class EditorHost {
     root.child(h_flex().h(38).flex_none().min_w(0).items_center().border_b(1).border_color(c.separator)
       .child(uiTabStrip("ade-central-tabs", entries.map(entry => ({ id: entry.key,
         content: adeTab(`ade-central-${entry.key}`, `${entry.title}${entry.dirty ? " •" : ""}`, {
-          icon: uiIcon(entry.kind === "review" ? "git-branch" : entry.kind === "file" ? "file-text" : entry.spec.kind === "console" ? "code" : entry.spec.kind === "table" ? "table" : "file-text", 14), selected: entry.key === selected.key,
+          icon: uiIcon(entry.kind === "review" ? "git-branch" : entry.kind === "file" ? this.files.icon?.(entry.path) ?? "file-text" : entry.spec.kind === "console" ? "code" : entry.spec.kind === "table" ? "table" : "file-text", 14), selected: entry.key === selected.key,
           onSelect: (_event, eventCx) => this.activate(entry, eventCx), closeIcon: uiIcon("x", 12), onClose: (_event, eventCx) => this.closeEntry(entry, eventCx),
         }),
       })), selected.key, this.viewport)));

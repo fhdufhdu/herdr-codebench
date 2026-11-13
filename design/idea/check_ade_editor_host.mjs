@@ -51,7 +51,7 @@ const bindings = {
   "./workspace.js": { projectKey, currentProject: () => current, documentState: context => fileStates.get(context.id) },
   "./database-model.js": { databaseDocumentState: context => dbStates.get(context.id) },
   "./text-editor.js": { default: Files }, "./database-editor.js": { DatabaseEditor: Database },
-  "./review.js": { ReviewView: class {
+  "./review.js": { openReview() {}, ReviewView: class {
     init(props) { this.context = props.context; this.focus = { focus() {} }; }
     refresh(_cx, context) { this.context = context; }
     render() { rendered.push(`review:${this.context.id}`); return element(); }

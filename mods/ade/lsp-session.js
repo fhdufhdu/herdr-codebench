@@ -293,11 +293,16 @@ export class LspSession {
         await backendCleanup("document_close", this.body(this.attempted), cx, { engine: this.engineIdentity });
         this.closed = true;
       } catch (error) {
+        // The engine has confirmed that this path belongs to another owner.
+        // This session has no lease left to release. A subsequent sync still
+        // has to acquire its own lease through the engine's normal checks.
+        if (error?.code === "owner_conflict") { this.closed = true; return; }
         // If the newest request never reached the engine, release the last
         // acknowledged lease instead. Every attempt still requires the exact
         // owner/revision; a different owner can never be closed.
         if (!/stale document revision/.test(String(error)) || !this.acknowledged || this.acknowledged.revision === this.attempted.revision) throw error;
-        await backendCleanup("document_close", this.body(this.acknowledged), cx, { engine: this.engineIdentity });
+        try { await backendCleanup("document_close", this.body(this.acknowledged), cx, { engine: this.engineIdentity }); }
+        catch (fallbackError) { if (fallbackError?.code !== "owner_conflict") throw fallbackError; }
         this.closed = true;
       }
     })();
